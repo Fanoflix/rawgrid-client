@@ -1,0 +1,1 @@
+export const DEFAULT_TEXTAREA_COUNT = 3

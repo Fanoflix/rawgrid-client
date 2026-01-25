@@ -121,9 +121,18 @@
     @apply border-border outline-ring/50;
     }
   body {
-    @apply font-sans bg-background text-foreground;
+    @apply font-sans bg-background text-foreground m-0;
     }
   html {
     @apply font-sans;
     }
+}
+
+.tool-base {
+  font-size: clamp(12px, 1.6cqi, 14px);
+}
+
+.tool-base input,
+.tool-base textarea {
+  font-size: inherit;
 }
