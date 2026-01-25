@@ -1,11 +1,11 @@
 export interface JwtDecoderConfig {
-  defaultFontSize: number
-  minFontSize: number
-  maxFontSize: number
+  defaultFontSize: number;
+  minFontSize: number;
+  maxFontSize: number;
 }
 
 export const JWT_DECODER_CONFIG: JwtDecoderConfig = {
-  defaultFontSize: 13,
-  minFontSize: 11,
+  defaultFontSize: 11,
+  minFontSize: 7,
   maxFontSize: 18,
-}
+};

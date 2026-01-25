@@ -30,7 +30,7 @@ export function App() {
                 </ToolBaseContainer>
               </ResizablePanel>
 
-              <ResizablePanel defaultSize={12} minSize={12}>
+              <ResizablePanel defaultSize={12} minSize={4}>
                 <ToolBaseContainer>
                   <ColorPickerTool />
                 </ToolBaseContainer>

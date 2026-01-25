@@ -16,7 +16,7 @@ export function JwtDecoderTool() {
         value={state.token}
         onChange={handleTokenChange}
         placeholder="jwt"
-        className="rounded-none border-0 border-b border-border text-xs font-mono font-medium truncate"
+        className="rounded-none border-0 border-b border-border text-xs font-medium truncate"
       />
       <div className="relative flex-1 min-h-0 group">
         <Textarea

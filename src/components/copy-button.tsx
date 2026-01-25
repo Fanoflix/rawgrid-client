@@ -1,13 +1,12 @@
-import { Check, Copy } from "lucide-react"
-import { useState } from "react"
+import { useState } from "react";
 
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export interface CopyButtonProps {
-  value: string
-  className?: string
-  ariaLabel?: string
+  value: string;
+  className?: string;
+  ariaLabel?: string;
 }
 
 export function CopyButton({
@@ -15,28 +14,29 @@ export function CopyButton({
   className,
   ariaLabel = "copy",
 }: CopyButtonProps) {
-  const [isCopied, setIsCopied] = useState(false)
+  const [isCopied, setIsCopied] = useState(false);
 
   async function handleCopy() {
-    if (!value) return
-    await navigator.clipboard.writeText(value)
-    setIsCopied(true)
-    window.setTimeout(() => setIsCopied(false), 1200)
+    if (!value) return;
+    await navigator.clipboard.writeText(value);
+    setIsCopied(true);
+    window.setTimeout(() => setIsCopied(false), 1200);
   }
 
   return (
     <Button
       type="button"
       variant="ghost"
-      size="icon-xs"
+      size="xs"
       className={cn(
         "border-border bg-background text-foreground hover:bg-muted rounded-none border",
+        isCopied && "text-green-500 hover:text-green-500",
         className
       )}
       onClick={handleCopy}
       aria-label={ariaLabel}
     >
-      {isCopied ? <Check className="size-3" /> : <Copy className="size-3" />}
+      {isCopied ? "copied" : "copy"}
     </Button>
-  )
+  );
 }
