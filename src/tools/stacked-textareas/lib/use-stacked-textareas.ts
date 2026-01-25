@@ -1,4 +1,4 @@
-import type { ChangeEvent } from "react"
+import { useMemo, type ChangeEvent } from "react"
 
 import { useToolHistory } from "@/lib/use-tool-history"
 import { DEFAULT_TEXTAREA_COUNT } from "@/tools/stacked-textareas/lib/constants"
@@ -23,9 +23,10 @@ function deserializeEntries(raw: string) {
 }
 
 export function useStackedTextareas() {
+  const initialEntries = useMemo(() => createDefaultEntries(), [])
   const { value: entries, setValue: setEntries } = useToolHistory<string[]>({
     tool: "stacked-textareas",
-    initialValue: createDefaultEntries(),
+    initialValue: initialEntries,
     serialize: serializeEntries,
     deserialize: deserializeEntries,
   })

@@ -1,21 +1,22 @@
-import { createContext, useContext } from "react"
+import { createContext, useContext } from "react";
 import {
   Group,
   Panel,
   Separator,
   type GroupProps,
   type SeparatorProps,
-} from "react-resizable-panels"
+} from "react-resizable-panels";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
-type ResizableDirection = "horizontal" | "vertical"
+type ResizableDirection = "horizontal" | "vertical";
 
-const ResizableDirectionContext = createContext<ResizableDirection>("horizontal")
+const ResizableDirectionContext =
+  createContext<ResizableDirection>("horizontal");
 
 export interface ResizablePanelGroupProps
   extends Omit<GroupProps, "orientation"> {
-  direction?: ResizableDirection
+  direction?: ResizableDirection;
 }
 
 function ResizablePanelGroup({
@@ -35,18 +36,18 @@ function ResizablePanelGroup({
         {...props}
       />
     </ResizableDirectionContext.Provider>
-  )
+  );
 }
 
-const ResizablePanel = Panel
+const ResizablePanel = Panel;
 
 function ResizableHandle({
   className,
   withHandle = false,
   ...props
 }: SeparatorProps & { withHandle?: boolean }) {
-  const direction = useContext(ResizableDirectionContext)
-  const isVertical = direction === "vertical"
+  const direction = useContext(ResizableDirectionContext);
+  const isVertical = direction === "vertical";
 
   return (
     <Separator
@@ -61,7 +62,7 @@ function ResizableHandle({
         <div className="bg-border pointer-events-none size-3" />
       ) : null}
     </Separator>
-  )
+  );
 }
 
-export { ResizableHandle, ResizablePanel, ResizablePanelGroup }
+export { ResizableHandle, ResizablePanel, ResizablePanelGroup };

@@ -1,14 +1,14 @@
-import { Minus, Plus } from "lucide-react"
+import { Minus, Plus } from "lucide-react";
 
-import { CopyButton } from "@/components/copy-button"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { useJwtDecoder } from "@/tools/jwt-decoder/lib/use-jwt-decoder"
+import { CopyButton } from "@/components/copy-button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useJwtDecoder } from "@/tools/jwt-decoder/lib/use-jwt-decoder";
 
 export function JwtDecoderTool() {
   const { state, handleTokenChange, increaseFont, decreaseFont } =
-    useJwtDecoder()
+    useJwtDecoder();
 
   return (
     <div className="flex h-full w-full flex-col gap-0">
@@ -16,14 +16,14 @@ export function JwtDecoderTool() {
         value={state.token}
         onChange={handleTokenChange}
         placeholder="jwt"
-        className="rounded-none border-0 border-b border-border font-mono truncate"
+        className="rounded-none border-0 border-b border-border text-xs font-mono font-medium truncate"
       />
-      <div className="relative flex-1 group">
+      <div className="relative flex-1 min-h-0 group">
         <Textarea
           value={state.output}
           readOnly
           placeholder="decoded json"
-          className="h-full w-full resize-none rounded-none border-0 border-t border-border font-mono"
+          className="h-full w-full min-h-0 resize-none border-0 border-t border-border font-mono font-thin overflow-auto"
           style={{ fontSize: state.fontSize }}
         />
         <div className="absolute right-1 top-1 flex gap-0 opacity-0 transition-opacity group-hover:opacity-100">
@@ -51,5 +51,5 @@ export function JwtDecoderTool() {
         </div>
       </div>
     </div>
-  )
+  );
 }

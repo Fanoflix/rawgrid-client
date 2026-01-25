@@ -1,8 +1,8 @@
-import { Input } from "@/components/ui/input"
-import { useYouTubePlayer } from "@/tools/youtube-player/lib/use-youtube-player"
+import { Input } from "@/components/ui/input";
+import { useYouTubePlayer } from "@/tools/youtube-player/lib/use-youtube-player";
 
 export function YouTubePlayerTool() {
-  const { url, embedUrl, handleUrlChange } = useYouTubePlayer()
+  const { url, embedUrl, handleUrlChange } = useYouTubePlayer();
 
   return (
     <div className="flex h-full w-full flex-col gap-0">
@@ -22,5 +22,5 @@ export function YouTubePlayerTool() {
         />
       </div>
     </div>
-  )
+  );
 }

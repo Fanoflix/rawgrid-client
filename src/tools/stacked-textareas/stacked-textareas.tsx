@@ -1,13 +1,13 @@
-import { X } from "lucide-react"
+import { X } from "lucide-react";
 
-import { CopyButton } from "@/components/copy-button"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { useStackedTextareas } from "@/tools/stacked-textareas/lib/use-stacked-textareas"
+import { CopyButton } from "@/components/copy-button";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useStackedTextareas } from "@/tools/stacked-textareas/lib/use-stacked-textareas";
 
 export function StackedTextareasTool() {
   const { entries, canRemove, getEntryChangeHandler, getEntryRemoveHandler } =
-    useStackedTextareas()
+    useStackedTextareas();
 
   return (
     <div className="flex h-full w-full flex-col gap-0">
@@ -17,7 +17,10 @@ export function StackedTextareasTool() {
             value={value}
             onChange={getEntryChangeHandler(index)}
             placeholder="paste text"
-            className="h-full w-full resize-y rounded-none border-0 border-b border-border font-mono"
+            className="h-full w-full resize-y rounded-none border-0 border-b border-border"
+            style={{
+              resize: entries.length > 1 ? "vertical" : "none",
+            }}
           />
           <div className="absolute right-1 top-1 flex gap-0 opacity-0 transition-opacity group-hover:opacity-100">
             <CopyButton value={value} ariaLabel="copy text" />
@@ -37,5 +40,5 @@ export function StackedTextareasTool() {
         </div>
       ))}
     </div>
-  )
+  );
 }
