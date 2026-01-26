@@ -46,6 +46,14 @@ export function App() {
                   <ColorPickerTool />
                 </ToolBaseContainer>
               </ResizablePanel>
+
+              <ResizableHandle />
+
+              <ResizablePanel defaultSize={40} minSize={20}>
+                <ToolBaseContainer>
+                  <YouTubePlayerTool />
+                </ToolBaseContainer>
+              </ResizablePanel>
             </ResizablePanelGroup>
           </ResizablePanel>
 
@@ -62,13 +70,7 @@ export function App() {
                 </ToolBaseContainer>
               </ResizablePanel>
 
-              <ResizableHandle />
-
-              <ResizablePanel defaultSize={40} minSize={20}>
-                <ToolBaseContainer>
-                  <YouTubePlayerTool />
-                </ToolBaseContainer>
-              </ResizablePanel>
+              {/* More tools go here */}
             </ResizablePanelGroup>
           </ResizablePanel>
         </ResizablePanelGroup>

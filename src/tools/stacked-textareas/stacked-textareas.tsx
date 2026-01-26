@@ -1,4 +1,4 @@
-import type { ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { Minus, Plus, X } from "lucide-react";
 
 import { CopyButton } from "@/components/copy-button";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useFont } from "@/lib/use-font";
 import { useStackedTextareas } from "@/tools/stacked-textareas/lib/use-stacked-textareas";
+import { Input } from "@/components/ui/input";
 
 export function StackedTextareasTool() {
   const {
@@ -18,19 +19,37 @@ export function StackedTextareasTool() {
     handleAddEntry,
   } = useStackedTextareas();
 
+  const now = useCurrentTimestamp();
+  const formattedNow = useMemo(
+    () =>
+      new Intl.DateTimeFormat("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(now),
+    [now]
+  );
+
   return (
     <div className="flex h-full w-full flex-col gap-0">
-      <div className="flex h-8 items-center justify-end border-b border-border px-1 py-0.5">
+      <div className="flex h-8 items-center justify-between border-b border-border px-2 py-0.5">
+        <span className="text-[10px] text-muted-foreground font-mono">
+          {formattedNow}
+        </span>
+
         <Button
           type="button"
           variant="ghost"
-          size="icon-xs"
+          size="xs"
           className="border-border bg-background text-foreground hover:bg-muted rounded-none border"
           onClick={handleAddEntry}
           aria-label="add textarea"
           disabled={!canAdd}
         >
-          <Plus className="size-3" />
+          add text area
         </Button>
       </div>
       {entries.map((value, index) => (
@@ -46,6 +65,22 @@ export function StackedTextareasTool() {
       ))}
     </div>
   );
+}
+
+function useCurrentTimestamp() {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setNow(new Date());
+    }, 30_000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  return now;
 }
 
 interface StackedTextareaRowProps {
