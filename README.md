@@ -1,3 +1,3 @@
-# React + TypeScript + Vite + shadcn/ui
+# rawgrid
 
-This is a template for a new Vite project with React, TypeScript, and shadcn/ui.
+a collection of tools that i use day to day at my job or for my side projects
