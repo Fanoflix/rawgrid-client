@@ -47,7 +47,7 @@ export function StackedTextareasTool() {
 
   return (
     <div className="flex h-full w-full flex-col gap-0">
-      <div className="flex h-8 items-center justify-between border-b border-border px-2 py-0.5">
+      <div className="flex h-8 items-center justify-between border-b border-border px-3 py-0.5">
         <span className="text-[10px] text-muted-foreground font-mono">
           {headerInfo}
         </span>
