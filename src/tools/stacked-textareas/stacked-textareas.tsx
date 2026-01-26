@@ -77,7 +77,7 @@ function StackedTextareaRow({
         value={value}
         onChange={onChange}
         placeholder="notes, ideas, todos..."
-        className="h-full w-full resize-y rounded-none border-b border-b-border"
+        className="h-full w-full resize-y rounded-none border-b border-b-border pt-6 px-4 max-h-64"
         style={{
           resize: canResize ? "vertical" : "none",
           fontSize,

@@ -12,11 +12,11 @@ export function YouTubePlayerTool() {
         placeholder="youtube url or id"
         className="rounded-none border-b border-b-border font-mono"
       />
-      <div className="aspect-video w-full">
+      <div className="flex flex-1 min-h-0 w-full items-center justify-center">
         <iframe
           title="youtube player"
           src={embedUrl}
-          className="h-full w-full border-0"
+          className="aspect-video w-full max-h-full max-w-full border-0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         />
