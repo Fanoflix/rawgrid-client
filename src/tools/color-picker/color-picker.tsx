@@ -11,12 +11,16 @@ export function ColorPickerTool() {
         type="color"
         value={color}
         onChange={handleColorChange}
-        className="h-32 w-full cursor-pointer border-t border-b border-border p-0"
+        className="h-32 w-full cursor-pointer border-y-border p-0"
         aria-label="color picker"
       />
       <div className="flex flex-1 flex-col gap-0">
         <div className="relative group">
-          <Input value={output.hex} readOnly className="font-mono" />
+          <Input
+            value={output.hex}
+            readOnly
+            className="font-mono border-b-secondary"
+          />
           <CopyButton
             value={output.hex}
             ariaLabel="copy hex"
@@ -24,7 +28,11 @@ export function ColorPickerTool() {
           />
         </div>
         <div className="relative group">
-          <Input value={output.rgb} readOnly className="font-mono" />
+          <Input
+            value={output.rgb}
+            readOnly
+            className="font-mono border-b-secondary"
+          />
           <CopyButton
             value={output.rgb}
             ariaLabel="copy rgb"
@@ -32,7 +40,11 @@ export function ColorPickerTool() {
           />
         </div>
         <div className="relative group">
-          <Input value={output.hsl} readOnly className="font-mono" />
+          <Input
+            value={output.hsl}
+            readOnly
+            className="font-mono border-b-secondary"
+          />
           <CopyButton
             value={output.hsl}
             ariaLabel="copy hsl"

@@ -32,7 +32,7 @@ export function UnixTimestampTool() {
           value={state.format}
           onValueChange={(value) => handleFormatChange(value ?? "date-string")}
         >
-          <SelectTrigger className="rounded-none border border-border bg-background">
+          <SelectTrigger className="rounded-none border-l-border border-y-border bg-background">
             <SelectValue placeholder="format" />
           </SelectTrigger>
           <SelectContent>

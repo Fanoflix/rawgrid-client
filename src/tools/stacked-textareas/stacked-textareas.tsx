@@ -76,7 +76,7 @@ function StackedTextareaRow({
       <Textarea
         value={value}
         onChange={onChange}
-        placeholder="Type anything"
+        placeholder="notes, ideas, todos..."
         className="h-full w-full resize-y rounded-none border-b border-b-border"
         style={{
           resize: canResize ? "vertical" : "none",
