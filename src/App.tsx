@@ -1,6 +1,10 @@
 import { ToolBaseContainer } from "@/components/tool-base-container";
 import { TopNavbar } from "@/components/top-navbar";
-import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 import { ColorPickerTool } from "@/tools/color-picker/color-picker";
 import { JwtDecoderTool } from "@/tools/jwt-decoder/jwt-decoder";
 import { StackedTextareasTool } from "@/tools/stacked-textareas/stacked-textareas";
@@ -9,10 +13,13 @@ import { YouTubePlayerTool } from "@/tools/youtube-player/youtube-player";
 
 export function App() {
   return (
-    <div className="flex h-screen w-screen flex-col bg-background text-foreground">
+    <div className="flex h-screen w-full flex-col bg-background text-foreground">
       <TopNavbar />
       <div className="min-h-0 flex-1">
-        <ResizablePanelGroup direction="vertical" className="h-full w-full">
+        <ResizablePanelGroup
+          direction="vertical"
+          className="overflow-y-auto min-h-full w-full max-w-screen"
+        >
           <ResizablePanel defaultSize={50} minSize={25}>
             <ResizablePanelGroup
               direction="horizontal"
@@ -24,11 +31,15 @@ export function App() {
                 </ToolBaseContainer>
               </ResizablePanel>
 
+              <ResizableHandle />
+
               <ResizablePanel defaultSize={33} minSize={20}>
                 <ToolBaseContainer>
                   <UnixTimestampTool />
                 </ToolBaseContainer>
               </ResizablePanel>
+
+              <ResizableHandle />
 
               <ResizablePanel defaultSize={12} minSize={4}>
                 <ToolBaseContainer>
@@ -37,6 +48,8 @@ export function App() {
               </ResizablePanel>
             </ResizablePanelGroup>
           </ResizablePanel>
+
+          <ResizableHandle />
 
           <ResizablePanel defaultSize={50} minSize={25}>
             <ResizablePanelGroup
@@ -48,6 +61,8 @@ export function App() {
                   <StackedTextareasTool />
                 </ToolBaseContainer>
               </ResizablePanel>
+
+              <ResizableHandle />
 
               <ResizablePanel defaultSize={40} minSize={20}>
                 <ToolBaseContainer>

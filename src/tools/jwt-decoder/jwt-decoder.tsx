@@ -16,14 +16,14 @@ export function JwtDecoderTool() {
         value={state.token}
         onChange={handleTokenChange}
         placeholder="jwt"
-        className="rounded-none border-0 border-b border-border text-xs font-medium truncate"
+        className="rounded-none border-x-transparent border-y-border text-xs font-medium truncate"
       />
       <div className="relative flex-1 min-h-0 group">
         <Textarea
           value={state.output}
           readOnly
           placeholder="decoded json"
-          className="h-full w-full min-h-0 resize-none border-0 border-t border-border font-mono font-thin overflow-auto"
+          className="h-full w-full min-h-0 max-w-full resize-none font-mono font-thin overflow-y-auto overflow-x-hidden whitespace-pre-wrap wrap-break-word field-sizing-fixed"
           style={{ fontSize: state.fontSize }}
         />
         <div className="absolute right-1 top-1 flex gap-0 opacity-0 transition-opacity group-hover:opacity-100">
@@ -32,7 +32,7 @@ export function JwtDecoderTool() {
             type="button"
             variant="ghost"
             size="icon-xs"
-            className="border-border bg-background text-foreground hover:bg-muted rounded-none border"
+            className="border-border bg-background text-foreground hover:bg-muted rounded-none border border-l-0"
             onClick={increaseFont}
             aria-label="increase font"
           >
@@ -42,7 +42,7 @@ export function JwtDecoderTool() {
             type="button"
             variant="ghost"
             size="icon-xs"
-            className="border-border bg-background text-foreground hover:bg-muted rounded-none border"
+            className="border-border bg-background text-foreground hover:bg-muted rounded-none border border-l-0"
             onClick={decreaseFont}
             aria-label="decrease font"
           >

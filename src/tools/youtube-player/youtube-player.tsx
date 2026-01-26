@@ -10,7 +10,7 @@ export function YouTubePlayerTool() {
         value={url}
         onChange={handleUrlChange}
         placeholder="youtube url or id"
-        className="rounded-none border-0 border-b border-border font-mono"
+        className="rounded-none border-b border-b-border font-mono"
       />
       <div className="aspect-video w-full">
         <iframe

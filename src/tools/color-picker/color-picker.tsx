@@ -1,26 +1,22 @@
-import { CopyButton } from "@/components/copy-button"
-import { Input } from "@/components/ui/input"
-import { useColorPicker } from "@/tools/color-picker/lib/use-color-picker"
+import { CopyButton } from "@/components/copy-button";
+import { Input } from "@/components/ui/input";
+import { useColorPicker } from "@/tools/color-picker/lib/use-color-picker";
 
 export function ColorPickerTool() {
-  const { color, output, handleColorChange } = useColorPicker()
+  const { color, output, handleColorChange } = useColorPicker();
 
   return (
     <div className="flex h-full w-full flex-col gap-0">
-      <input
+      <Input
         type="color"
         value={color}
         onChange={handleColorChange}
-        className="h-24 w-full cursor-pointer border-0 border-b border-border p-0 rounded-none"
+        className="h-32 w-full cursor-pointer border-t border-b border-border p-0"
         aria-label="color picker"
       />
       <div className="flex flex-1 flex-col gap-0">
         <div className="relative group">
-          <Input
-            value={output.hex}
-            readOnly
-            className="rounded-none border-0 border-b border-border font-mono"
-          />
+          <Input value={output.hex} readOnly className="font-mono" />
           <CopyButton
             value={output.hex}
             ariaLabel="copy hex"
@@ -28,11 +24,7 @@ export function ColorPickerTool() {
           />
         </div>
         <div className="relative group">
-          <Input
-            value={output.rgb}
-            readOnly
-            className="rounded-none border-0 border-b border-border font-mono"
-          />
+          <Input value={output.rgb} readOnly className="font-mono" />
           <CopyButton
             value={output.rgb}
             ariaLabel="copy rgb"
@@ -40,11 +32,7 @@ export function ColorPickerTool() {
           />
         </div>
         <div className="relative group">
-          <Input
-            value={output.hsl}
-            readOnly
-            className="rounded-none border-0 font-mono"
-          />
+          <Input value={output.hsl} readOnly className="font-mono" />
           <CopyButton
             value={output.hsl}
             ariaLabel="copy hsl"
@@ -53,5 +41,5 @@ export function ColorPickerTool() {
         </div>
       </div>
     </div>
-  )
+  );
 }
