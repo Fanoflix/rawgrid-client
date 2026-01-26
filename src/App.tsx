@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/resizable";
 import { ColorPickerTool } from "@/tools/color-picker/color-picker";
 import { JwtDecoderTool } from "@/tools/jwt-decoder/jwt-decoder";
+import { QuickRememberTool } from "@/tools/quick-remember/quick-remember";
 import { StackedTextareasTool } from "@/tools/stacked-textareas/stacked-textareas";
 import { UnixTimestampTool } from "@/tools/unix-timestamp/unix-timestamp";
 import { YouTubePlayerTool } from "@/tools/youtube-player/youtube-player";
@@ -55,6 +56,14 @@ export function App() {
                 </ToolBaseContainer>
               </ResizablePanel>
             </ResizablePanelGroup>
+          </ResizablePanel>
+
+          <ResizableHandle />
+
+          <ResizablePanel defaultSize="32px" minSize="32px" maxSize="32px">
+            <ToolBaseContainer>
+              <QuickRememberTool />
+            </ToolBaseContainer>
           </ResizablePanel>
 
           <ResizableHandle />
