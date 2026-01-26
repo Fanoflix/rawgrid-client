@@ -57,13 +57,16 @@ export function useStackedTextareas() {
     (index: number) => {
       return function handleRemove() {
         const target = entries[index] ?? "";
+        let confirmed = false;
         if (target.trim()) {
-          window.alert("textarea contains text");
+          confirmed = window.confirm("textarea contains text");
         }
-        setEntries((previous) => {
-          if (previous.length <= 1) return previous;
-          return previous.filter((_, currentIndex) => currentIndex !== index);
-        });
+        if (confirmed) {
+          setEntries((previous) => {
+            if (previous.length <= 1) return previous;
+            return previous.filter((_, currentIndex) => currentIndex !== index);
+          });
+        }
       };
     },
     [entries, setEntries]

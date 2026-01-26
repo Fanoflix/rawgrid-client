@@ -26,17 +26,17 @@ export function App() {
               direction="horizontal"
               className="h-full w-full"
             >
-              <ResizablePanel defaultSize={34} minSize={20}>
+              <ResizablePanel defaultSize={20} minSize={15}>
                 <ToolBaseContainer>
-                  <JwtDecoderTool />
+                  <UnixTimestampTool />
                 </ToolBaseContainer>
               </ResizablePanel>
 
               <ResizableHandle />
 
-              <ResizablePanel defaultSize={33} minSize={20}>
+              <ResizablePanel defaultSize={34} minSize={20}>
                 <ToolBaseContainer>
-                  <UnixTimestampTool />
+                  <JwtDecoderTool />
                 </ToolBaseContainer>
               </ResizablePanel>
 

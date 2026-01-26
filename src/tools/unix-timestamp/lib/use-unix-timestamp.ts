@@ -13,6 +13,9 @@ import { formatTimestamp } from "@/tools/unix-timestamp/lib/utils";
 export interface UnixTimestampOutput {
   gmt: string;
   local: string;
+  prettyDate: string;
+  prettyTime: string;
+  prettyDisplay: string;
 }
 
 function serializeTimestampState(state: UnixTimestampState) {
@@ -40,7 +43,16 @@ export function useUnixTimestamp() {
 
   const output = useMemo<UnixTimestampOutput>(() => {
     const result = formatTimestamp(state.input, state.format);
-    return { gmt: result.gmt, local: result.local };
+    const prettyDisplay = result.isValid
+      ? `${result.prettyDate} | ${result.prettyTime}`
+      : result.prettyDate;
+    return {
+      gmt: result.gmt,
+      local: result.local,
+      prettyDate: result.prettyDate,
+      prettyTime: result.prettyTime,
+      prettyDisplay,
+    };
   }, [state]);
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
