@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/resizable";
 import { ColorPickerTool } from "@/tools/color-picker/color-picker";
 import { JwtDecoderTool } from "@/tools/jwt-decoder/jwt-decoder";
+import { JsonSearchTool } from "@/tools/json-search/json-search";
 import { QuickRememberTool } from "@/tools/quick-remember/quick-remember";
 import { StackedTextareasTool } from "@/tools/stacked-textareas/stacked-textareas";
 import { TimerTool } from "@/tools/timer/timer";
@@ -95,7 +96,13 @@ export function App() {
                 </ToolBaseContainer>
               </ResizablePanel>
 
-              {/* More tools go here */}
+              <ResizableHandle />
+
+              <ResizablePanel defaultSize={40} minSize={20}>
+                <ToolBaseContainer>
+                  <JsonSearchTool />
+                </ToolBaseContainer>
+              </ResizablePanel>
             </ResizablePanelGroup>
           </ResizablePanel>
         </ResizablePanelGroup>
