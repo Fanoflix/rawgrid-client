@@ -9,6 +9,7 @@ import { ColorPickerTool } from "@/tools/color-picker/color-picker";
 import { JwtDecoderTool } from "@/tools/jwt-decoder/jwt-decoder";
 import { QuickRememberTool } from "@/tools/quick-remember/quick-remember";
 import { StackedTextareasTool } from "@/tools/stacked-textareas/stacked-textareas";
+import { TimerTool } from "@/tools/timer/timer";
 import { UnixTimestampTool } from "@/tools/unix-timestamp/unix-timestamp";
 import { YouTubePlayerTool } from "@/tools/youtube-player/youtube-player";
 
@@ -26,10 +27,25 @@ export function App() {
               direction="horizontal"
               className="h-full w-full"
             >
-              <ResizablePanel defaultSize={20} minSize={15}>
-                <ToolBaseContainer>
-                  <UnixTimestampTool />
-                </ToolBaseContainer>
+              <ResizablePanel defaultSize={30} minSize={18}>
+                <ResizablePanelGroup
+                  direction="vertical"
+                  className="h-full w-full"
+                >
+                  <ResizablePanel defaultSize={50} minSize={20}>
+                    <ToolBaseContainer>
+                      <UnixTimestampTool />
+                    </ToolBaseContainer>
+                  </ResizablePanel>
+
+                  <ResizableHandle />
+
+                  <ResizablePanel defaultSize={50} minSize={20}>
+                    <ToolBaseContainer>
+                      <TimerTool />
+                    </ToolBaseContainer>
+                  </ResizablePanel>
+                </ResizablePanelGroup>
               </ResizablePanel>
 
               <ResizableHandle />

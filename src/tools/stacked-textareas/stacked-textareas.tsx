@@ -64,17 +64,19 @@ export function StackedTextareasTool() {
           add text area
         </Button>
       </div>
-      {entries.map((value, index) => (
-        <StackedTextareaRow
-          key={`${index}-textarea`}
-          value={value}
-          onChange={getEntryChangeHandler(index)}
-          onRemove={getEntryRemoveHandler(index)}
-          onTransform={(nextValue) => setEntryValue(index, nextValue)}
-          canRemove={canRemove}
-          canResize={entries.length > 1}
-        />
-      ))}
+      <div className="flex flex-col">
+        {entries.map((value, index) => (
+          <StackedTextareaRow
+            key={`${index}-textarea`}
+            value={value}
+            onChange={getEntryChangeHandler(index)}
+            onRemove={getEntryRemoveHandler(index)}
+            onTransform={(nextValue) => setEntryValue(index, nextValue)}
+            canRemove={canRemove}
+            canResize={entries.length > 1}
+          />
+        ))}
+      </div>
     </div>
   );
 }

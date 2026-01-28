@@ -61,7 +61,7 @@ export function useStackedTextareas() {
         if (target.trim()) {
           confirmed = window.confirm("textarea contains text");
         }
-        if (confirmed) {
+        if (confirmed || !target.trim()) {
           setEntries((previous) => {
             if (previous.length <= 1) return previous;
             return previous.filter((_, currentIndex) => currentIndex !== index);
