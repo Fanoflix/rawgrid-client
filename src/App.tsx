@@ -8,7 +8,6 @@ import {
 import { ColorPickerTool } from "@/tools/color-picker/color-picker";
 import { JwtDecoderTool } from "@/tools/jwt-decoder/jwt-decoder";
 import { JsonSearchTool } from "@/tools/json-search/json-search";
-import { QuickRememberTool } from "@/tools/quick-remember/quick-remember";
 import { StackedTextareasTool } from "@/tools/stacked-textareas/stacked-textareas";
 import { TimerTool } from "@/tools/timer/timer";
 import { UnixTimestampTool } from "@/tools/unix-timestamp/unix-timestamp";
@@ -73,14 +72,6 @@ export function App() {
                 </ToolBaseContainer>
               </ResizablePanel>
             </ResizablePanelGroup>
-          </ResizablePanel>
-
-          <ResizableHandle />
-
-          <ResizablePanel defaultSize="32px" minSize="32px" maxSize="32px">
-            <ToolBaseContainer>
-              <QuickRememberTool />
-            </ToolBaseContainer>
           </ResizablePanel>
 
           <ResizableHandle />
