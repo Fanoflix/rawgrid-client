@@ -2,29 +2,58 @@ import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useToolHistory } from "@/lib/use-tool-history";
-import { TIMER_CONFIG } from "@/tools/timer/lib/constants";
+import { TIMER_CONFIG, type TimerInput } from "@/tools/timer/lib/constants";
 import {
-  formatDuration,
-  parseDurationInput,
+  formatDurationParts,
+  parseDurationParts,
+  parseLegacyDurationString,
   playTimerSound,
 } from "@/tools/timer/lib/utils";
 
 export interface TimerState {
-  input: string;
+  input: TimerInput;
   remainingMs: number;
   status: "idle" | "running" | "paused" | "completed";
 }
 
-function serializeInput(value: string) {
-  return value;
+function sanitizeHoursPart(value: string) {
+  return value.replace(/\D/g, "").slice(0, 4);
+}
+
+function sanitizeTwoDigitPart(value: string) {
+  return value.replace(/\D/g, "").slice(0, 2);
+}
+
+function padTwoDigitPart(value: string) {
+  if (!value) return "00";
+  return value.padStart(2, "0");
+}
+
+function normalizeInput(value?: Partial<TimerInput> | null): TimerInput {
+  return {
+    hours: padTwoDigitPart(sanitizeHoursPart(value?.hours ?? "")),
+    minutes: padTwoDigitPart(sanitizeTwoDigitPart(value?.minutes ?? "")),
+    seconds: padTwoDigitPart(sanitizeTwoDigitPart(value?.seconds ?? "")),
+  };
+}
+
+function serializeInput(value: TimerInput) {
+  return JSON.stringify(value);
 }
 
 function deserializeInput(value: string) {
-  return value || TIMER_CONFIG.defaultInput;
+  try {
+    const parsed = JSON.parse(value) as Partial<TimerInput>;
+    return normalizeInput(parsed);
+  } catch {
+    const legacyMs = parseLegacyDurationString(value);
+    if (legacyMs === null) return TIMER_CONFIG.defaultInput;
+    return formatDurationParts(legacyMs);
+  }
 }
 
 export function useTimer() {
-  const { value: input, setValue: setInput } = useToolHistory<string>({
+  const { value: input, setValue: setInput } = useToolHistory<TimerInput>({
     tool: "timer",
     initialValue: TIMER_CONFIG.defaultInput,
     serialize: serializeInput,
@@ -59,15 +88,30 @@ export function useTimer() {
     intervalRef.current = window.setInterval(tick, TIMER_CONFIG.tickMs);
   }
 
-  function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
-    setInput(event.target.value);
+  function handleInputChange(part: keyof TimerInput) {
+    return function onChange(event: ChangeEvent<HTMLInputElement>) {
+      const nextValue =
+        part === "hours"
+          ? sanitizeHoursPart(event.target.value)
+          : sanitizeTwoDigitPart(event.target.value);
+      setInput((current) => ({ ...current, [part]: nextValue }));
+    };
+  }
+
+  function handleInputBlur(part: keyof TimerInput) {
+    return function onBlur() {
+      setInput((current) => ({
+        ...current,
+        [part]: padTwoDigitPart(current[part]),
+      }));
+    };
   }
 
   function handlePlay() {
     if (status === "running") return;
 
     const nextDuration =
-      status === "paused" ? remainingMs : parseDurationInput(input);
+      status === "paused" ? remainingMs : parseDurationParts(input);
     if (!nextDuration) return;
 
     endTimeRef.current = Date.now() + nextDuration;
@@ -94,9 +138,9 @@ export function useTimer() {
     return () => clearIntervalRef();
   }, []);
 
-  const displayValue = useMemo(() => {
-    const baseMs = status === "idle" ? parseDurationInput(input) : remainingMs;
-    return formatDuration(baseMs);
+  const displayParts = useMemo(() => {
+    if (status === "idle") return input;
+    return formatDurationParts(remainingMs);
   }, [input, remainingMs, status]);
 
   const state: TimerState = {
@@ -107,8 +151,10 @@ export function useTimer() {
 
   return {
     state,
-    displayValue,
+    displayParts,
+    isInputLocked: status !== "idle",
     handleInputChange,
+    handleInputBlur,
     handlePlay,
     handlePause,
     handleStop,
