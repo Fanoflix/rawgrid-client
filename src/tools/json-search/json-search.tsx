@@ -19,7 +19,6 @@ export function JsonSearchTool() {
     useJsonSearch();
 
   const hasResults = matches.length > 0;
-  const outputValue = matches.map((match) => match.lines.join("\n")).join("\n");
 
   return (
     <div className="flex h-full w-full flex-col gap-0 overflow-hidden">
@@ -57,7 +56,6 @@ export function JsonSearchTool() {
             error={error}
             hasResults={hasResults}
             matches={matches}
-            outputValue={outputValue}
             hasFields={config.fields.length > 0}
           />
         </ResizablePanel>
@@ -86,7 +84,6 @@ interface JsonSearchResultsProps {
   error: string | null;
   hasResults: boolean;
   matches: { field: string; index: number; lines: string[] }[];
-  outputValue: string;
   hasFields: boolean;
 }
 

@@ -1,5 +1,5 @@
 import type { ChangeEvent } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 
 import { useToolHistory } from "@/lib/use-tool-history";
 import { JSON_SEARCH_DEFAULTS } from "@/tools/json-search/lib/constants";
@@ -88,8 +88,14 @@ export function useJsonSearch() {
   const displayQuery = hasEditedQuery ? query : storedQuery;
   const displayJson = hasEditedJson ? json : storedJson;
 
-  const parsed = useMemo(() => parseJsonLines(displayJson), [displayJson]);
-  const config = useMemo(() => parseQueryConfig(displayQuery), [displayQuery]);
+  const deferredQuery = useDeferredValue(displayQuery);
+  const deferredJson = useDeferredValue(displayJson);
+
+  const parsed = useMemo(() => parseJsonLines(deferredJson), [deferredJson]);
+  const config = useMemo(
+    () => parseQueryConfig(deferredQuery),
+    [deferredQuery]
+  );
   const matches = useMemo(
     () => getMatchResults(parsed.lines, config),
     [parsed.lines, config]
