@@ -1,4 +1,4 @@
 export const JSON_SEARCH_DEFAULTS = {
-  query: "fieldA, fieldB [0,0]",
+  query: "fieldA [0,0]",
   json: "",
 };

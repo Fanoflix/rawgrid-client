@@ -16,6 +16,7 @@ interface MatchResult {
 }
 
 const LINE_WINDOW_REGEX = /\[(\d+)\s*,\s*(\d+)\]\s*$/;
+const LARGE_JSON_CHAR_LIMIT = 250_000;
 
 function escapeRegExp(value: string) {
   // Escape user input so it can be safely used inside a RegExp.
@@ -48,6 +49,11 @@ export function parseQueryConfig(query: string): QueryConfig {
 export function parseJsonLines(rawJson: string): ParsedJson {
   // Accept raw JSON and return a pretty-printed, line-based view for searching.
   if (!rawJson.trim()) return { lines: [], error: null };
+
+  if (rawJson.length > LARGE_JSON_CHAR_LIMIT) {
+    // Avoid blocking the UI on huge payloads by skipping JSON.parse/stringify.
+    return { lines: rawJson.split("\n"), error: null };
+  }
 
   try {
     const parsed = JSON.parse(rawJson);
