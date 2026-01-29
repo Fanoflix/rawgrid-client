@@ -68,14 +68,14 @@ export function getMatchResults(
   // Find each field key and return a slice of lines around every match.
   if (!lines.length || !config.fields.length) return [];
 
-  return config.fields.flatMap((field) => {
+  const matches = config.fields.flatMap((field) => {
     // Match the exact JSON key (with optional whitespace) followed by a colon.
     const regex = new RegExp(`"\\s*${escapeRegExp(field)}\\s*"\\s*:`);
-    const matches = lines
+    const fieldMatches = lines
       .map((line, index) => ({ line, index }))
       .filter(({ line }) => regex.test(line));
 
-    return matches.map(({ index }) => {
+    return fieldMatches.map(({ index }) => {
       // Clamp the window to the available line range.
       const start = Math.max(0, index - config.preLines);
       const end = Math.min(lines.length - 1, index + config.postLines);
@@ -85,5 +85,15 @@ export function getMatchResults(
         lines: lines.slice(start, end + 1),
       };
     });
+  });
+
+  return [...matches].sort((left, right) => {
+    if (left.index !== right.index) return left.index - right.index;
+    const leftFieldIndex = config.fields.indexOf(left.field);
+    const rightFieldIndex = config.fields.indexOf(right.field);
+    if (leftFieldIndex !== rightFieldIndex) {
+      return leftFieldIndex - rightFieldIndex;
+    }
+    return left.field.localeCompare(right.field);
   });
 }
