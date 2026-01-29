@@ -15,8 +15,15 @@ import {
 import { useJsonSearch } from "@/tools/json-search/lib/use-json-search";
 
 export function JsonSearchTool() {
-  const { state, matches, config, error, handleQueryChange, handleJsonChange } =
-    useJsonSearch();
+  const {
+    state,
+    matches,
+    config,
+    error,
+    isParsing,
+    handleQueryChange,
+    handleJsonChange,
+  } = useJsonSearch();
 
   const hasResults = matches.length > 0;
 
@@ -43,23 +50,32 @@ export function JsonSearchTool() {
           </TooltipContent>
         </Tooltip>
       </div>
-      <ResizablePanelGroup
-        direction="horizontal"
-        className="min-h-0 flex-1 overflow-hidden"
-      >
-        <ResizablePanel defaultSize={50} minSize={20}>
-          <JsonSearchInput value={state.json} onChange={handleJsonChange} />
-        </ResizablePanel>
-        <ResizableHandle />
-        <ResizablePanel defaultSize={50} minSize={20}>
-          <JsonSearchResults
-            error={error}
-            hasResults={hasResults}
-            matches={matches}
-            hasFields={config.fields.length > 0}
-          />
-        </ResizablePanel>
-      </ResizablePanelGroup>
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        <ResizablePanelGroup
+          direction="horizontal"
+          className={`min-h-0 flex-1 overflow-hidden ${
+            isParsing ? "blur-sm" : ""
+          }`}
+        >
+          <ResizablePanel defaultSize={50} minSize={20}>
+            <JsonSearchInput value={state.json} onChange={handleJsonChange} />
+          </ResizablePanel>
+          <ResizableHandle />
+          <ResizablePanel defaultSize={50} minSize={20}>
+            <JsonSearchResults
+              error={error}
+              hasResults={hasResults}
+              matches={matches}
+              hasFields={config.fields.length > 0}
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+        {isParsing ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/60 text-xs text-muted-foreground">
+            parsing json…
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

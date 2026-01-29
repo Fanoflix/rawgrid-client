@@ -1,5 +1,5 @@
 import type { ChangeEvent } from "react";
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
 import { useToolHistory } from "@/lib/use-tool-history";
 import { JSON_SEARCH_DEFAULTS } from "@/tools/json-search/lib/constants";
@@ -60,6 +60,10 @@ export function useJsonSearch() {
   const [json, setJson] = useState(JSON_SEARCH_DEFAULTS.json);
   const [hasEditedQuery, setHasEditedQuery] = useState(false);
   const [hasEditedJson, setHasEditedJson] = useState(false);
+  const [parsedLines, setParsedLines] = useState<string[]>([]);
+  const [parsedError, setParsedError] = useState<string | null>(null);
+  const [isParsing, setIsParsing] = useState(false);
+  const workerRef = useRef<Worker | null>(null);
 
   function handleQueryChange(event: ChangeEvent<HTMLInputElement>) {
     if (!hasEditedQuery) setHasEditedQuery(true);
@@ -91,15 +95,58 @@ export function useJsonSearch() {
   const deferredQuery = useDeferredValue(displayQuery);
   const deferredJson = useDeferredValue(displayJson);
 
-  const parsed = useMemo(() => parseJsonLines(deferredJson), [deferredJson]);
   const config = useMemo(
     () => parseQueryConfig(deferredQuery),
     [deferredQuery]
   );
   const matches = useMemo(
-    () => getMatchResults(parsed.lines, config),
-    [parsed.lines, config]
+    () => getMatchResults(parsedLines, config),
+    [parsedLines, config]
   );
+
+  useEffect(() => {
+    const rawJson = deferredJson;
+    if (!rawJson.trim()) {
+      setParsedLines([]);
+      setParsedError(null);
+      setIsParsing(false);
+      return;
+    }
+
+    if (rawJson.length > 250_000) {
+      setIsParsing(true);
+      setParsedError(null);
+
+      if (workerRef.current) workerRef.current.terminate();
+      const worker = new Worker(
+        new URL("./json-parse-worker.ts", import.meta.url),
+        { type: "module" }
+      );
+      workerRef.current = worker;
+
+      const handleMessage = (event: MessageEvent<{
+        lines: string[];
+        error: string | null;
+      }>) => {
+        setParsedLines(event.data?.lines ?? []);
+        setParsedError(event.data?.error ?? null);
+        setIsParsing(false);
+      };
+
+      worker.addEventListener("message", handleMessage);
+      worker.postMessage({ json: rawJson });
+
+      return () => {
+        worker.removeEventListener("message", handleMessage);
+        worker.terminate();
+      };
+    }
+
+    const parsed = parseJsonLines(rawJson);
+    setParsedLines(parsed.lines);
+    setParsedError(parsed.error);
+    setIsParsing(false);
+  }, [deferredJson]);
 
   const state: JsonSearchState = {
     query: displayQuery,
@@ -110,7 +157,8 @@ export function useJsonSearch() {
     state,
     matches,
     config,
-    error: parsed.error,
+    error: parsedError,
+    isParsing,
     handleQueryChange,
     handleJsonChange,
   };
