@@ -64,6 +64,7 @@ export function playTimerSound() {
 }
 
 interface WindowWithWebkitAudioContext extends Window {
+  AudioContext?: typeof AudioContext;
   webkitAudioContext?: typeof AudioContext;
 }
 
