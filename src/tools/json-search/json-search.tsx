@@ -1,5 +1,6 @@
 import type { ChangeEventHandler } from "react";
 
+import { ToolInfo } from "@/components/tool-info";
 import { Input } from "@/components/ui/input";
 import {
   ResizableHandle,
@@ -7,11 +8,6 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useJsonSearch } from "@/tools/json-search/lib/use-json-search";
 
 export function JsonSearchTool() {
@@ -29,26 +25,35 @@ export function JsonSearchTool() {
 
   return (
     <div className="flex h-full w-full flex-col gap-0 overflow-hidden">
-      <div className="group flex w-full gap-0 border-b border-border">
+      <div className="group items-center px-1 flex w-full gap-1 border-b border-border">
+        <ToolInfo
+          name="json search"
+          description="find field matches with optional line context."
+          triggerText="help"
+          detailed={
+            <div className="flex flex-col gap-1">
+              <div
+                className="font-mono text-xs text-foreground"
+                style={{
+                  fontFamily:
+                    "Consolas, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace",
+                }}
+              >
+                syntax: {"<fieldA, fieldB, fieldC...> [n1,n2]"}
+              </div>
+              <div className="text-muted-foreground flex flex-col gap-0.5">
+                <span>n1 is the number of lines before each matched field</span>
+                <span>n2 is the number of lines after each matched field</span>
+              </div>
+            </div>
+          }
+        />
         <Input
           value={state.query}
           onChange={handleQueryChange}
           placeholder="fields, fields [linesBefore,linesAfter]"
           className="min-w-0 flex-1 rounded-none font-mono text-xs"
         />
-        <Tooltip>
-          <TooltipTrigger
-            type="button"
-            className="rounded-none border border-border p-2 text-[10px] font-medium text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
-            aria-label="json search help"
-            delay={75}
-          >
-            help
-          </TooltipTrigger>
-          <TooltipContent className="max-w-xs border border-border p-4 text-xs">
-            <HelpText />
-          </TooltipContent>
-        </Tooltip>
       </div>
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <ResizablePanelGroup
@@ -131,26 +136,6 @@ function JsonSearchResults({
           {hasFields ? "no matches" : "add fields to search"}
         </div>
       )}
-    </div>
-  );
-}
-
-function HelpText() {
-  return (
-    <div className="flex flex-col gap-2">
-      <div
-        className="font-mono text-[11px]"
-        style={{
-          fontFamily:
-            "Consolas, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace",
-        }}
-      >
-        Syntax: {"<fieldA, fieldB, fieldC...> [n1,n2]"}
-      </div>
-      <div className="text-muted-foreground">
-        n1 is the number of lines before each matched field, and n2 is the
-        number of lines after each matched field.
-      </div>
     </div>
   );
 }

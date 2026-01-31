@@ -4,13 +4,13 @@ import { Button } from "./ui/button";
 export function TopNavbar() {
   return (
     <nav className="flex justify-between px-1.5">
-      <p className="flex items-center flex-nowrap text-nowrap gap-0.5 text-xs">
+      <p className="flex items-center flex-nowrap text-nowrap gap-0.75 text-xs">
         made by{" "}
         <a
           href="https://ammarnasir.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-thin text-primary"
+          className="text-primary tracking-[0.05rem]"
         >
           ammarnasir.com
         </a>
@@ -25,7 +25,11 @@ export function TopNavbar() {
             className="font-thin text-foreground flex items-center gap-1.75"
           >
             star // contribute
-            <img src="public/github.svg" alt="GitHub" className="size-3" />
+            <img
+              src="github.svg"
+              alt="GitHub"
+              className="size-3 invert dark:invert-0"
+            />
           </a>
         </Button>
 

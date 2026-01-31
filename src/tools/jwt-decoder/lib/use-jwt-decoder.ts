@@ -20,10 +20,13 @@ function deserializeToken(value: string) {
   return value;
 }
 
+export const DEFAULT_DUMMY_VALUE =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30";
+
 export function useJwtDecoder() {
   const { value: token, setValue: setToken } = useToolHistory<string>({
     tool: "jwt-decoder",
-    initialValue: "",
+    initialValue: DEFAULT_DUMMY_VALUE,
     serialize: serializeToken,
     deserialize: deserializeToken,
   });

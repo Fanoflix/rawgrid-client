@@ -76,7 +76,7 @@ export function App() {
 
           <ResizableHandle />
 
-          <ResizablePanel defaultSize={15} minSize={15}>
+          <ResizablePanel defaultSize={25} minSize={15}>
             <ResizablePanelGroup
               direction="horizontal"
               className="h-full w-full"

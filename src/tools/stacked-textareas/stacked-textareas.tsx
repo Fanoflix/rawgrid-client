@@ -47,16 +47,15 @@ export function StackedTextareasTool() {
 
   return (
     <div className="flex h-full w-full flex-col gap-0">
-      <div className="flex h-8 items-center justify-between border-b border-border px-3 py-0.5">
+      <div className="flex h-8 items-center justify-between border-b border-border px-1 py-0.5">
         <span className="text-[10px] text-muted-foreground font-mono">
           {headerInfo}
         </span>
 
         <Button
           type="button"
-          variant="ghost"
+          variant="secondary"
           size="xs"
-          className="border-border bg-background text-foreground hover:bg-muted rounded-none border"
           onClick={handleAddEntry}
           aria-label="add textarea"
           disabled={!canAdd}
