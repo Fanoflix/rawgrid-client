@@ -5,7 +5,7 @@ export function TopNavbar() {
   return (
     <nav className="flex justify-between px-1.5">
       <p className="flex items-center flex-nowrap text-nowrap gap-0.75 text-xs">
-        small toolbox for my daily —{" "}
+        small toolbox —{" "}
         <a
           href="https://ammarnasir.com"
           target="_blank"
