@@ -7,9 +7,8 @@ export function ThemeToggle() {
   return (
     <Button
       type="button"
-      variant="ghost"
+      variant="outline"
       size="xs"
-      className="border border-border cursor-pointer bg-background px-2.5 py-0"
       onClick={toggleTheme}
       aria-label="toggle theme"
     >

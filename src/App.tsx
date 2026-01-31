@@ -22,17 +22,17 @@ export function App() {
           direction="vertical"
           className="overflow-y-auto min-h-full w-full max-w-screen"
         >
-          <ResizablePanel defaultSize={50} minSize={25}>
+          <ResizablePanel defaultSize={15} minSize={15}>
             <ResizablePanelGroup
               direction="horizontal"
               className="h-full w-full"
             >
-              <ResizablePanel defaultSize={30} minSize={18}>
+              <ResizablePanel defaultSize={15} minSize={15}>
                 <ResizablePanelGroup
                   direction="vertical"
                   className="h-full w-full"
                 >
-                  <ResizablePanel defaultSize={50} minSize={20}>
+                  <ResizablePanel defaultSize={12} minSize={12}>
                     <ToolBaseContainer>
                       <UnixTimestampTool />
                     </ToolBaseContainer>
@@ -40,7 +40,7 @@ export function App() {
 
                   <ResizableHandle />
 
-                  <ResizablePanel defaultSize={50} minSize={20}>
+                  <ResizablePanel defaultSize={5} minSize={5}>
                     <ToolBaseContainer>
                       <TimerTool />
                     </ToolBaseContainer>
@@ -50,7 +50,7 @@ export function App() {
 
               <ResizableHandle />
 
-              <ResizablePanel defaultSize={34} minSize={20}>
+              <ResizablePanel defaultSize={15} minSize={15}>
                 <ToolBaseContainer>
                   <JwtDecoderTool />
                 </ToolBaseContainer>
@@ -58,7 +58,7 @@ export function App() {
 
               <ResizableHandle />
 
-              <ResizablePanel defaultSize={12} minSize={4}>
+              <ResizablePanel defaultSize={5} minSize={5}>
                 <ToolBaseContainer>
                   <ColorPickerTool />
                 </ToolBaseContainer>
@@ -66,7 +66,7 @@ export function App() {
 
               <ResizableHandle />
 
-              <ResizablePanel defaultSize={40} minSize={20}>
+              <ResizablePanel defaultSize={15} minSize={15}>
                 <ToolBaseContainer>
                   <YouTubePlayerTool />
                 </ToolBaseContainer>
@@ -76,12 +76,12 @@ export function App() {
 
           <ResizableHandle />
 
-          <ResizablePanel defaultSize={50} minSize={25}>
+          <ResizablePanel defaultSize={15} minSize={15}>
             <ResizablePanelGroup
               direction="horizontal"
               className="h-full w-full"
             >
-              <ResizablePanel defaultSize={60} minSize={30}>
+              <ResizablePanel defaultSize={15} minSize={15}>
                 <ToolBaseContainer>
                   <StackedTextareasTool />
                 </ToolBaseContainer>
