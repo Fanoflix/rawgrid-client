@@ -21,7 +21,7 @@ export function UnixTimestampTool() {
 
   return (
     <div className="flex h-full w-full flex-col gap-0">
-      <div className="flex w-full gap-0">
+      <div className="flex w-full gap-0 h-8">
         <Input
           value={state.input}
           onChange={handleInputChange}

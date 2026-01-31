@@ -34,15 +34,15 @@ export function ToolInfo({
           {triggerText} <InfoIcon />
         </div>
       </TooltipTrigger>
-      <TooltipContent className="max-w-xs border border-border p-4 text-xs">
-        <div className="flex flex-col gap-2 text-xs">
+      <TooltipContent className="max-w-xs border border-border p-3 text-xs">
+        <div className="flex flex-col gap-2.5 text-xs">
           <div className="flex flex-col gap-0">
             <h3 className="text-sm font-medium">{name}</h3>
             <p className="text-muted-foreground">{description}</p>
           </div>
 
           {Boolean(detailed) && (
-            <div className="h-px w-full bg-muted-foreground/50" />
+            <div className="h-px w-full bg-muted-foreground/30" />
           )}
           <div className="text-muted-foreground text-xs">{detailed}</div>
         </div>

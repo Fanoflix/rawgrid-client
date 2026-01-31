@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/resizable";
 import { Textarea } from "@/components/ui/textarea";
 import { useJsonSearch } from "@/tools/json-search/lib/use-json-search";
+import { cn } from "@/lib/utils";
+import { JSON_SEARCH_DEFAULTS } from "./lib/constants";
 
 export function JsonSearchTool() {
   const {
@@ -25,7 +27,7 @@ export function JsonSearchTool() {
 
   return (
     <div className="flex h-full w-full flex-col gap-0 overflow-hidden">
-      <div className="group items-center px-1 flex w-full gap-1 border-b border-border">
+      <div className="group items-center px-1 flex w-full gap-1 border-b border-border h-8">
         <ToolInfo
           name="json search"
           description="find field matches with optional line context."
@@ -33,7 +35,7 @@ export function JsonSearchTool() {
           detailed={
             <div className="flex flex-col gap-1">
               <div
-                className="font-mono text-xs text-foreground"
+                className="font-mono text-[11px] text-foreground"
                 style={{
                   fontFamily:
                     "Consolas, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace",
@@ -52,7 +54,10 @@ export function JsonSearchTool() {
           value={state.query}
           onChange={handleQueryChange}
           placeholder="fields, fields [linesBefore,linesAfter]"
-          className="min-w-0 flex-1 rounded-none font-mono text-xs"
+          className={cn(
+            "min-w-0 flex-1 rounded-none font-mono text-xs",
+            state.query === JSON_SEARCH_DEFAULTS.query && "text-foreground/85"
+          )}
         />
       </div>
       <div className="relative min-h-0 flex-1 overflow-hidden">

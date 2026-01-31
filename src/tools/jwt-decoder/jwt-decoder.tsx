@@ -13,16 +13,12 @@ export function JwtDecoderTool() {
 
   return (
     <div className="flex h-full w-full flex-col gap-0">
-      <div className="flex items-center border px-1 border-x-transparent border-y-border">
+      <div className="flex items-center border px-1 h-8 border-x-transparent border-y-border gap-1">
         <ToolInfo
           name="jwt decoder"
           description="decode jwt header + payload as json."
           triggerText="help"
-          detailed={
-            <span className="font-mono">
-              paste a token like {"<header.payload.signature>"}
-            </span>
-          }
+          detailed={`paste a token like {"<header.payload.signature>"}`}
         />
         <Input
           value={state.token}
