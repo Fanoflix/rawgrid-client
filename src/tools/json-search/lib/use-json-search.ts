@@ -124,10 +124,12 @@ export function useJsonSearch() {
       );
       workerRef.current = worker;
 
-      const handleMessage = (event: MessageEvent<{
-        lines: string[];
-        error: string | null;
-      }>) => {
+      const handleMessage = (
+        event: MessageEvent<{
+          lines: string[];
+          error: string | null;
+        }>
+      ) => {
         setParsedLines(event.data?.lines ?? []);
         setParsedError(event.data?.error ?? null);
         setIsParsing(false);
