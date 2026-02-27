@@ -59,15 +59,30 @@ export function App() {
 
               <ResizableHandle />
 
-              <ResizablePanel defaultSize={5} minSize={5}>
-                <ToolBaseContainer>
-                  <ColorPickerTool />
-                </ToolBaseContainer>
+              <ResizablePanel defaultSize={10} minSize={5}>
+                <ResizablePanelGroup
+                  direction="vertical"
+                  className="h-full w-full"
+                >
+                  <ResizablePanel defaultSize={10} minSize={5}>
+                    <ToolBaseContainer>
+                      <ColorPickerTool />
+                    </ToolBaseContainer>
+                  </ResizablePanel>
+
+                  <ResizableHandle />
+
+                  <ResizablePanel defaultSize={10} minSize={5}>
+                    <ToolBaseContainer>
+                      <VideoPlayerTool />
+                    </ToolBaseContainer>
+                  </ResizablePanel>
+                </ResizablePanelGroup>
               </ResizablePanel>
 
               <ResizableHandle />
 
-              <ResizablePanel defaultSize={15} minSize={15}>
+              <ResizablePanel defaultSize={10} minSize={10}>
                 <ToolBaseContainer>
                   <YouTubePlayerTool />
                 </ToolBaseContainer>
@@ -90,17 +105,9 @@ export function App() {
 
               <ResizableHandle />
 
-              <ResizablePanel defaultSize={30} minSize={20}>
+              <ResizablePanel defaultSize={40} minSize={20}>
                 <ToolBaseContainer>
                   <JsonSearchTool />
-                </ToolBaseContainer>
-              </ResizablePanel>
-
-              <ResizableHandle />
-
-              <ResizablePanel defaultSize={15} minSize={15}>
-                <ToolBaseContainer>
-                  <VideoPlayerTool />
                 </ToolBaseContainer>
               </ResizablePanel>
             </ResizablePanelGroup>
