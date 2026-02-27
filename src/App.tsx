@@ -1,120 +1,182 @@
-import { ToolBaseContainer } from "@/components/tool-base-container";
+import { useState } from "react";
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+
+import { DragOverlayContent } from "@/components/drag-overlay-content";
+import { DraggableTool } from "@/components/draggable-tool";
+import { GridSlot } from "@/components/grid-slot";
 import { TopNavbar } from "@/components/top-navbar";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { ColorPickerTool } from "@/tools/color-picker/color-picker";
-import { JwtDecoderTool } from "@/tools/jwt-decoder/jwt-decoder";
-import { JsonSearchTool } from "@/tools/json-search/json-search";
-import { StackedTextareasTool } from "@/tools/stacked-textareas/stacked-textareas";
-import { TimerTool } from "@/tools/timer/timer";
-import { UnixTimestampTool } from "@/tools/unix-timestamp/unix-timestamp";
-import { VideoPlayerTool } from "@/tools/video-player/video-player";
-import { YouTubePlayerTool } from "@/tools/youtube-player/youtube-player";
+import { useLayout } from "@/lib/use-layout";
+import type { ToolId } from "@/lib/tool-registry";
+import { TOOL_REGISTRY } from "@/lib/tool-registry";
 
 export function App() {
+  const layoutState = useLayout();
+  const { layout, isEditMode, swapSlots, hideTool } = layoutState;
+
+  const [activeToolId, setActiveToolId] = useState<ToolId | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
+
+  function handleDragStart(event: DragStartEvent) {
+    setActiveToolId(event.active.data.current?.toolId ?? null);
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    setActiveToolId(null);
+    const { active, over } = event;
+    if (!over) return;
+
+    const fromSlot = active.data.current?.slotIndex as number;
+    const toSlot = over.data.current?.slotIndex as number;
+
+    if (fromSlot !== undefined && toSlot !== undefined && fromSlot !== toSlot) {
+      swapSlots(fromSlot, toSlot);
+    }
+  }
+
+  function renderSlot(slotIndex: number) {
+    const toolId = layout[slotIndex] as ToolId | null;
+    const isEmpty = toolId === null;
+
+    return (
+      <GridSlot slotIndex={slotIndex} isEditMode={isEditMode} isEmpty={isEmpty}>
+        {toolId && (
+          <DraggableTool
+            toolId={toolId}
+            slotIndex={slotIndex}
+            isEditMode={isEditMode}
+            onHide={() => hideTool(slotIndex)}
+          >
+            {renderToolComponent(toolId)}
+          </DraggableTool>
+        )}
+      </GridSlot>
+    );
+  }
+
+  function renderToolComponent(toolId: ToolId) {
+    const entry = TOOL_REGISTRY[toolId];
+    if (!entry) return null;
+    const Component = entry.component;
+    return <Component />;
+  }
+
   return (
-    <div className="flex h-screen w-full flex-col bg-background text-foreground">
-      <TopNavbar />
-      <div className="min-h-0 flex-1">
-        <ResizablePanelGroup
-          direction="vertical"
-          className="overflow-y-auto min-h-full w-full max-w-screen"
-        >
-          <ResizablePanel defaultSize={15} minSize={15}>
-            <ResizablePanelGroup
-              direction="horizontal"
-              className="h-full w-full"
-            >
-              <ResizablePanel defaultSize={15} minSize={15}>
-                <ResizablePanelGroup
-                  direction="vertical"
-                  className="h-full w-full"
-                >
-                  <ResizablePanel defaultSize={12} minSize={12}>
-                    <ToolBaseContainer>
-                      <UnixTimestampTool />
-                    </ToolBaseContainer>
-                  </ResizablePanel>
+    <DndContext
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="flex h-screen w-full flex-col bg-background text-foreground">
+        <TopNavbar layoutState={layoutState} />
+        <div className="min-h-0 flex-1">
+          <ResizablePanelGroup
+            direction="vertical"
+            className="overflow-y-auto min-h-full w-full max-w-screen"
+          >
+            <ResizablePanel defaultSize={15} minSize={15}>
+              <ResizablePanelGroup
+                direction="horizontal"
+                className="h-full w-full"
+              >
+                <ResizablePanel defaultSize={15} minSize={15}>
+                  <ResizablePanelGroup
+                    direction="vertical"
+                    className="h-full w-full"
+                  >
+                    <ResizablePanel defaultSize={12} minSize={12}>
+                      {renderSlot(0)}
+                    </ResizablePanel>
 
-                  <ResizableHandle />
+                    <ResizableHandle />
 
-                  <ResizablePanel defaultSize={5} minSize={5}>
-                    <ToolBaseContainer>
-                      <TimerTool />
-                    </ToolBaseContainer>
-                  </ResizablePanel>
-                </ResizablePanelGroup>
-              </ResizablePanel>
+                    <ResizablePanel defaultSize={5} minSize={5}>
+                      {renderSlot(1)}
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
+                </ResizablePanel>
 
-              <ResizableHandle />
+                <ResizableHandle />
 
-              <ResizablePanel defaultSize={15} minSize={15}>
-                <ToolBaseContainer>
-                  <JwtDecoderTool />
-                </ToolBaseContainer>
-              </ResizablePanel>
+                <ResizablePanel defaultSize={15} minSize={15}>
+                  {renderSlot(2)}
+                </ResizablePanel>
 
-              <ResizableHandle />
+                <ResizableHandle />
 
-              <ResizablePanel defaultSize={10} minSize={5}>
-                <ResizablePanelGroup
-                  direction="vertical"
-                  className="h-full w-full"
-                >
-                  <ResizablePanel defaultSize={10} minSize={5}>
-                    <ToolBaseContainer>
-                      <ColorPickerTool />
-                    </ToolBaseContainer>
-                  </ResizablePanel>
+                <ResizablePanel defaultSize={10} minSize={5}>
+                  <ResizablePanelGroup
+                    direction="vertical"
+                    className="h-full w-full"
+                  >
+                    <ResizablePanel defaultSize={10} minSize={5}>
+                      {renderSlot(3)}
+                    </ResizablePanel>
 
-                  <ResizableHandle />
+                    <ResizableHandle />
 
-                  <ResizablePanel defaultSize={10} minSize={5}>
-                    <ToolBaseContainer>
-                      <VideoPlayerTool />
-                    </ToolBaseContainer>
-                  </ResizablePanel>
-                </ResizablePanelGroup>
-              </ResizablePanel>
+                    <ResizablePanel defaultSize={10} minSize={5}>
+                      {renderSlot(4)}
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
+                </ResizablePanel>
 
-              <ResizableHandle />
+                <ResizableHandle />
 
-              <ResizablePanel defaultSize={10} minSize={10}>
-                <ToolBaseContainer>
-                  <YouTubePlayerTool />
-                </ToolBaseContainer>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          </ResizablePanel>
+                <ResizablePanel defaultSize={10} minSize={10}>
+                  {renderSlot(5)}
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </ResizablePanel>
 
-          <ResizableHandle />
+            <ResizableHandle />
 
-          <ResizablePanel defaultSize={25} minSize={15}>
-            <ResizablePanelGroup
-              direction="horizontal"
-              className="h-full w-full"
-            >
-              <ResizablePanel defaultSize={15} minSize={15}>
-                <ToolBaseContainer>
-                  <StackedTextareasTool />
-                </ToolBaseContainer>
-              </ResizablePanel>
+            <ResizablePanel defaultSize={25} minSize={15}>
+              <ResizablePanelGroup
+                direction="horizontal"
+                className="h-full w-full"
+              >
+                <ResizablePanel defaultSize={15} minSize={15}>
+                  {renderSlot(6)}
+                </ResizablePanel>
 
-              <ResizableHandle />
+                <ResizableHandle />
 
-              <ResizablePanel defaultSize={40} minSize={20}>
-                <ToolBaseContainer>
-                  <JsonSearchTool />
-                </ToolBaseContainer>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+                <ResizablePanel defaultSize={40} minSize={20}>
+                  {renderSlot(7)}
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
       </div>
-    </div>
+
+      <DragOverlay
+        dropAnimation={{
+          duration: 50,
+          easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+        }}
+      >
+        {activeToolId ? (
+          <DragOverlayContent toolName={TOOL_REGISTRY[activeToolId].name} />
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 }
 
