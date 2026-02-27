@@ -36,6 +36,7 @@ export function useYouTubePlayer() {
   return {
     url,
     embedUrl,
+    setUrl,
     handleUrlChange,
   }
 }

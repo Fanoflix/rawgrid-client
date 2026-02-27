@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { useYouTubePlayer } from "@/tools/youtube-player/lib/use-youtube-player";
+import { useYouTubePlayerWithCommands as useYouTubePlayer } from "@/tools/youtube-player/lib/use-youtube-player-commands";
 
 export function YouTubePlayerTool() {
   const { url, embedUrl, handleUrlChange } = useYouTubePlayer();

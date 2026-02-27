@@ -8,7 +8,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { Textarea } from "@/components/ui/textarea";
-import { useJsonSearch } from "@/tools/json-search/lib/use-json-search";
+import { useJsonSearchWithCommands as useJsonSearch } from "@/tools/json-search/lib/use-json-search-commands";
 import { cn } from "@/lib/utils";
 import { JSON_SEARCH_DEFAULTS } from "./lib/constants";
 

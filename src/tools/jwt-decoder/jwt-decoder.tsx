@@ -5,7 +5,7 @@ import { ToolInfo } from "@/components/tool-info";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useJwtDecoder } from "@/tools/jwt-decoder/lib/use-jwt-decoder";
+import { useJwtDecoderWithCommands as useJwtDecoder } from "@/tools/jwt-decoder/lib/use-jwt-decoder-commands";
 
 export function JwtDecoderTool() {
   const { state, handleTokenChange, increaseFont, decreaseFont } =

@@ -1,6 +1,6 @@
 import { CopyButton } from "@/components/copy-button";
 import { Input } from "@/components/ui/input";
-import { useColorPicker } from "@/tools/color-picker/lib/use-color-picker";
+import { useColorPickerWithCommands as useColorPicker } from "@/tools/color-picker/lib/use-color-picker-commands";
 
 export function ColorPickerTool() {
   const { color, output, handleColorChange } = useColorPicker();

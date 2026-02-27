@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useTimer } from "@/tools/timer/lib/use-timer";
+import { useTimerWithCommands as useTimer } from "@/tools/timer/lib/use-timer-commands";
 
 export function TimerTool() {
   const {

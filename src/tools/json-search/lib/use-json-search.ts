@@ -1,5 +1,11 @@
 import type { ChangeEvent } from "react";
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { useToolHistory } from "@/lib/use-tool-history";
 import { JSON_SEARCH_DEFAULTS } from "@/tools/json-search/lib/constants";
@@ -89,6 +95,11 @@ export function useJsonSearch() {
     setStoredJson(json);
   }, [hasEditedJson, isJsonReady, json, setStoredJson, storedJson]);
 
+  function loadJson(value: string) {
+    setJson(value);
+    setHasEditedJson(true);
+  }
+
   const displayQuery = hasEditedQuery ? query : storedQuery;
   const displayJson = hasEditedJson ? json : storedJson;
 
@@ -161,6 +172,7 @@ export function useJsonSearch() {
     config,
     error: parsedError,
     isParsing,
+    loadJson,
     handleQueryChange,
     handleJsonChange,
   };

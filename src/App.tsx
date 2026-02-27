@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -9,6 +9,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 
+import { CommandPalette } from "@/components/command-palette";
 import { DragOverlayContent } from "@/components/drag-overlay-content";
 import { DraggableTool } from "@/components/draggable-tool";
 import { GridSlot } from "@/components/grid-slot";
@@ -18,7 +19,9 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { subscribe } from "@/lib/command-bus";
 import { useLayout } from "@/lib/use-layout";
+import { useThemeToggle } from "@/lib/use-theme-toggle";
 import type { ToolId } from "@/lib/tool-registry";
 import { TOOL_REGISTRY } from "@/lib/tool-registry";
 
@@ -26,7 +29,18 @@ export function App() {
   const layoutState = useLayout();
   const { layout, isEditMode, swapSlots, hideTool } = layoutState;
 
+  const { isDark, toggleTheme } = useThemeToggle();
   const [activeToolId, setActiveToolId] = useState<ToolId | null>(null);
+
+  useEffect(() => {
+    const unsubs = [
+      subscribe("theme:dark", () => { if (!isDark) toggleTheme(); }),
+      subscribe("theme:light", () => { if (isDark) toggleTheme(); }),
+      subscribe("layout:reset", () => layoutState.resetLayout()),
+      subscribe("layout:edit", () => layoutState.setEditMode((v) => !v)),
+    ];
+    return () => unsubs.forEach((fn) => fn());
+  });
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -176,6 +190,8 @@ export function App() {
           <DragOverlayContent toolName={TOOL_REGISTRY[activeToolId].name} />
         ) : null}
       </DragOverlay>
+
+      <CommandPalette />
     </DndContext>
   );
 }

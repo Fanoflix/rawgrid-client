@@ -5,7 +5,7 @@ import { CopyButton } from "@/components/copy-button";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useFont } from "@/lib/use-font";
-import { useStackedTextareas } from "@/tools/stacked-textareas/lib/use-stacked-textareas";
+import { useStackedTextareasWithCommands as useStackedTextareas } from "@/tools/stacked-textareas/lib/use-stacked-textareas-commands";
 
 export function StackedTextareasTool() {
   const {

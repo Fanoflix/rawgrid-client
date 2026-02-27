@@ -49,6 +49,7 @@ export function useColorPicker() {
   return {
     color,
     output,
+    setColor,
     handleColorChange,
   };
 }

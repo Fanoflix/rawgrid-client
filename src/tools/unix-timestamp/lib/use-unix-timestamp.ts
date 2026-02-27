@@ -55,6 +55,10 @@ export function useUnixTimestamp() {
     };
   }, [state]);
 
+  function setTimestampInput(value: string) {
+    setState((previous) => ({ ...previous, input: value }));
+  }
+
   function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
     setState((previous) => ({
       ...previous,
@@ -73,6 +77,7 @@ export function useUnixTimestamp() {
     state,
     output,
     formatOptions: TIMESTAMP_FORMAT_OPTIONS,
+    setTimestampInput,
     handleInputChange,
     handleFormatChange,
   };

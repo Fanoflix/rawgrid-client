@@ -8,7 +8,7 @@ import {
 import { CopyButton } from "@/components/copy-button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useUnixTimestamp } from "@/tools/unix-timestamp/lib/use-unix-timestamp";
+import { useUnixTimestampWithCommands as useUnixTimestamp } from "@/tools/unix-timestamp/lib/use-unix-timestamp-commands";
 
 export function UnixTimestampTool() {
   const {

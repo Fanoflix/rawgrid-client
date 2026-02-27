@@ -58,6 +58,7 @@ export function useJwtDecoder() {
 
   return {
     state,
+    setToken,
     handleTokenChange,
     increaseFont,
     decreaseFont,

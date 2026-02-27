@@ -79,6 +79,15 @@ export function useStackedTextareas() {
     });
   }
 
+  function addNote(text: string) {
+    handleAddEntry();
+    setEntries((previous) => {
+      const next = [...previous];
+      next[next.length - 1] = text;
+      return next;
+    });
+  }
+
   return {
     entries,
     canRemove: entries.length > 1,
@@ -87,5 +96,6 @@ export function useStackedTextareas() {
     getEntryRemoveHandler,
     setEntryValue,
     handleAddEntry,
+    addNote,
   };
 }

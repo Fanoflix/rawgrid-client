@@ -138,6 +138,17 @@ export function useTimer() {
     return () => clearIntervalRef();
   }, []);
 
+  function setTime(timeString: string) {
+    const parts = timeString.split(":");
+    if (parts.length !== 3) return;
+    const [hours, minutes, seconds] = parts;
+    setInput({
+      hours: padTwoDigitPart(sanitizeHoursPart(hours)),
+      minutes: padTwoDigitPart(sanitizeTwoDigitPart(minutes)),
+      seconds: padTwoDigitPart(sanitizeTwoDigitPart(seconds)),
+    });
+  }
+
   const displayParts = useMemo(() => {
     if (status === "idle") return input;
     return formatDurationParts(remainingMs);
@@ -158,5 +169,6 @@ export function useTimer() {
     handlePlay,
     handlePause,
     handleStop,
+    setTime,
   };
 }
