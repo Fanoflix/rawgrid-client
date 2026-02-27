@@ -11,6 +11,7 @@ import { JsonSearchTool } from "@/tools/json-search/json-search";
 import { StackedTextareasTool } from "@/tools/stacked-textareas/stacked-textareas";
 import { TimerTool } from "@/tools/timer/timer";
 import { UnixTimestampTool } from "@/tools/unix-timestamp/unix-timestamp";
+import { VideoPlayerTool } from "@/tools/video-player/video-player";
 import { YouTubePlayerTool } from "@/tools/youtube-player/youtube-player";
 
 export function App() {
@@ -89,9 +90,17 @@ export function App() {
 
               <ResizableHandle />
 
-              <ResizablePanel defaultSize={40} minSize={20}>
+              <ResizablePanel defaultSize={30} minSize={20}>
                 <ToolBaseContainer>
                   <JsonSearchTool />
+                </ToolBaseContainer>
+              </ResizablePanel>
+
+              <ResizableHandle />
+
+              <ResizablePanel defaultSize={15} minSize={15}>
+                <ToolBaseContainer>
+                  <VideoPlayerTool />
                 </ToolBaseContainer>
               </ResizablePanel>
             </ResizablePanelGroup>
