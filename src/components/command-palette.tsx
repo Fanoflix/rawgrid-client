@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -16,17 +16,79 @@ const COMMANDS: Command[] = [
   { id: "timer-play", label: "play", group: "timer", command: "timer:play" },
   { id: "timer-pause", label: "pause", group: "timer", command: "timer:pause" },
   { id: "timer-stop", label: "stop", group: "timer", command: "timer:stop" },
-  { id: "timer-set", label: "set time", group: "timer", command: "timer:set", param: "hh:mm:ss" },
-  { id: "jwt-decode", label: "decode token", group: "jwt", command: "jwt:set", param: "paste token" },
-  { id: "timestamp-convert", label: "convert", group: "timestamp", command: "timestamp:set", param: "timestamp value" },
-  { id: "color-set", label: "set color", group: "color", command: "color:set", param: "#hex" },
-  { id: "youtube-load", label: "load video", group: "youtube", command: "youtube:set", param: "youtube url" },
-  { id: "notes-add", label: "add note", group: "notes", command: "notes:add", param: "note text" },
-  { id: "json-load", label: "load json", group: "json search", command: "json:set", param: "paste json" },
-  { id: "theme-dark", label: "dark mode", group: "theme", command: "theme:dark" },
-  { id: "theme-light", label: "light mode", group: "theme", command: "theme:light" },
-  { id: "layout-reset", label: "reset layout", group: "layout", command: "layout:reset" },
-  { id: "layout-edit", label: "toggle edit mode", group: "layout", command: "layout:edit" },
+  {
+    id: "timer-set",
+    label: "set time",
+    group: "timer",
+    command: "timer:set",
+    param: "hh:mm:ss",
+  },
+  {
+    id: "jwt-decode",
+    label: "decode token",
+    group: "jwt",
+    command: "jwt:set",
+    param: "paste token",
+  },
+  {
+    id: "timestamp-convert",
+    label: "convert",
+    group: "timestamp",
+    command: "timestamp:set",
+    param: "timestamp value",
+  },
+  {
+    id: "color-set",
+    label: "set color",
+    group: "color",
+    command: "color:set",
+    param: "#hex",
+  },
+  {
+    id: "youtube-load",
+    label: "load video",
+    group: "youtube",
+    command: "youtube:set",
+    param: "youtube url",
+  },
+  {
+    id: "notes-add",
+    label: "add note",
+    group: "notes",
+    command: "notes:add",
+    param: "note text",
+  },
+  {
+    id: "json-load",
+    label: "load json",
+    group: "json search",
+    command: "json:set",
+    param: "paste json",
+  },
+  {
+    id: "theme-dark",
+    label: "dark mode",
+    group: "theme",
+    command: "theme:dark",
+  },
+  {
+    id: "theme-light",
+    label: "light mode",
+    group: "theme",
+    command: "theme:light",
+  },
+  {
+    id: "layout-reset",
+    label: "reset layout",
+    group: "layout",
+    command: "layout:reset",
+  },
+  {
+    id: "layout-edit",
+    label: "toggle edit mode",
+    group: "layout",
+    command: "layout:edit",
+  },
 ];
 
 export function CommandPalette() {
@@ -44,7 +106,7 @@ export function CommandPalette() {
     ? COMMANDS.filter(
         (cmd) =>
           cmd.label.includes(query.toLowerCase()) ||
-          cmd.group.includes(query.toLowerCase()),
+          cmd.group.includes(query.toLowerCase())
       )
     : COMMANDS;
 
@@ -101,11 +163,6 @@ export function CommandPalette() {
     }
   }, [isOpen, activeCommand]);
 
-  // Reset selected index when query changes
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [query]);
-
   // Scroll selected item into view
   useEffect(() => {
     if (!listRef.current) return;
@@ -113,23 +170,20 @@ export function CommandPalette() {
     items[selectedIndex]?.scrollIntoView({ block: "nearest" });
   }, [selectedIndex]);
 
-  const handleSearchKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      if (event.key === "ArrowDown") {
-        event.preventDefault();
-        setSelectedIndex((i) => Math.min(i + 1, filtered.length - 1));
-      } else if (event.key === "ArrowUp") {
-        event.preventDefault();
-        setSelectedIndex((i) => Math.max(i - 1, 0));
-      } else if (event.key === "Enter" && filtered[selectedIndex]) {
-        event.preventDefault();
-        selectCommand(filtered[selectedIndex]);
-      } else if (event.key === "Escape") {
-        close();
-      }
-    },
-    [filtered, selectedIndex],
-  );
+  function handleSearchKeyDown(event: React.KeyboardEvent) {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setSelectedIndex((i) => Math.min(i + 1, filtered.length - 1));
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setSelectedIndex((i) => Math.max(i - 1, 0));
+    } else if (event.key === "Enter" && filtered[selectedIndex]) {
+      event.preventDefault();
+      selectCommand(filtered[selectedIndex]);
+    } else if (event.key === "Escape") {
+      close();
+    }
+  }
 
   function handleParamKeyDown(event: React.KeyboardEvent) {
     if (event.key === "Enter" && activeCommand) {
@@ -149,7 +203,7 @@ export function CommandPalette() {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]">
       {/* backdrop */}
-      <div className="absolute inset-0 bg-black/40" onClick={close} />
+      <div className="absolute inset-0 bg-background/85" onClick={close} />
 
       {/* palette */}
       <div className="relative z-10 w-full max-w-md border bg-background shadow-2xl">
@@ -180,7 +234,7 @@ export function CommandPalette() {
               <input
                 ref={inputRef}
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => { setQuery(e.target.value); setSelectedIndex(0); }}
                 onKeyDown={handleSearchKeyDown}
                 placeholder="type a command..."
                 className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
@@ -206,7 +260,7 @@ export function CommandPalette() {
                       "flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm",
                       index === selectedIndex
                         ? "bg-accent text-accent-foreground"
-                        : "text-foreground",
+                        : "text-foreground"
                     )}
                   >
                     <span className="shrink-0 text-xs text-muted-foreground w-20">

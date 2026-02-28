@@ -13,7 +13,7 @@
             return s.replace(/~and~/g, '&')
           }).join('?');
           window.history.replaceState(null, null,
-            l.pathname + decoded + l.hash
+            l.pathname.replace(/\/$/, '') + decoded + l.hash
           );
         }
       }(window.location))
