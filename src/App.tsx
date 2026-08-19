@@ -174,6 +174,12 @@ export function App() {
                 <ResizablePanel defaultSize={40} minSize={20}>
                   {renderSlot(7)}
                 </ResizablePanel>
+
+                <ResizableHandle />
+
+                <ResizablePanel defaultSize={25} minSize={15}>
+                  {renderSlot(8)}
+                </ResizablePanel>
               </ResizablePanelGroup>
             </ResizablePanel>
           </ResizablePanelGroup>

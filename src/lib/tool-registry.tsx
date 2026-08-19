@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 
+import { Base64Tool } from "@/tools/base64/base64";
 import { ColorPickerTool } from "@/tools/color-picker/color-picker";
 import { JwtDecoderTool } from "@/tools/jwt-decoder/jwt-decoder";
 import { JsonSearchTool } from "@/tools/json-search/json-search";
@@ -17,7 +18,8 @@ export type ToolId =
   | "video-player"
   | "youtube-player"
   | "stacked-textareas"
-  | "json-search";
+  | "json-search"
+  | "base64";
 
 export interface ToolEntry {
   name: string;
@@ -36,6 +38,7 @@ export const TOOL_REGISTRY: Record<ToolId, ToolEntry> = {
     component: StackedTextareasTool,
   },
   "json-search": { name: "JSON Search", component: JsonSearchTool },
+  base64: { name: "Base64", component: Base64Tool },
 };
 
 export const ALL_TOOL_IDS = Object.keys(TOOL_REGISTRY) as ToolId[];

@@ -66,6 +66,20 @@ const COMMANDS: Command[] = [
     param: "paste json",
   },
   {
+    id: "base64-encode",
+    label: "encode text",
+    group: "base64",
+    command: "base64:encode",
+    param: "text to encode",
+  },
+  {
+    id: "base64-decode",
+    label: "decode base64",
+    group: "base64",
+    command: "base64:decode",
+    param: "paste base64",
+  },
+  {
     id: "theme-dark",
     label: "dark mode",
     group: "theme",
