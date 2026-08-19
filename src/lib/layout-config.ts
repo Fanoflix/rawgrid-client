@@ -4,7 +4,7 @@ export type LayoutConfig = (ToolId | null)[];
 
 const STORAGE_KEY = "rawgrid-layout";
 
-export const SLOT_COUNT = 9;
+export const SLOT_COUNT = 10;
 
 export const DEFAULT_LAYOUT: LayoutConfig = [
   "unix-timestamp", // Slot 0: top-left-upper
@@ -15,7 +15,8 @@ export const DEFAULT_LAYOUT: LayoutConfig = [
   "youtube-player", // Slot 5: right
   "stacked-textareas", // Slot 6: bottom-left
   "json-search", // Slot 7: bottom-center
-  "base64", // Slot 8: bottom-right
+  "base64", // Slot 8: bottom-right-upper
+  "json-prettify", // Slot 9: bottom-right-lower
 ];
 
 export function saveLayout(config: LayoutConfig): void {

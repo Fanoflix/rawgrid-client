@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 import { Base64Tool } from "@/tools/base64/base64";
 import { ColorPickerTool } from "@/tools/color-picker/color-picker";
 import { JwtDecoderTool } from "@/tools/jwt-decoder/jwt-decoder";
+import { JsonPrettifyTool } from "@/tools/json-prettify/json-prettify";
 import { JsonSearchTool } from "@/tools/json-search/json-search";
 import { StackedTextareasTool } from "@/tools/stacked-textareas/stacked-textareas";
 import { TimerTool } from "@/tools/timer/timer";
@@ -19,7 +20,8 @@ export type ToolId =
   | "youtube-player"
   | "stacked-textareas"
   | "json-search"
-  | "base64";
+  | "base64"
+  | "json-prettify";
 
 export interface ToolEntry {
   name: string;
@@ -39,6 +41,7 @@ export const TOOL_REGISTRY: Record<ToolId, ToolEntry> = {
   },
   "json-search": { name: "JSON Search", component: JsonSearchTool },
   base64: { name: "Base64", component: Base64Tool },
+  "json-prettify": { name: "JSON Prettify", component: JsonPrettifyTool },
 };
 
 export const ALL_TOOL_IDS = Object.keys(TOOL_REGISTRY) as ToolId[];

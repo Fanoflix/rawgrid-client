@@ -178,7 +178,20 @@ export function App() {
                 <ResizableHandle />
 
                 <ResizablePanel defaultSize={25} minSize={15}>
-                  {renderSlot(8)}
+                  <ResizablePanelGroup
+                    direction="vertical"
+                    className="h-full w-full"
+                  >
+                    <ResizablePanel defaultSize={50} minSize={15}>
+                      {renderSlot(8)}
+                    </ResizablePanel>
+
+                    <ResizableHandle />
+
+                    <ResizablePanel defaultSize={50} minSize={15}>
+                      {renderSlot(9)}
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
                 </ResizablePanel>
               </ResizablePanelGroup>
             </ResizablePanel>

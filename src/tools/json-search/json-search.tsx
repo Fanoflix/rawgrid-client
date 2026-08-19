@@ -1,6 +1,8 @@
 import type { ChangeEventHandler } from "react";
+import { Minus, Plus } from "lucide-react";
 
 import { ToolInfo } from "@/components/tool-info";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   ResizableHandle,
@@ -21,6 +23,8 @@ export function JsonSearchTool() {
     isParsing,
     handleQueryChange,
     handleJsonChange,
+    increaseFont,
+    decreaseFont,
   } = useJsonSearch();
 
   const hasResults = matches.length > 0;
@@ -59,6 +63,28 @@ export function JsonSearchTool() {
             state.query === JSON_SEARCH_DEFAULTS.query && "text-foreground/85"
           )}
         />
+        <span className="flex shrink-0 gap-0">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            className="rounded-none border border-border bg-background text-foreground hover:bg-muted"
+            onClick={increaseFont}
+            aria-label="increase font"
+          >
+            <Plus className="size-3" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            className="rounded-none border border-l-0 border-border bg-background text-foreground hover:bg-muted"
+            onClick={decreaseFont}
+            aria-label="decrease font"
+          >
+            <Minus className="size-3" />
+          </Button>
+        </span>
       </div>
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <ResizablePanelGroup
@@ -68,7 +94,11 @@ export function JsonSearchTool() {
           }`}
         >
           <ResizablePanel defaultSize={50} minSize={20}>
-            <JsonSearchInput value={state.json} onChange={handleJsonChange} />
+            <JsonSearchInput
+              value={state.json}
+              onChange={handleJsonChange}
+              fontSize={state.fontSize}
+            />
           </ResizablePanel>
           <ResizableHandle />
           <ResizablePanel defaultSize={50} minSize={20}>
@@ -77,6 +107,7 @@ export function JsonSearchTool() {
               hasResults={hasResults}
               matches={matches}
               hasFields={config.fields.length > 0}
+              fontSize={state.fontSize}
             />
           </ResizablePanel>
         </ResizablePanelGroup>
@@ -93,15 +124,17 @@ export function JsonSearchTool() {
 interface JsonSearchInputProps {
   value: string;
   onChange: ChangeEventHandler<HTMLTextAreaElement>;
+  fontSize: number;
 }
 
-function JsonSearchInput({ value, onChange }: JsonSearchInputProps) {
+function JsonSearchInput({ value, onChange, fontSize }: JsonSearchInputProps) {
   return (
     <Textarea
       value={value}
       onChange={onChange}
       placeholder="paste json"
-      className="h-full w-full min-h-0 resize-none rounded-none font-mono text-xs"
+      className="h-full w-full min-h-0 resize-none rounded-none font-mono"
+      style={{ fontSize }}
     />
   );
 }
@@ -111,6 +144,7 @@ interface JsonSearchResultsProps {
   hasResults: boolean;
   matches: { field: string; index: number; lines: string[] }[];
   hasFields: boolean;
+  fontSize: number;
 }
 
 function JsonSearchResults({
@@ -118,11 +152,15 @@ function JsonSearchResults({
   hasResults,
   matches,
   hasFields,
+  fontSize,
 }: JsonSearchResultsProps) {
   return (
     <div className="relative h-full w-full overflow-hidden">
       {error ? (
-        <div className="h-full w-full p-3 font-mono text-xs text-destructive overflow-auto">
+        <div
+          className="h-full w-full p-3 font-mono text-destructive overflow-auto"
+          style={{ fontSize }}
+        >
           {error}
         </div>
       ) : hasResults ? (
@@ -130,7 +168,8 @@ function JsonSearchResults({
           {matches.map((match, index) => (
             <div
               key={`${match.field}-${match.index}-${index}`}
-              className="border-b-2 border-dashed border-border px-3 py-2 font-mono text-xs whitespace-pre"
+              className="border-b-2 border-dashed border-border px-3 py-2 font-mono whitespace-pre"
+              style={{ fontSize }}
             >
               {match.lines.join("\n")}
             </div>

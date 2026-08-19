@@ -17,6 +17,7 @@ A browser-based developer toolbox with multiple utilities arranged in a resizabl
 | **YouTube Player**    | Embed and play YouTube videos by URL or video ID using privacy-enhanced mode.                                             | Keep a tutorial video playing in one panel while coding in another window.                                                               |
 | **Stacked Textareas** | Up to 3 resizable note areas with text transforms (capitalize, uppercase, lowercase).                                     | Jot down quick notes, API keys, or scratch text while working across other tools.                                                        |
 | **Base64**            | Encode text to Base64 and decode it back, with UTF-8 safe conversion and inline errors on invalid input.                     | Paste a Base64 blob from a config file into the left box, hit `decode`, and read the plain text on the right.                            |
+| **JSON Prettify**     | Format messy JSON with 2-space, 4-space, or tab indent. Minify, sort keys A-Z, and get line/column parse errors.            | Paste a one-line API response, read it indented, then hit `minify` to squash it back for a config file.                                  |
 | **JSON Search**       | Search large JSON documents for specific fields with configurable context lines. Uses a Web Worker for files over 250KB.  | Query `names, privileges [0,4]` against an Elasticsearch role mapping JSON to extract just the fields you need with surrounding context. |
 
 ## Getting Started

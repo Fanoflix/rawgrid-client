@@ -7,8 +7,12 @@ import {
   useState,
 } from "react";
 
+import { useFont } from "@/lib/use-font";
 import { useToolHistory } from "@/lib/use-tool-history";
-import { JSON_SEARCH_DEFAULTS } from "@/tools/json-search/lib/constants";
+import {
+  JSON_SEARCH_CONFIG,
+  JSON_SEARCH_DEFAULTS,
+} from "@/tools/json-search/lib/constants";
 import {
   getMatchResults,
   parseJsonLines,
@@ -18,6 +22,7 @@ import {
 export interface JsonSearchState {
   query: string;
   json: string;
+  fontSize: number;
 }
 
 function isSameValue(left: string, right: string) {
@@ -60,6 +65,12 @@ export function useJsonSearch() {
     initialValue: JSON_SEARCH_DEFAULTS.json,
     serialize: serializeJson,
     deserialize: deserializeJson,
+  });
+
+  const { fontSize, increaseFont, decreaseFont } = useFont({
+    defaultSize: JSON_SEARCH_CONFIG.defaultFontSize,
+    minSize: JSON_SEARCH_CONFIG.minFontSize,
+    maxSize: JSON_SEARCH_CONFIG.maxFontSize,
   });
 
   const [query, setQuery] = useState(JSON_SEARCH_DEFAULTS.query);
@@ -164,6 +175,7 @@ export function useJsonSearch() {
   const state: JsonSearchState = {
     query: displayQuery,
     json: displayJson,
+    fontSize,
   };
 
   return {
@@ -175,5 +187,7 @@ export function useJsonSearch() {
     loadJson,
     handleQueryChange,
     handleJsonChange,
+    increaseFont,
+    decreaseFont,
   };
 }

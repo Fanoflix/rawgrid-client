@@ -80,6 +80,25 @@ const COMMANDS: Command[] = [
     param: "paste base64",
   },
   {
+    id: "json-prettify-set",
+    label: "prettify json",
+    group: "json prettify",
+    command: "json-prettify:set",
+    param: "paste json",
+  },
+  {
+    id: "json-prettify-minify",
+    label: "minify json",
+    group: "json prettify",
+    command: "json-prettify:minify",
+  },
+  {
+    id: "json-prettify-pretty",
+    label: "expand json",
+    group: "json prettify",
+    command: "json-prettify:pretty",
+  },
+  {
     id: "theme-dark",
     label: "dark mode",
     group: "theme",
