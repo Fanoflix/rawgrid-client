@@ -1,4 +1,5 @@
 import type { ChangeEvent, ReactNode } from "react";
+import { useRef } from "react";
 import { Minus, Plus, X } from "lucide-react";
 
 import { CopyButton } from "@/components/copy-button";
@@ -188,6 +189,22 @@ function JsonPane({
   copyLabel,
   className,
 }: JsonPaneProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  function handleClear() {
+    const textarea = textareaRef.current;
+    if (!textarea || !textarea.value) return;
+
+    // Clear through the browser's own editing command so the deletion lands on
+    // the textarea's native undo stack and ctrl+z brings the text back.
+    textarea.focus();
+    textarea.setSelectionRange(0, textarea.value.length);
+    const isUndoable = document.execCommand("delete");
+
+    // Older engines without execCommand still get a clear, just not undoable.
+    if (!isUndoable) onClear();
+  }
+
   return (
     <div className={cn("flex h-full w-full flex-col", className)}>
       <PanelHeader label={label} info={info}>
@@ -196,7 +213,7 @@ function JsonPane({
           variant="ghost"
           size="icon-xs"
           className="rounded-none border border-border bg-background text-foreground hover:bg-muted"
-          onClick={onClear}
+          onClick={handleClear}
           aria-label={`clear ${label}`}
         >
           <X className="size-3" />
@@ -210,6 +227,7 @@ function JsonPane({
         )}
       >
         <Textarea
+          ref={textareaRef}
           value={value}
           onChange={onChange}
           placeholder={placeholder}

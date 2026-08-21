@@ -11,7 +11,7 @@ export function ColorPickerTool() {
         type="color"
         value={color}
         onChange={handleColorChange}
-        className="h-32 w-full cursor-pointer border-y-border p-0"
+        className="h-16 w-full shrink-0 cursor-pointer border-y-border p-0"
         aria-label="color picker"
       />
       <div className="flex flex-1 flex-col gap-0">

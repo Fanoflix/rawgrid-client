@@ -103,23 +103,23 @@ export function App() {
             direction="vertical"
             className="overflow-y-auto min-h-full w-full max-w-screen"
           >
-            <ResizablePanel defaultSize={15} minSize={15}>
+            <ResizablePanel defaultSize={40} minSize={15}>
               <ResizablePanelGroup
                 direction="horizontal"
                 className="h-full w-full"
               >
-                <ResizablePanel defaultSize={15} minSize={15}>
+                <ResizablePanel defaultSize={12} minSize={8}>
                   <ResizablePanelGroup
                     direction="vertical"
                     className="h-full w-full"
                   >
-                    <ResizablePanel defaultSize={12} minSize={12}>
+                    <ResizablePanel defaultSize={70} minSize={20}>
                       {renderSlot(0)}
                     </ResizablePanel>
 
                     <ResizableHandle />
 
-                    <ResizablePanel defaultSize={5} minSize={5}>
+                    <ResizablePanel defaultSize={30} minSize={15}>
                       {renderSlot(1)}
                     </ResizablePanel>
                   </ResizablePanelGroup>
@@ -127,24 +127,24 @@ export function App() {
 
                 <ResizableHandle />
 
-                <ResizablePanel defaultSize={15} minSize={15}>
+                <ResizablePanel defaultSize={23} minSize={10}>
                   {renderSlot(2)}
                 </ResizablePanel>
 
                 <ResizableHandle />
 
-                <ResizablePanel defaultSize={10} minSize={5}>
+                <ResizablePanel defaultSize={45} minSize={15}>
                   <ResizablePanelGroup
                     direction="vertical"
                     className="h-full w-full"
                   >
-                    <ResizablePanel defaultSize={10} minSize={5}>
+                    <ResizablePanel defaultSize={45} minSize={15}>
                       {renderSlot(3)}
                     </ResizablePanel>
 
                     <ResizableHandle />
 
-                    <ResizablePanel defaultSize={10} minSize={5}>
+                    <ResizablePanel defaultSize={55} minSize={10}>
                       {renderSlot(4)}
                     </ResizablePanel>
                   </ResizablePanelGroup>
@@ -152,7 +152,7 @@ export function App() {
 
                 <ResizableHandle />
 
-                <ResizablePanel defaultSize={10} minSize={10}>
+                <ResizablePanel defaultSize={20} minSize={10}>
                   {renderSlot(5)}
                 </ResizablePanel>
               </ResizablePanelGroup>
@@ -160,38 +160,38 @@ export function App() {
 
             <ResizableHandle />
 
-            <ResizablePanel defaultSize={25} minSize={15}>
+            <ResizablePanel defaultSize={60} minSize={15}>
               <ResizablePanelGroup
                 direction="horizontal"
                 className="h-full w-full"
               >
-                <ResizablePanel defaultSize={15} minSize={15}>
-                  {renderSlot(6)}
-                </ResizablePanel>
-
-                <ResizableHandle />
-
-                <ResizablePanel defaultSize={40} minSize={20}>
-                  {renderSlot(7)}
-                </ResizablePanel>
-
-                <ResizableHandle />
-
-                <ResizablePanel defaultSize={25} minSize={15}>
+                <ResizablePanel defaultSize={22} minSize={12}>
                   <ResizablePanelGroup
                     direction="vertical"
                     className="h-full w-full"
                   >
-                    <ResizablePanel defaultSize={50} minSize={15}>
-                      {renderSlot(8)}
+                    <ResizablePanel defaultSize={68} minSize={20}>
+                      {renderSlot(6)}
                     </ResizablePanel>
 
                     <ResizableHandle />
 
-                    <ResizablePanel defaultSize={50} minSize={15}>
-                      {renderSlot(9)}
+                    <ResizablePanel defaultSize={32} minSize={12}>
+                      {renderSlot(7)}
                     </ResizablePanel>
                   </ResizablePanelGroup>
+                </ResizablePanel>
+
+                <ResizableHandle />
+
+                <ResizablePanel defaultSize={24} minSize={12}>
+                  {renderSlot(8)}
+                </ResizablePanel>
+
+                <ResizableHandle />
+
+                <ResizablePanel defaultSize={54} minSize={15}>
+                  {renderSlot(9)}
                 </ResizablePanel>
               </ResizablePanelGroup>
             </ResizablePanel>

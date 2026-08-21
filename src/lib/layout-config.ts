@@ -2,21 +2,21 @@ import type { ToolId } from "./tool-registry";
 
 export type LayoutConfig = (ToolId | null)[];
 
-const STORAGE_KEY = "rawgrid-layout";
+const STORAGE_KEY = "rawgrid-layout-v2";
 
 export const SLOT_COUNT = 10;
 
 export const DEFAULT_LAYOUT: LayoutConfig = [
   "unix-timestamp", // Slot 0: top-left-upper
   "timer", // Slot 1: top-left-lower
-  "jwt-decoder", // Slot 2: center-left
-  "color-picker", // Slot 3: center-right-upper
-  "video-player", // Slot 4: center-right-lower
-  "youtube-player", // Slot 5: right
-  "stacked-textareas", // Slot 6: bottom-left
-  "json-search", // Slot 7: bottom-center
-  "base64", // Slot 8: bottom-right-upper
-  "json-prettify", // Slot 9: bottom-right-lower
+  "jwt-decoder", // Slot 2: top-center-left
+  "json-prettify", // Slot 3: top-center-right-upper
+  null, // Slot 4: top-center-right-lower (video-player lives here when unhidden)
+  "youtube-player", // Slot 5: top-right
+  "stacked-textareas", // Slot 6: bottom-left-upper
+  "color-picker", // Slot 7: bottom-left-lower
+  "json-search", // Slot 8: bottom-center
+  "base64", // Slot 9: bottom-right
 ];
 
 export function saveLayout(config: LayoutConfig): void {
