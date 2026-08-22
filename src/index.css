@@ -114,6 +114,110 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  --animate-attention-surface: attention-surface 0.9s ease-in-out infinite;
+  --animate-blink: blink 0.9s ease-in-out infinite;
+  --animate-hint-in: hint-in 0.22s ease-out both;
+}
+
+/* Keyed on the hovered tool, so moving between panels replays both animations. */
+@keyframes hint-in {
+  from {
+    opacity: 0;
+    transform: translateX(-0.4rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hint-sweep {
+  from {
+    transform: translateX(-110%);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(110%);
+    opacity: 0;
+  }
+}
+
+/*
+ * A band of light travelling across the hint as it lands. Kept at a low alpha
+ * and run once, so it reads as a highlight passing over the text rather than
+ * something painted on top of it.
+ */
+.hint-flash {
+  position: relative;
+  overflow: hidden;
+}
+
+.hint-flash::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline: -1rem;
+  pointer-events: none;
+  background: linear-gradient(
+    50deg,
+    transparent 0%,
+    color-mix(in oklab, var(--primary-foreground) 8%, transparent) 35%,
+    color-mix(in oklab, var(--primary-foreground) 80%, transparent) 50%,
+    color-mix(in oklab, var(--primary-foreground) 8%, transparent) 65%,
+    transparent 100%
+  );
+  animation: hint-sweep 0.75s ease-in both;
+}
+
+/* Same 0.9s plateau as attention-surface, so the two blink as one unit. */
+@keyframes blink {
+  0%,
+  40% {
+    opacity: 1;
+  }
+  60%,
+  100% {
+    opacity: 0.1;
+  }
+}
+
+/*
+ * Pulsing the surface is what makes the alert carry across the grid. The lit
+ * state is held over a plateau rather than passed through at the midpoint —
+ * a peak you cross instantly is not something you notice out of the corner of
+ * your eye.
+ */
+@keyframes attention-surface {
+  0%,
+  40% {
+    background-color: color-mix(in oklab, var(--primary) 24%, transparent);
+    box-shadow: inset 0 0 0 2px
+      color-mix(in oklab, var(--primary) 75%, transparent);
+  }
+  60%,
+  100% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 2px transparent;
+  }
+}
+
+/* No motion still needs to signal, so hold the lit state instead of dropping it. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-blink,
+  .animate-hint-in {
+    animation: none;
+  }
+  .hint-flash::after {
+    animation: none;
+    opacity: 0;
+  }
+  .animate-attention-surface {
+    animation: none;
+    background-color: color-mix(in oklab, var(--primary) 24%, transparent);
+    box-shadow: inset 0 0 0 2px
+      color-mix(in oklab, var(--primary) 75%, transparent);
+  }
 }
 
 @layer base {
@@ -126,6 +230,25 @@
   html {
     @apply font-sans;
   }
+}
+
+/*
+ * Faint hatching so a slot with no tool in it still reads as deliberate space.
+ * Feathered stops rather than hard 1px edges: a hard edge at 45deg lands on a
+ * different fraction of the device pixel grid on each pass, which is what made
+ * the lines read as alternating shades. Ramping into and out of the colour
+ * gives every stripe identical coverage.
+ */
+.empty-slot {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent 0px,
+    transparent 5px,
+    var(--border) 6px,
+    transparent 7px,
+    transparent 12px
+  );
+  background-color: transparent;
 }
 
 .tool-base {

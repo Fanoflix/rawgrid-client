@@ -25,23 +25,62 @@ export type ToolId =
 
 export interface ToolEntry {
   name: string;
+  /** A handful of words, shown in the top bar while the tool is hovered. */
+  description: string;
   component: ComponentType;
 }
 
 export const TOOL_REGISTRY: Record<ToolId, ToolEntry> = {
-  "unix-timestamp": { name: "Unix Timestamp", component: UnixTimestampTool },
-  timer: { name: "Timer", component: TimerTool },
-  "jwt-decoder": { name: "JWT Decoder", component: JwtDecoderTool },
-  "color-picker": { name: "Color Picker", component: ColorPickerTool },
-  "video-player": { name: "Video Player", component: VideoPlayerTool },
-  "youtube-player": { name: "YouTube Player", component: YouTubePlayerTool },
+  "unix-timestamp": {
+    name: "Unix Timestamp",
+    description: "convert epoch seconds to readable dates",
+    component: UnixTimestampTool,
+  },
+  timer: {
+    name: "Timer",
+    description: "countdown with progress bar and alarm",
+    component: TimerTool,
+  },
+  "jwt-decoder": {
+    name: "JWT Decoder",
+    description: "decode a token's header and payload",
+    component: JwtDecoderTool,
+  },
+  "color-picker": {
+    name: "Color Picker",
+    description: "pick a color, copy hex, rgb or hsl",
+    component: ColorPickerTool,
+  },
+  "video-player": {
+    name: "Video Player",
+    description: "play a local video file",
+    component: VideoPlayerTool,
+  },
+  "youtube-player": {
+    name: "YouTube Player",
+    description: "paste a link and watch inline",
+    component: YouTubePlayerTool,
+  },
   "stacked-textareas": {
     name: "Stacked Textareas",
+    description: "scratch notes across stackable text areas",
     component: StackedTextareasTool,
   },
-  "json-search": { name: "JSON Search", component: JsonSearchTool },
-  base64: { name: "Base64", component: Base64Tool },
-  "json-prettify": { name: "JSON Prettify", component: JsonPrettifyTool },
+  "json-search": {
+    name: "JSON Search",
+    description: "find keys and values inside json",
+    component: JsonSearchTool,
+  },
+  base64: {
+    name: "Base64",
+    description: "encode and decode base64 both ways",
+    component: Base64Tool,
+  },
+  "json-prettify": {
+    name: "JSON Prettify",
+    description: "format, minify and sort json keys",
+    component: JsonPrettifyTool,
+  },
 };
 
 export const ALL_TOOL_IDS = Object.keys(TOOL_REGISTRY) as ToolId[];

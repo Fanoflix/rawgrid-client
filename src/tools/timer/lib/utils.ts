@@ -47,17 +47,30 @@ export function playTimerSound() {
     if (!AudioContextConstructor) return;
 
     const context = new AudioContextConstructor();
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
 
-    oscillator.type = "sine";
-    oscillator.frequency.value = 880;
-    gain.gain.setValueAtTime(0.08, context.currentTime);
+    // Three short beeps carry a lot further than one, which matters when the
+    // timer is a small panel in the corner of a busy grid.
+    for (let index = 0; index < 3; index += 1) {
+      const startAt = context.currentTime + index * 0.22;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
 
-    oscillator.connect(gain);
-    gain.connect(context.destination);
-    oscillator.start();
-    oscillator.stop(context.currentTime + 0.4);
+      oscillator.type = "sine";
+      oscillator.frequency.value = 880;
+
+      // Ramp the envelope instead of switching it, so there is no click.
+      gain.gain.setValueAtTime(0, startAt);
+      gain.gain.linearRampToValueAtTime(0.08, startAt + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.18);
+
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(startAt);
+      oscillator.stop(startAt + 0.2);
+    }
+
+    // Release the hardware once the pattern has played out.
+    window.setTimeout(() => void context.close(), 1200);
   } catch {
     // ignore
   }

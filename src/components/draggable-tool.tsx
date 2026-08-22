@@ -3,6 +3,8 @@ import { useDraggable } from "@dnd-kit/core";
 import { GripVertical, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { dispatch } from "@/lib/command-bus";
+import { HOVER_COMMAND } from "@/lib/tool-hover";
 import { ToolBaseContainer } from "@/components/tool-base-container";
 
 interface DraggableToolProps {
@@ -30,6 +32,8 @@ export function DraggableTool({
     <div
       ref={setNodeRef}
       className={cn("relative h-full w-full", isDragging && "opacity-30")}
+      onMouseEnter={() => dispatch(HOVER_COMMAND, toolId)}
+      onMouseLeave={() => dispatch(HOVER_COMMAND, "")}
     >
       <ToolBaseContainer>{children}</ToolBaseContainer>
 

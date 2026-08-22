@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { useDroppable } from "@dnd-kit/core";
 
+import { dispatch } from "@/lib/command-bus";
+import { EMPTY_SLOT, HOVER_COMMAND } from "@/lib/tool-hover";
 import { cn } from "@/lib/utils";
 
 interface GridSlotProps {
@@ -25,8 +27,10 @@ export function GridSlot({
     <div ref={setNodeRef} className="relative h-full w-full">
       {isEmpty ? (
         <div
+          onMouseEnter={() => dispatch(HOVER_COMMAND, EMPTY_SLOT)}
+          onMouseLeave={() => dispatch(HOVER_COMMAND, "")}
           className={cn(
-            "flex h-full w-full items-center justify-center border border-dashed rounded-md transition-colors",
+            "empty-slot flex h-full w-full items-center justify-center border border-dashed rounded-md transition-colors",
             isEditMode
               ? "border-muted-foreground/40 text-muted-foreground/60"
               : "border-transparent",
