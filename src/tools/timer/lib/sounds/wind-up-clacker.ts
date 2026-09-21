@@ -1,4 +1,7 @@
-import { getAudioContextConstructor } from "@/tools/timer/lib/sounds/audio-context";
+import {
+  releaseAlarmContextAfter,
+  startAlarmContext,
+} from "@/tools/timer/lib/sounds/audio-context";
 
 // Mechanical "wind-up clock" alarm: alternating tick/tock woodblock knocks in
 // bursts, ~3.4s total. Sharp transients cut through background noise far
@@ -12,10 +15,8 @@ const ALARM_TOTAL_SECONDS =
 
 export function playWindUpClacker() {
   try {
-    const AudioContextConstructor = getAudioContextConstructor();
-    if (!AudioContextConstructor) return;
-
-    const context = new AudioContextConstructor();
+    const context = startAlarmContext();
+    if (!context) return;
 
     // A compressor lets the clicks run hot without clipping, which is what
     // makes the alarm loud rather than just distorted.
@@ -60,10 +61,7 @@ export function playWindUpClacker() {
     }
 
     // Release the hardware once the pattern has played out.
-    window.setTimeout(
-      () => void context.close(),
-      (ALARM_TOTAL_SECONDS + 0.5) * 1000,
-    );
+    releaseAlarmContextAfter(context, ALARM_TOTAL_SECONDS + 0.5);
   } catch {
     // ignore
   }
