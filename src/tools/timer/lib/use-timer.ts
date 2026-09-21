@@ -9,6 +9,14 @@ import {
   type TimerSoundId,
 } from "@/tools/timer/lib/sounds";
 import {
+  claimAlarm,
+  parseTimerRun,
+  readTimerRun,
+  TIMER_RUN_STORAGE_KEY,
+  writeTimerRun,
+  type TimerRun,
+} from "@/tools/timer/lib/timer-run-storage";
+import {
   formatDurationParts,
   parseDurationParts,
   parseLegacyDurationString,
@@ -71,6 +79,44 @@ function getInitialSound(): TimerSoundId {
   }
 }
 
+interface RestoredTimer {
+  status: TimerStatus;
+  remainingMs: number;
+  totalMs: number;
+  endTime: number | null;
+  justFinished: boolean;
+}
+
+function restoreTimer(run: TimerRun | null, now: number): RestoredTimer {
+  if (run?.status === "running" && run.endTime > now) {
+    return {
+      status: "running",
+      remainingMs: run.endTime - now,
+      totalMs: run.totalMs,
+      endTime: run.endTime,
+      justFinished: false,
+    };
+  }
+  if (run?.status === "paused") {
+    return {
+      status: "paused",
+      remainingMs: run.remainingMs,
+      totalMs: run.totalMs,
+      endTime: null,
+      justFinished: false,
+    };
+  }
+  const finishedAt = run ? ("endTime" in run ? run.endTime : null) : null;
+  return {
+    status: "idle",
+    remainingMs: 0,
+    totalMs: 0,
+    endTime: null,
+    justFinished:
+      finishedAt !== null && now - finishedAt < TIMER_CONFIG.finishFlashMs,
+  };
+}
+
 export function useTimer() {
   const { value: input, setValue: setInput } = useToolHistory<TimerInput>({
     tool: "timer",
@@ -79,14 +125,17 @@ export function useTimer() {
     deserialize: deserializeInput,
   });
 
-  const [remainingMs, setRemainingMs] = useState(0);
-  const [totalMs, setTotalMs] = useState(0);
-  const [status, setStatus] = useState<TimerStatus>("idle");
-  const [justFinished, setJustFinished] = useState(false);
+  const [initialTimer] = useState(() =>
+    restoreTimer(readTimerRun(), Date.now())
+  );
+  const [remainingMs, setRemainingMs] = useState(initialTimer.remainingMs);
+  const [totalMs, setTotalMs] = useState(initialTimer.totalMs);
+  const [status, setStatus] = useState<TimerStatus>(initialTimer.status);
+  const [justFinished, setJustFinished] = useState(initialTimer.justFinished);
   const [soundId, setSoundIdState] = useState(getInitialSound);
   // Read through a ref so a sound change mid-run doesn't rebuild the interval.
   const soundIdRef = useRef(soundId);
-  const endTimeRef = useRef<number | null>(null);
+  const endTimeRef = useRef<number | null>(initialTimer.endTime);
   const intervalRef = useRef<number | null>(null);
 
   const clearIntervalRef = useCallback(() => {
@@ -99,13 +148,18 @@ export function useTimer() {
   // Reaching zero returns the timer to its idle state so the entered duration is
   // sitting there ready to run again; the flash is what signals that it fired.
   const finish = useCallback(() => {
+    const endTime = endTimeRef.current;
     clearIntervalRef();
     endTimeRef.current = null;
     setRemainingMs(0);
     setTotalMs(0);
     setStatus("idle");
     setJustFinished(true);
-    playTimerSound(soundIdRef.current);
+    if (endTime === null) return;
+    writeTimerRun({ status: "finished", endTime });
+    void claimAlarm(endTime).then((isClaimedByThisTab) => {
+      if (isClaimedByThisTab) playTimerSound(soundIdRef.current);
+    });
   }, [clearIntervalRef]);
 
   const tick = useCallback(() => {
@@ -122,6 +176,19 @@ export function useTimer() {
     clearIntervalRef();
     intervalRef.current = window.setInterval(tick, TIMER_CONFIG.tickMs);
   }, [clearIntervalRef, tick]);
+
+  const applyRestoredTimer = useCallback(
+    (restored: RestoredTimer) => {
+      endTimeRef.current = restored.endTime;
+      setRemainingMs(restored.remainingMs);
+      setTotalMs(restored.totalMs);
+      setStatus(restored.status);
+      setJustFinished(restored.justFinished);
+      if (restored.endTime === null) clearIntervalRef();
+      else startInterval();
+    },
+    [clearIntervalRef, startInterval]
+  );
 
   function handleInputChange(part: keyof TimerInput) {
     return function onChange(event: ChangeEvent<HTMLInputElement>) {
@@ -147,20 +214,26 @@ export function useTimer() {
       status === "paused" ? remainingMs : parseDurationParts(input);
     if (!nextDuration) return;
 
-    endTimeRef.current = Date.now() + nextDuration;
+    const endTime = Date.now() + nextDuration;
+    const nextTotalMs = status === "paused" ? totalMs : nextDuration;
+    endTimeRef.current = endTime;
     setRemainingMs(nextDuration);
-    if (status !== "paused") setTotalMs(nextDuration);
+    setTotalMs(nextTotalMs);
     setStatus("running");
+    writeTimerRun({ status: "running", endTime, totalMs: nextTotalMs });
     setJustFinished(false);
     startInterval();
-  }, [input, remainingMs, startInterval, status]);
+  }, [input, remainingMs, startInterval, status, totalMs]);
 
   const handlePause = useCallback(() => {
-    if (status !== "running") return;
-    tick();
+    if (status !== "running" || endTimeRef.current === null) return;
+    const pausedRemainingMs = Math.max(0, endTimeRef.current - Date.now());
     clearIntervalRef();
+    endTimeRef.current = null;
+    setRemainingMs(pausedRemainingMs);
     setStatus("paused");
-  }, [clearIntervalRef, status, tick]);
+    writeTimerRun({ status: "paused", remainingMs: pausedRemainingMs, totalMs });
+  }, [clearIntervalRef, status, totalMs]);
 
   const handleStop = useCallback(() => {
     clearIntervalRef();
@@ -169,6 +242,7 @@ export function useTimer() {
     setTotalMs(0);
     setStatus("idle");
     setJustFinished(false);
+    writeTimerRun(null);
   }, [clearIntervalRef]);
 
   const handleToggle = useCallback(() => {
@@ -195,8 +269,19 @@ export function useTimer() {
   }
 
   useEffect(() => {
+    if (endTimeRef.current !== null) startInterval();
     return () => clearIntervalRef();
-  }, [clearIntervalRef]);
+  }, [clearIntervalRef, startInterval]);
+
+  useEffect(() => {
+    function handleTimerRunChangedInAnotherTab(event: StorageEvent) {
+      if (event.key !== TIMER_RUN_STORAGE_KEY) return;
+      applyRestoredTimer(restoreTimer(parseTimerRun(event.newValue), Date.now()));
+    }
+    window.addEventListener("storage", handleTimerRunChangedInAnotherTab);
+    return () =>
+      window.removeEventListener("storage", handleTimerRunChangedInAnotherTab);
+  }, [applyRestoredTimer]);
 
   useEffect(() => {
     if (!justFinished) return;
