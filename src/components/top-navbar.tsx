@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pencil, RotateCcw } from "lucide-react";
 
+import { CommandPaletteTrigger } from "@/components/command-palette-trigger";
 import { HiddenSpacesMenu } from "@/components/hidden-spaces-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "./ui/button";
@@ -38,7 +39,7 @@ export function TopNavbar({ layoutState }: TopNavbarProps) {
   return (
     <nav
       className={cn(
-        "flex justify-between px-1.5 transition-colors",
+        "grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-1.5 transition-colors",
         isEditMode && "bg-primary/50"
       )}
     >
@@ -87,6 +88,8 @@ export function TopNavbar({ layoutState }: TopNavbarProps) {
           </span>
         )}
       </p>
+
+      <CommandPaletteTrigger />
 
       <div className="h-9 flex shrink-0 items-center justify-end gap-1">
         {isEditMode && (

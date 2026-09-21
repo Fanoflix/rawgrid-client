@@ -1,4 +1,11 @@
-import { useEffect, useImperativeHandle, useRef, type Ref } from "react";
+import {
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type MouseEvent,
+  type Ref,
+} from "react";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { json } from "@codemirror/lang-json";
 import {
@@ -17,7 +24,13 @@ import {
   type ViewUpdate,
 } from "@codemirror/view";
 
-import { getBracketClass, isBracket, jsonTagHighlighter } from "@/lib/json-highlight";
+import {
+  getBracketClass,
+  isBracket,
+  jsonTagHighlighter,
+} from "@/lib/json-highlight";
+import { Button } from "@/components/ui/button";
+import { findJsonPropertyOnLine } from "@/lib/json-property";
 import { cn } from "@/lib/utils";
 
 export interface JsonEditorHandle {
@@ -42,20 +55,39 @@ const swallowTab = keymap.of([
   { key: "Tab", run: () => true, shift: () => true },
 ]);
 
+const LINE_GAP_PX = 9;
+const WRAPPED_LINE_HEIGHT = "1.2";
+const COPY_BUTTONS_GUTTER = "10px";
+const COPY_BUTTON_SIZE_PX = 16;
+const COPY_BUTTONS_WIDTH_PX = COPY_BUTTON_SIZE_PX * 2 + 2;
+const COPY_BUTTONS_OFFSET_PX = 2;
+const COPIED_FEEDBACK_MS = 1200;
+
+interface HoveredJsonProperty {
+  top: number;
+  left: number;
+  lineHighlightTop: number;
+  lineHighlightHeight: number;
+  keyText: string;
+  valueText: string | null;
+}
+
+type CopiedPart = "key" | "value";
+
 const theme = EditorView.theme({
   "&": { height: "100%", backgroundColor: "transparent" },
   "&.cm-focused": { outline: "none" },
   ".cm-scroller": {
     fontFamily: "var(--font-mono, ui-monospace, monospace)",
-    lineHeight: "1.5",
+    lineHeight: WRAPPED_LINE_HEIGHT,
     overflow: "auto",
   },
   ".cm-content": {
-    padding: "8px 10px",
+    padding: `8px 12px 8px calc(12px + ${COPY_BUTTONS_GUTTER})`,
     color: "var(--json-punctuation)",
     caretColor: "var(--foreground)",
   },
-  ".cm-line": { padding: "0" },
+  ".cm-line": { padding: `0 0 ${LINE_GAP_PX}px 0` },
   ".cm-cursor": { borderLeftColor: "var(--foreground)" },
   ".cm-placeholder": { color: "var(--muted-foreground)" },
   "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection":
@@ -73,7 +105,7 @@ function getBracketDecorations(view: EditorView) {
         builder.add(
           node.from,
           node.to,
-          Decoration.mark({ class: getBracketClass(node.node) })
+          Decoration.mark({ class: getBracketClass(node.node) }),
         );
       },
     });
@@ -101,7 +133,7 @@ const bracketDepthColors = ViewPlugin.fromClass(
       }
     }
   },
-  { decorations: (plugin) => plugin.decorations }
+  { decorations: (plugin) => plugin.decorations },
 );
 
 export function JsonEditor({
@@ -117,6 +149,10 @@ export function JsonEditor({
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
   const fontSizeCompartment = useRef(new Compartment());
+  const [hoveredProperty, setHoveredProperty] =
+    useState<HoveredJsonProperty | null>(null);
+  const [copiedPart, setCopiedPart] = useState<CopiedPart | null>(null);
+  const copiedFeedbackTimerRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -179,7 +215,9 @@ export function JsonEditor({
     if (!view) return;
     const currentDoc = view.state.doc.toString();
     if (currentDoc === value) return;
-    view.dispatch({ changes: { from: 0, to: currentDoc.length, insert: value } });
+    view.dispatch({
+      changes: { from: 0, to: currentDoc.length, insert: value },
+    });
   }, [value]);
 
   useEffect(() => {
@@ -188,8 +226,121 @@ export function JsonEditor({
     });
   }, [fontSize]);
 
+  function showCopyButtonsForHoveredLine(event: MouseEvent<HTMLDivElement>) {
+    const view = viewRef.current;
+    const wrapper = event.currentTarget;
+    const hoveredPosition = view?.posAtCoords({
+      x: event.clientX,
+      y: event.clientY,
+    });
+    if (!view || hoveredPosition === null || hoveredPosition === undefined) {
+      setHoveredProperty(null);
+      return;
+    }
+
+    const line = view.state.doc.lineAt(hoveredPosition);
+    const property = findJsonPropertyOnLine(
+      syntaxTree(view.state),
+      (from, to) => view.state.sliceDoc(from, to),
+      line.from,
+      line.to,
+    );
+    const propertyCoords = property
+      ? view.coordsAtPos(property.propertyStart)
+      : null;
+    if (!property || !propertyCoords) {
+      setHoveredProperty(null);
+      return;
+    }
+
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const lineBlock = view.lineBlockAt(line.from);
+    const firstRowHeight = propertyCoords.bottom - propertyCoords.top;
+    setHoveredProperty({
+      top:
+        propertyCoords.top -
+        wrapperRect.top +
+        (firstRowHeight - COPY_BUTTON_SIZE_PX) / 2,
+      left: Math.max(
+        0,
+        propertyCoords.left -
+          wrapperRect.left -
+          COPY_BUTTONS_WIDTH_PX -
+          COPY_BUTTONS_OFFSET_PX,
+      ),
+      lineHighlightTop:
+        view.documentTop + lineBlock.top - wrapperRect.top - LINE_GAP_PX / 2,
+      lineHighlightHeight: lineBlock.height,
+      keyText: property.keyText,
+      valueText: property.valueText,
+    });
+  }
+
+  async function copyPart(part: CopiedPart, text: string | null) {
+    if (text === null) return;
+    await navigator.clipboard.writeText(text);
+    setCopiedPart(part);
+    window.clearTimeout(copiedFeedbackTimerRef.current);
+    copiedFeedbackTimerRef.current = window.setTimeout(
+      () => setCopiedPart(null),
+      COPIED_FEEDBACK_MS,
+    );
+  }
+
   return (
-    <div ref={containerRef} className={cn("h-full w-full min-h-0", className)} />
+    <div
+      className={cn("relative h-full w-full min-h-0", className)}
+      onMouseMove={showCopyButtonsForHoveredLine}
+      onMouseLeave={() => setHoveredProperty(null)}
+      onScrollCapture={() => setHoveredProperty(null)}
+    >
+      <div ref={containerRef} className="h-full w-full min-h-0" />
+      {hoveredProperty && (
+        <div
+          className="pointer-events-none absolute inset-x-0 bg-foreground/5"
+          style={{
+            top: hoveredProperty.lineHighlightTop,
+            height: hoveredProperty.lineHighlightHeight,
+          }}
+        />
+      )}
+      {hoveredProperty && (
+        <div
+          className="absolute z-10 flex gap-0.5"
+          style={{ top: hoveredProperty.top, left: hoveredProperty.left }}
+        >
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-xs"
+            onClick={() => copyPart("key", hoveredProperty.keyText)}
+            aria-label={`copy key ${hoveredProperty.keyText}`}
+            title="copy key"
+            className={cn(
+              "size-4 font-mono text-[10px] leading-none",
+              copiedPart === "key" && "text-green-500 hover:text-green-500",
+            )}
+          >
+            k
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-xs"
+            onClick={() => copyPart("value", hoveredProperty.valueText)}
+            disabled={hoveredProperty.valueText === null}
+            aria-label={`copy value of ${hoveredProperty.keyText}`}
+            title="copy value"
+            className={cn(
+              "size-4 font-mono text-[10px] leading-none",
+              copiedPart === "value" && "text-green-500 hover:text-green-500",
+            )}
+          >
+            v
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }
 
