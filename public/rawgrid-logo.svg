@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="5.65 13.45 34 34" fill="none" stroke-linecap="round">
+  <style>
+    .rawgrid-logo-lines { stroke: #1c1917; }
+    @media (prefers-color-scheme: dark) { .rawgrid-logo-lines { stroke: #f5f5f4; } }
+  </style>
+  <defs>
+    <filter id="rough-edges" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="7" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.2" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </defs>
+  <g class="rawgrid-logo-lines" filter="url(#rough-edges)">
+    <path d="M11.8 27.8 A21 21 0 0 1 36.3 27.4" stroke-width="1.5" opacity="0.9" />
+    <path d="M11.8 29.8 A21 21 0 0 1 36.3 29.4" stroke-width="0.8" opacity="0.45" />
+    <path d="M12.7 32.1 A13 13 0 0 1 29.9 32.6" stroke-width="1.15" opacity="0.75" />
+    <path d="M18.3 16.7 L18.5 44.2" stroke-width="2" />
+    <path d="M17.4 20 L17.6 40.5" stroke-width="0.6" opacity="0.5" />
+    <path d="M9.1 37.7 L22.6 36.9" stroke-width="1.5" />
+  </g>
+</svg>
