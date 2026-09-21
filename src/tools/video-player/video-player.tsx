@@ -27,7 +27,7 @@ export function VideoPlayerTool() {
         <div className="flex gap-0">
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="xs"
             onClick={handleBrowseClick}
           >
@@ -36,9 +36,10 @@ export function VideoPlayerTool() {
           {videoUrl && (
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="xs"
               onClick={handleClear}
+              className="border-l-0"
             >
               clear
             </Button>

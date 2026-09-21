@@ -1,15 +1,13 @@
-import type { ChangeEventHandler } from "react";
-import { Minus, Plus } from "lucide-react";
-
+import { FontSizeButtons } from "@/components/font-size-buttons";
 import { ToolInfo } from "@/components/tool-info";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { Textarea } from "@/components/ui/textarea";
+import { JsonEditor } from "@/components/json-editor";
+import { highlightJson } from "@/lib/json-highlight";
 import { useJsonSearchWithCommands as useJsonSearch } from "@/tools/json-search/lib/use-json-search-commands";
 import { cn } from "@/lib/utils";
 import { JSON_SEARCH_DEFAULTS } from "./lib/constants";
@@ -64,26 +62,7 @@ export function JsonSearchTool() {
           )}
         />
         <span className="flex shrink-0 gap-0">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            className="rounded-none border border-border bg-background text-foreground hover:bg-muted"
-            onClick={increaseFont}
-            aria-label="increase font"
-          >
-            <Plus className="size-3" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            className="rounded-none border border-l-0 border-border bg-background text-foreground hover:bg-muted"
-            onClick={decreaseFont}
-            aria-label="decrease font"
-          >
-            <Minus className="size-3" />
-          </Button>
+          <FontSizeButtons onIncrease={increaseFont} onDecrease={decreaseFont} />
         </span>
       </div>
       <div className="relative min-h-0 flex-1 overflow-hidden">
@@ -123,18 +102,18 @@ export function JsonSearchTool() {
 
 interface JsonSearchInputProps {
   value: string;
-  onChange: ChangeEventHandler<HTMLTextAreaElement>;
+  onChange: (value: string) => void;
   fontSize: number;
 }
 
 function JsonSearchInput({ value, onChange, fontSize }: JsonSearchInputProps) {
   return (
-    <Textarea
+    <JsonEditor
       value={value}
       onChange={onChange}
+      fontSize={fontSize}
       placeholder="paste json"
-      className="h-full w-full min-h-0 resize-none rounded-none font-mono"
-      style={{ fontSize }}
+      ariaLabel="json to search"
     />
   );
 }
@@ -171,7 +150,7 @@ function JsonSearchResults({
               className="border-b-2 border-dashed border-border px-3 py-2 font-mono whitespace-pre"
               style={{ fontSize }}
             >
-              {match.lines.join("\n")}
+              <HighlightedJson code={match.lines.join("\n")} />
             </div>
           ))}
         </div>
@@ -181,5 +160,23 @@ function JsonSearchResults({
         </div>
       )}
     </div>
+  );
+}
+
+// Search results are fragments, so they're colored statically rather than
+// mounting an editor per match.
+function HighlightedJson({ code }: { code: string }) {
+  return (
+    <span className="json-punctuation">
+      {highlightJson(code).map((segment, index) =>
+        segment.className ? (
+          <span key={index} className={segment.className}>
+            {segment.text}
+          </span>
+        ) : (
+          segment.text
+        )
+      )}
+    </span>
   );
 }

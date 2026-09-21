@@ -1,4 +1,7 @@
-import { getAudioContextConstructor } from "@/tools/timer/lib/sounds/audio-context";
+import {
+  releaseAlarmContextAfter,
+  startAlarmContext,
+} from "@/tools/timer/lib/sounds/audio-context";
 
 // Building block for the keyboard-style alarms. A keypress is up to three
 // layers, all very short so nothing rings long enough to read as a beep:
@@ -35,10 +38,8 @@ const NOISE_SECONDS = 0.2;
 
 export function playStrikes(strikes: ScheduledStrike[]) {
   try {
-    const AudioContextConstructor = getAudioContextConstructor();
-    if (!AudioContextConstructor) return;
-
-    const context = new AudioContextConstructor();
+    const context = startAlarmContext();
+    if (!context) return;
     const output = context.createGain();
     output.gain.value = 0.8;
     output.connect(context.destination);
@@ -61,7 +62,7 @@ export function playStrikes(strikes: ScheduledStrike[]) {
     }
 
     // Release the hardware once the pattern has played out.
-    window.setTimeout(() => void context.close(), (lastAt + 0.5) * 1000);
+    releaseAlarmContextAfter(context, lastAt + 0.5);
   } catch {
     // ignore
   }

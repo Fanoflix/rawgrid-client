@@ -87,9 +87,9 @@ export function useJsonSearch() {
     setQuery(event.target.value);
   }
 
-  function handleJsonChange(event: ChangeEvent<HTMLTextAreaElement>) {
+  function handleJsonChange(nextJson: string) {
     if (!hasEditedJson) setHasEditedJson(true);
-    setJson(event.target.value);
+    setJson(nextJson);
   }
 
   useEffect(() => {

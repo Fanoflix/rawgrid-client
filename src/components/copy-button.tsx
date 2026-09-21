@@ -26,10 +26,9 @@ export function CopyButton({
   return (
     <Button
       type="button"
-      variant="ghost"
+      variant="outline"
       size="xs"
       className={cn(
-        "border-border bg-background text-foreground hover:bg-muted rounded-none border",
         isCopied && "text-green-500 hover:text-green-500",
         className
       )}

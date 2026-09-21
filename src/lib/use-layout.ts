@@ -1,70 +1,73 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 
-import type { ToolId } from "./tool-registry";
-import { ALL_TOOL_IDS } from "./tool-registry";
 import {
-  DEFAULT_LAYOUT,
-  loadLayout,
-  saveLayout,
-  type LayoutConfig,
+  getDefaultLayoutState,
+  loadLayoutState,
+  saveLayoutState,
+  SLOT_COUNT,
+  sortSlots,
+  type LayoutState,
 } from "./layout-config";
 
 export function useLayout() {
-  const [layout, setLayout] = useState<LayoutConfig>(loadLayout);
+  const [{ toolsBySlot, hiddenSlots }, setLayoutState] =
+    useState<LayoutState>(loadLayoutState);
   const [isEditMode, setEditMode] = useState(false);
 
-  const persist = useCallback((next: LayoutConfig) => {
-    setLayout(next);
-    saveLayout(next);
+  const persistLayoutState = useCallback((nextLayoutState: LayoutState) => {
+    setLayoutState(nextLayoutState);
+    saveLayoutState(nextLayoutState);
   }, []);
 
   const swapSlots = useCallback(
-    (from: number, to: number) => {
-      const next = [...layout];
-      [next[from], next[to]] = [next[to], next[from]];
-      persist(next);
+    (fromSlot: number, toSlot: number) => {
+      const nextToolsBySlot = [...toolsBySlot];
+      [nextToolsBySlot[fromSlot], nextToolsBySlot[toSlot]] = [
+        nextToolsBySlot[toSlot],
+        nextToolsBySlot[fromSlot],
+      ];
+      persistLayoutState({ toolsBySlot: nextToolsBySlot, hiddenSlots });
     },
-    [layout, persist],
+    [hiddenSlots, toolsBySlot, persistLayoutState],
   );
 
-  const hideTool = useCallback(
+  // At least one space always stays, so the grid can't be emptied entirely.
+  const canHideSlot = hiddenSlots.length < SLOT_COUNT - 1;
+
+  const hideSlot = useCallback(
     (slotIndex: number) => {
-      const next = [...layout];
-      next[slotIndex] = null;
-      persist(next);
+      if (!canHideSlot || hiddenSlots.includes(slotIndex)) return;
+      persistLayoutState({
+        toolsBySlot,
+        hiddenSlots: sortSlots([...hiddenSlots, slotIndex]),
+      });
     },
-    [layout, persist],
+    [canHideSlot, hiddenSlots, toolsBySlot, persistLayoutState],
   );
 
-  const showTool = useCallback(
-    (toolId: ToolId) => {
-      const next = [...layout];
-      const emptySlot = next.indexOf(null);
-      if (emptySlot !== -1) {
-        next[emptySlot] = toolId;
-        persist(next);
-      }
+  const showSlot = useCallback(
+    (slotIndex: number) => {
+      persistLayoutState({
+        toolsBySlot,
+        hiddenSlots: hiddenSlots.filter((slot) => slot !== slotIndex),
+      });
     },
-    [layout, persist],
+    [hiddenSlots, toolsBySlot, persistLayoutState],
   );
 
   const resetLayout = useCallback(() => {
-    persist([...DEFAULT_LAYOUT]);
-  }, [persist]);
-
-  const hiddenTools = useMemo(() => {
-    const active = new Set(layout.filter(Boolean));
-    return ALL_TOOL_IDS.filter((id) => !active.has(id));
-  }, [layout]);
+    persistLayoutState(getDefaultLayoutState());
+  }, [persistLayoutState]);
 
   return {
-    layout,
-    hiddenTools,
+    toolsBySlot,
+    hiddenSlots,
+    canHideSlot,
     isEditMode,
     setEditMode,
     swapSlots,
-    hideTool,
-    showTool,
+    hideSlot,
+    showSlot,
     resetLayout,
   };
 }

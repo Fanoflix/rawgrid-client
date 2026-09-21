@@ -1,10 +1,7 @@
 import { useCallback, useMemo, type ChangeEvent } from "react";
 
 import { useToolHistory } from "@/lib/use-tool-history";
-import {
-  DEFAULT_TEXTAREA_COUNT,
-  MAX_TEXTAREA_COUNT,
-} from "@/tools/stacked-textareas/lib/constants";
+import { DEFAULT_TEXTAREA_COUNT } from "@/tools/stacked-textareas/lib/constants";
 
 function createDefaultEntries() {
   return Array.from({ length: DEFAULT_TEXTAREA_COUNT }, () => "");
@@ -73,10 +70,7 @@ export function useStackedTextareas() {
   );
 
   function handleAddEntry() {
-    setEntries((previous) => {
-      if (previous.length >= MAX_TEXTAREA_COUNT) return previous;
-      return [...previous, ""];
-    });
+    setEntries((previous) => [...previous, ""]);
   }
 
   function addNote(text: string) {
@@ -91,7 +85,6 @@ export function useStackedTextareas() {
   return {
     entries,
     canRemove: entries.length > 1,
-    canAdd: entries.length < MAX_TEXTAREA_COUNT,
     getEntryChangeHandler,
     getEntryRemoveHandler,
     setEntryValue,

@@ -1,21 +1,22 @@
 import type { ReactNode } from "react";
 import { useDroppable } from "@dnd-kit/core";
+import { EyeOff } from "lucide-react";
 
-import { dispatch } from "@/lib/command-bus";
-import { EMPTY_SLOT, HOVER_COMMAND } from "@/lib/tool-hover";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface GridSlotProps {
   slotIndex: number;
   isEditMode: boolean;
-  isEmpty: boolean;
-  children?: ReactNode;
+  canHide: boolean;
+  onHide: () => void;
+  children: ReactNode;
 }
 
 export function GridSlot({
   slotIndex,
   isEditMode,
-  isEmpty,
+  canHide,
+  onHide,
   children,
 }: GridSlotProps) {
   const { setNodeRef, isOver } = useDroppable({
@@ -25,29 +26,29 @@ export function GridSlot({
 
   return (
     <div ref={setNodeRef} className="relative h-full w-full">
-      {isEmpty ? (
-        <div
-          onMouseEnter={() => dispatch(HOVER_COMMAND, EMPTY_SLOT)}
-          onMouseLeave={() => dispatch(HOVER_COMMAND, "")}
-          className={cn(
-            "empty-slot flex h-full w-full items-center justify-center border border-dashed rounded-md transition-colors",
-            isEditMode
-              ? "border-muted-foreground/40 text-muted-foreground/60"
-              : "border-transparent",
-            isOver && "border-primary bg-primary/10",
-          )}
-        >
-          {isEditMode && (
-            <span className="text-xs select-none">Drop tool here</span>
-          )}
+      {children}
+
+      {isEditMode && isOver && (
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-md border-2 border-primary bg-primary/10">
+          <span className="rounded-md bg-background px-2 py-1 text-foreground text-xs shadow-md select-none">
+            Drop and switch spaces
+          </span>
         </div>
-      ) : (
-        <>
-          {children}
-          {isEditMode && isOver && (
-            <div className="pointer-events-none absolute inset-0 z-20 rounded-md border-2 border-primary bg-primary/10" />
-          )}
-        </>
+      )}
+
+      {isEditMode && canHide && (
+        <div className="absolute top-1.5 right-1.5 z-30 flex items-center gap-1">
+          <Button
+            type="button"
+            size="xs"
+            variant="primary-outline"
+            onClick={onHide}
+            className="shadow-md"
+          >
+            <EyeOff />
+            hide space
+          </Button>
+        </div>
       )}
     </div>
   );

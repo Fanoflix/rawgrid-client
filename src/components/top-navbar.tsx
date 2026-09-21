@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Pencil, RotateCcw } from "lucide-react";
 
-import { HiddenToolsMenu } from "@/components/hidden-tools-menu";
+import { HiddenSpacesMenu } from "@/components/hidden-spaces-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "./ui/button";
 import { subscribe } from "@/lib/command-bus";
-import { EMPTY_SLOT, EMPTY_SLOT_HINT, HOVER_COMMAND } from "@/lib/tool-hover";
+import { HOVER_COMMAND } from "@/lib/tool-hover";
+import { cn } from "@/lib/utils";
 import { TOOL_REGISTRY, type ToolId } from "@/lib/tool-registry";
 import type { useLayout } from "@/lib/use-layout";
 
@@ -14,22 +15,33 @@ interface TopNavbarProps {
 }
 
 export function TopNavbar({ layoutState }: TopNavbarProps) {
-  const { isEditMode, setEditMode, hiddenTools, showTool, resetLayout } =
-    layoutState;
+  const {
+    isEditMode,
+    setEditMode,
+    toolsBySlot,
+    hiddenSlots,
+    showSlot,
+    resetLayout,
+  } = layoutState;
 
-  const [hovered, setHovered] = useState<string | null>(null);
+  const [hoveredToolId, setHoveredToolId] = useState<string | null>(null);
 
   useEffect(
-    () => subscribe(HOVER_COMMAND, (toolId) => setHovered(toolId || null)),
+    () => subscribe(HOVER_COMMAND, (toolId) => setHoveredToolId(toolId || null)),
     []
   );
 
-  const isEmptySlot = hovered === EMPTY_SLOT;
-  const hoveredTool =
-    hovered && !isEmptySlot ? TOOL_REGISTRY[hovered as ToolId] : null;
+  const hoveredTool = hoveredToolId
+    ? TOOL_REGISTRY[hoveredToolId as ToolId]
+    : null;
 
   return (
-    <nav className="flex justify-between px-1.5">
+    <nav
+      className={cn(
+        "flex justify-between px-1.5 transition-colors",
+        isEditMode && "bg-primary/50"
+      )}
+    >
       <p className="flex min-w-0 items-center overflow-hidden flex-nowrap text-nowrap gap-0.75 text-xs">
         small toolbox —{" "}
         <a
@@ -40,41 +52,52 @@ export function TopNavbar({ layoutState }: TopNavbarProps) {
         >
           ammarnasir.com
         </a>
+        <Button
+          size="xs"
+          variant="outline"
+          nativeButton={false}
+          className="ml-1.5"
+          render={
+            <a
+              href="https://github.com/Fanoflix/rawgrid-client"
+              target="_blank"
+              rel="noopener noreferrer"
+            />
+          }
+        >
+          star // contribute
+          <img
+            src="github.svg"
+            alt="GitHub"
+            className="size-3 invert dark:invert-0"
+          />
+        </Button>
         {/* Keyed so each new hover replays the slide instead of swapping text in place. */}
-        {(hoveredTool || isEmptySlot) && (
+        {hoveredTool && (
           <span
-            key={hovered}
+            key={hoveredToolId}
             aria-live="polite"
             className="animate-hint-in hint-flash flex min-w-0 items-center gap-1.5 pl-1 pr-2.5 rounded-[7px]"
           >
             <span className="text-muted-foreground/40">/</span>
-            {isEmptySlot ? (
-              <span className="truncate font-light text-muted-foreground">
-                {EMPTY_SLOT_HINT}
-              </span>
-            ) : (
-              <>
-                <span className="truncate">{hoveredTool?.name}</span>
-                <span className="truncate text-muted-foreground">
-                  {hoveredTool?.description}
-                </span>
-              </>
-            )}
+            <span className="truncate">{hoveredTool.name}</span>
+            <span className="truncate text-muted-foreground">
+              {hoveredTool.description}
+            </span>
           </span>
         )}
       </p>
 
-      <div className="h-9 flex shrink-0 items-center justify-end bg-background gap-1">
+      <div className="h-9 flex shrink-0 items-center justify-end gap-1">
         {isEditMode && (
           <>
-            <HiddenToolsMenu hiddenTools={hiddenTools} onShow={showTool} />
-            <Button
-              size="xs"
-              variant="outline"
-              onClick={resetLayout}
-              className="gap-1"
-            >
-              <RotateCcw className="size-3" />
+            <HiddenSpacesMenu
+              toolsBySlot={toolsBySlot}
+              hiddenSlots={hiddenSlots}
+              onShow={showSlot}
+            />
+            <Button size="xs" variant="outline" onClick={resetLayout}>
+              <RotateCcw />
               Reset
             </Button>
           </>
@@ -84,26 +107,9 @@ export function TopNavbar({ layoutState }: TopNavbarProps) {
           size="xs"
           variant={isEditMode ? "default" : "outline"}
           onClick={() => setEditMode(!isEditMode)}
-          className="gap-1"
         >
-          <Pencil className="size-3" />
+          <Pencil />
           {isEditMode ? "done" : "edit spaces"}
-        </Button>
-
-        <Button size="xs" variant={"outline"}>
-          <a
-            href="https://github.com/Fanoflix/rawgrid-client"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-thin text-foreground flex items-center gap-1.75"
-          >
-            star // contribute
-            <img
-              src="github.svg"
-              alt="GitHub"
-              className="size-3 invert dark:invert-0"
-            />
-          </a>
         </Button>
 
         <ThemeToggle />

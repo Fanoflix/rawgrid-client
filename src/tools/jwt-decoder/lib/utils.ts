@@ -57,3 +57,38 @@ export function decodeJwt(token: string): JwtDecodeOutput {
     return { prettyJson: "", error: "invalid token" }
   }
 }
+
+function encodeBase64Url(value: string) {
+  const binary = Array.from(new TextEncoder().encode(value), (byte) =>
+    String.fromCharCode(byte)
+  ).join("")
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+/**
+ * Turns edited decoder output ({ header, payload, signature }) back into a
+ * token. The signature is carried over as-is: without the signing key it
+ * can't be recomputed, so an edited token won't verify.
+ */
+export function encodeJwt(json: string): { token: string | null; error: string | null } {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(json)
+  } catch {
+    return { token: null, error: "invalid json" }
+  }
+
+  if (!isPlainObject(parsed)) return { token: null, error: "expected an object" }
+  const { header, payload, signature = "" } = parsed
+  if (!isPlainObject(header)) return { token: null, error: "header must be an object" }
+  if (!isPlainObject(payload)) return { token: null, error: "payload must be an object" }
+  if (typeof signature !== "string") return { token: null, error: "signature must be a string" }
+
+  const encodedHeader = encodeBase64Url(JSON.stringify(header))
+  const encodedPayload = encodeBase64Url(JSON.stringify(payload))
+  return { token: `${encodedHeader}.${encodedPayload}.${signature}`, error: null }
+}
