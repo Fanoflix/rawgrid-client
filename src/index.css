@@ -281,3 +281,24 @@
 .tool-base textarea {
   font-size: inherit;
 }
+
+.hero-image-fade {
+  mask-image:
+    linear-gradient(to right, transparent, black 6%, black 94%, transparent),
+    linear-gradient(to bottom, transparent, black 5%, black 55%, transparent);
+  mask-composite: intersect;
+}
+
+.fade-to-background-edges {
+  mask-image:
+    linear-gradient(to right, transparent, black 18%, black 82%, transparent),
+    linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
+  mask-composite: intersect;
+}
+
+.rawgrid-logo {
+  display: inline-block;
+  flex-shrink: 0;
+  background-color: currentColor;
+  mask: url("/rawgrid-logo.svg") center / contain no-repeat;
+}
