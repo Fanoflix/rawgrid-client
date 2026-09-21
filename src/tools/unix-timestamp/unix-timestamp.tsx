@@ -21,18 +21,18 @@ export function UnixTimestampTool() {
 
   return (
     <div className="flex h-full w-full flex-col gap-0">
-      <div className="flex w-full gap-0 h-8">
+      <div className="flex h-8 w-full shrink-0 items-center gap-1 border-b border-border px-1">
         <Input
           value={state.input}
           onChange={handleInputChange}
           placeholder="unix timestamp"
-          className="rounded-none font-mono border-y-border"
+          className="h-full min-w-0 flex-1 rounded-none px-1 font-mono"
         />
         <Select
           value={state.format}
           onValueChange={(value) => handleFormatChange(value ?? "date-string")}
         >
-          <SelectTrigger className="rounded-none border-l-border border-y-border bg-background">
+          <SelectTrigger size="xs" className="border-border bg-background">
             <SelectValue placeholder="format" />
           </SelectTrigger>
           <SelectContent>
@@ -74,7 +74,7 @@ function PrettyDateOutputRow({
 }) {
   const hasPretty = Boolean(date && time);
   return (
-    <div className="group relative px-1 py-1.5 h-full w-full flex flex-col border-b border-border items-center justify-center text-center text-base">
+    <div className="group relative px-1 py-1.5 h-full w-full flex flex-col items-center justify-center text-center text-base">
       {hasPretty ? (
         <>
           <span className="font-sans font-bold">{date}</span>{" "}
@@ -98,7 +98,7 @@ function TimestampOutputRow({
   return (
     <div
       className={cn(
-        "group relative font-mono px-1 py-1.5 text-xs h-8 border-b border-border",
+        "group relative font-mono px-1 py-1.5 text-xs min-h-8 shrink-0 border-b border-border",
         className
       )}
     >

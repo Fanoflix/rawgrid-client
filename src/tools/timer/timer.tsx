@@ -73,7 +73,7 @@ export function TimerTool() {
         )}
       />
 
-      <div className="absolute top-2 right-1 z-10">
+      <div className="absolute top-1 right-1 z-10">
         <Select
           value={soundId}
           items={soundItems}
@@ -82,9 +82,10 @@ export function TimerTool() {
           }}
         >
           <SelectTrigger
+            size="xs"
             aria-label="alarm sound"
             title="alarm sound"
-            className="h-6 rounded-none border-border bg-background text-muted-foreground text-xs"
+            className="border-border bg-background text-muted-foreground"
           >
             <Volume2 className="size-3.5" />
             <SelectValue />

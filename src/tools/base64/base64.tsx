@@ -1,13 +1,8 @@
 import type { ChangeEvent } from "react";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Minus,
-  Plus,
-  TriangleAlert,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, TriangleAlert } from "lucide-react";
 
 import { CopyButton } from "@/components/copy-button";
+import { FontSizeButtons } from "@/components/font-size-buttons";
 import { ToolInfo } from "@/components/tool-info";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,7 +22,7 @@ export function Base64Tool() {
 
   return (
     <div className="flex h-full w-full flex-col gap-0">
-      <div className="flex h-8 items-center gap-1 border border-x-transparent border-y-border px-1">
+      <div className="flex h-8 items-center gap-1 border-b border-border px-1">
         <ToolInfo
           name="base64"
           description="encode text to base64 and decode it back."
@@ -45,26 +40,7 @@ export function Base64Tool() {
           </span>
         )}
         <span className="ml-auto flex gap-0">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            className="rounded-none border border-border bg-background text-foreground hover:bg-muted"
-            onClick={increaseFont}
-            aria-label="increase font"
-          >
-            <Plus className="size-3" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            className="rounded-none border border-l-0 border-border bg-background text-foreground hover:bg-muted"
-            onClick={decreaseFont}
-            aria-label="decrease font"
-          >
-            <Minus className="size-3" />
-          </Button>
+          <FontSizeButtons onIncrease={increaseFont} onDecrease={decreaseFont} />
         </span>
       </div>
 
