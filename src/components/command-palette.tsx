@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { dispatch } from "@/lib/command-bus";
+import { dispatch, subscribe } from "@/lib/command-bus";
+
+export const OPEN_COMMAND_PALETTE = "palette:open";
 
 interface Command {
   id: string;
@@ -169,6 +171,8 @@ export function CommandPalette() {
       executeCommand(cmd);
     }
   }
+
+  useEffect(() => subscribe(OPEN_COMMAND_PALETTE, open));
 
   // Cmd+K / Ctrl+K global listener
   useEffect(() => {
