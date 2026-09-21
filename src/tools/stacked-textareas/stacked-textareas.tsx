@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
-import { Minus, Plus, X } from "lucide-react";
+import { X } from "lucide-react";
 
 import { CopyButton } from "@/components/copy-button";
+import { FontSizeButtons } from "@/components/font-size-buttons";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useFont } from "@/lib/use-font";
@@ -11,7 +12,6 @@ export function StackedTextareasTool() {
   const {
     entries,
     canRemove,
-    canAdd,
     getEntryChangeHandler,
     getEntryRemoveHandler,
     setEntryValue,
@@ -47,23 +47,22 @@ export function StackedTextareasTool() {
 
   return (
     <div className="flex h-full w-full flex-col gap-0">
-      <div className="flex h-8 items-center justify-between border-b border-border px-1 py-0.5">
+      <div className="flex h-8 shrink-0 items-center justify-between border-b border-border px-1 py-0.5">
         <span className="text-[10px] text-muted-foreground font-mono">
           {headerInfo}
         </span>
 
         <Button
           type="button"
-          variant="secondary"
+          variant="outline"
           size="xs"
           onClick={handleAddEntry}
           aria-label="add textarea"
-          disabled={!canAdd}
         >
           add text area
         </Button>
       </div>
-      <div className="flex flex-col">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         {entries.map((value, index) => (
           <StackedTextareaRow
             key={`${index}-textarea`}
@@ -72,7 +71,6 @@ export function StackedTextareasTool() {
             onRemove={getEntryRemoveHandler(index)}
             onTransform={(nextValue) => setEntryValue(index, nextValue)}
             canRemove={canRemove}
-            canResize={entries.length > 1}
           />
         ))}
       </div>
@@ -102,7 +100,6 @@ interface StackedTextareaRowProps {
   onRemove: () => void;
   onTransform: (nextValue: string) => void;
   canRemove: boolean;
-  canResize: boolean;
 }
 
 function StackedTextareaRow({
@@ -111,33 +108,29 @@ function StackedTextareaRow({
   onRemove,
   onTransform,
   canRemove,
-  canResize,
 }: StackedTextareaRowProps) {
   const { fontSize, increaseFont, decreaseFont } = useFont({
     defaultSize: 12,
     minSize: 10,
-    maxSize: 18,
+    maxSize: 36,
   });
 
   return (
-    <div className="relative group flex-1">
+    <div className="relative group shrink-0">
       <Textarea
         value={value}
         onChange={onChange}
         placeholder="notes, ideas, todos..."
-        className="h-full w-full resize-y rounded-none border-b border-b-border pt-6 px-4 max-h-64"
-        style={{
-          resize: canResize ? "vertical" : "none",
-          fontSize,
-        }}
+        className="block w-full resize-y rounded-none border-b border-b-border pt-6 px-4"
+        style={{ fontSize }}
       />
       <div className="absolute right-1 top-1 flex gap-0 opacity-0 transition-opacity group-hover:opacity-100">
         <CopyButton value={value} ariaLabel="copy text" />
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           size="xs"
-          className="border-border bg-background text-foreground hover:bg-muted rounded-none border border-l-0 px-2"
+          className="border-l-0 px-2"
           onClick={() => onTransform(toCapitalized(value))}
           aria-label="capitalize"
         >
@@ -145,9 +138,9 @@ function StackedTextareaRow({
         </Button>
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           size="xs"
-          className="border-border bg-background text-foreground hover:bg-muted rounded-none border border-l-0 px-2"
+          className="border-l-0 px-2"
           onClick={() => onTransform(value.toUpperCase())}
           aria-label="all caps"
         >
@@ -155,40 +148,25 @@ function StackedTextareaRow({
         </Button>
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           size="xs"
-          className="border-border bg-background text-foreground hover:bg-muted rounded-none border border-l-0 px-2"
+          className="border-l-0 px-2"
           onClick={() => onTransform(value.toLowerCase())}
           aria-label="all lowercase"
         >
           all lowercase
         </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-xs"
-          className="border-border bg-background text-foreground hover:bg-muted rounded-none border border-l-0"
-          onClick={increaseFont}
-          aria-label="increase font"
-        >
-          <Plus className="size-3" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-xs"
-          className="border-border bg-background text-foreground hover:bg-muted rounded-none border border-l-0"
-          onClick={decreaseFont}
-          aria-label="decrease font"
-        >
-          <Minus className="size-3" />
-        </Button>
+        <FontSizeButtons
+          onIncrease={increaseFont}
+          onDecrease={decreaseFont}
+          isJoinedToPreviousButton
+        />
         {canRemove ? (
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="icon-xs"
-            className="border-border bg-background text-foreground hover:bg-muted rounded-none border border-l-0"
+            className="border-l-0"
             onClick={onRemove}
             aria-label="remove text"
           >
