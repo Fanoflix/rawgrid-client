@@ -1,8 +1,9 @@
-import type { ChangeEvent, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useRef } from "react";
-import { Minus, Plus, X } from "lucide-react";
+import { X } from "lucide-react";
 
 import { CopyButton } from "@/components/copy-button";
+import { FontSizeButtons } from "@/components/font-size-buttons";
 import { ToolInfo } from "@/components/tool-info";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { JsonEditor, type JsonEditorHandle } from "@/components/json-editor";
 import { cn } from "@/lib/utils";
 import type { IndentId } from "@/tools/json-prettify/lib/constants";
 import { formatBytes } from "@/tools/json-prettify/lib/utils";
@@ -32,7 +33,6 @@ export function JsonPrettifyTool() {
     handleIndentChange,
     setMode,
     toggleSortKeys,
-    clearPane,
     increaseFont,
     decreaseFont,
   } = useJsonPrettify();
@@ -58,7 +58,10 @@ export function JsonPrettifyTool() {
             handleIndentChange((value ?? "2") as IndentId)
           }
         >
-          <SelectTrigger className="h-6 rounded-none border-border bg-background text-xs">
+          <SelectTrigger
+            size="xs"
+            className="border-border bg-background"
+          >
             <SelectValue placeholder="indent" />
           </SelectTrigger>
           <SelectContent>
@@ -100,26 +103,7 @@ export function JsonPrettifyTool() {
         )}
 
         <span className="ml-auto flex gap-0">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            className="rounded-none border border-border bg-background text-foreground hover:bg-muted"
-            onClick={increaseFont}
-            aria-label="increase font"
-          >
-            <Plus className="size-3" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            className="rounded-none border border-l-0 border-border bg-background text-foreground hover:bg-muted"
-            onClick={decreaseFont}
-            aria-label="decrease font"
-          >
-            <Minus className="size-3" />
-          </Button>
+          <FontSizeButtons onIncrease={increaseFont} onDecrease={decreaseFont} />
         </span>
       </div>
 
@@ -134,7 +118,6 @@ export function JsonPrettifyTool() {
               error={state.inputError}
               fontSize={state.fontSize}
               isStale={state.isPending && state.source !== "input"}
-              onClear={() => clearPane("input")}
               copyLabel="copy input json"
             />
           </ResizablePanel>
@@ -151,7 +134,6 @@ export function JsonPrettifyTool() {
               error={state.outputError}
               fontSize={state.fontSize}
               isStale={state.isPending && state.source !== "output"}
-              onClear={() => clearPane("output")}
               copyLabel="copy formatted json"
               className="border-l border-border"
             />
@@ -166,12 +148,11 @@ interface JsonPaneProps {
   label: string;
   info?: string;
   value: string;
-  onChange: (event: ChangeEvent<HTMLTextAreaElement>) => void;
+  onChange: (value: string) => void;
   placeholder: string;
   error: string | null;
   fontSize: number;
   isStale: boolean;
-  onClear: () => void;
   copyLabel: string;
   className?: string;
 }
@@ -185,35 +166,19 @@ function JsonPane({
   error,
   fontSize,
   isStale,
-  onClear,
   copyLabel,
   className,
 }: JsonPaneProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  function handleClear() {
-    const textarea = textareaRef.current;
-    if (!textarea || !textarea.value) return;
-
-    // Clear through the browser's own editing command so the deletion lands on
-    // the textarea's native undo stack and ctrl+z brings the text back.
-    textarea.focus();
-    textarea.setSelectionRange(0, textarea.value.length);
-    const isUndoable = document.execCommand("delete");
-
-    // Older engines without execCommand still get a clear, just not undoable.
-    if (!isUndoable) onClear();
-  }
+  const editorRef = useRef<JsonEditorHandle>(null);
 
   return (
     <div className={cn("flex h-full w-full flex-col", className)}>
       <PanelHeader label={label} info={info}>
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           size="icon-xs"
-          className="rounded-none border border-border bg-background text-foreground hover:bg-muted"
-          onClick={handleClear}
+          onClick={() => editorRef.current?.clear()}
           aria-label={`clear ${label}`}
         >
           <X className="size-3" />
@@ -226,14 +191,13 @@ function JsonPane({
           isStale && "opacity-60 transition-opacity"
         )}
       >
-        <Textarea
-          ref={textareaRef}
+        <JsonEditor
+          ref={editorRef}
           value={value}
           onChange={onChange}
+          fontSize={fontSize}
           placeholder={placeholder}
-          aria-invalid={Boolean(error)}
-          className="h-full w-full min-h-0 resize-none rounded-none font-mono font-thin field-sizing-fixed"
-          style={{ fontSize }}
+          ariaLabel={label}
         />
         <div className="absolute right-1 top-1 flex gap-0 opacity-0 transition-opacity group-hover:opacity-100">
           <CopyButton value={value} ariaLabel={copyLabel} />

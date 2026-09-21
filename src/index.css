@@ -40,6 +40,38 @@
   --sidebar-ring: oklch(0.705 0.015 286.067);
 }
 
+/* JSON editor syntax colors: One Dark Pro under .dark, One Light otherwise. */
+:root {
+  --json-key: #e45649;
+  --json-string: #50a14f;
+  --json-number: #986801;
+  --json-literal: #986801;
+  --json-punctuation: #383a42;
+  --json-bracket-0: #986801;
+  --json-bracket-1: #a626a4;
+  --json-bracket-2: #0184bc;
+}
+
+.dark {
+  --json-key: #e06c75;
+  --json-string: #98c379;
+  --json-number: #d19a66;
+  --json-literal: #d19a66;
+  --json-punctuation: #abb2bf;
+  --json-bracket-0: #d19a66;
+  --json-bracket-1: #c678dd;
+  --json-bracket-2: #56b6c2;
+}
+
+.json-key { color: var(--json-key); }
+.json-string { color: var(--json-string); }
+.json-number { color: var(--json-number); }
+.json-literal { color: var(--json-literal); }
+.json-punctuation { color: var(--json-punctuation); }
+.json-bracket-0 { color: var(--json-bracket-0); }
+.json-bracket-1 { color: var(--json-bracket-1); }
+.json-bracket-2 { color: var(--json-bracket-2); }
+
 .dark {
   --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);
@@ -230,25 +262,6 @@
   html {
     @apply font-sans;
   }
-}
-
-/*
- * Faint hatching so a slot with no tool in it still reads as deliberate space.
- * Feathered stops rather than hard 1px edges: a hard edge at 45deg lands on a
- * different fraction of the device pixel grid on each pass, which is what made
- * the lines read as alternating shades. Ramping into and out of the colour
- * gives every stripe identical coverage.
- */
-.empty-slot {
-  background-image: repeating-linear-gradient(
-    45deg,
-    transparent 0px,
-    transparent 5px,
-    var(--border) 6px,
-    transparent 7px,
-    transparent 12px
-  );
-  background-color: transparent;
 }
 
 .tool-base {

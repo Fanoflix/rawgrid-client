@@ -1,4 +1,3 @@
-import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 import { useFont } from "@/lib/use-font";
@@ -97,7 +96,7 @@ export function useJsonPrettify() {
   // The edited pane rebuilds the other one, but only once typing settles.
   // Writing the target pane never re-triggers this, so the two cannot loop.
   useEffect(() => {
-    const handle = window.setTimeout(() => {
+    const syncTimer = window.setTimeout(() => {
       const target = source === "input" ? "output" : "input";
 
       if (!sourceText.trim()) {
@@ -133,7 +132,7 @@ export function useJsonPrettify() {
       setSettings((previous) => ({ ...previous, [target]: result.value }));
     }, SYNC_DEBOUNCE_MS);
 
-    return () => window.clearTimeout(handle);
+    return () => window.clearTimeout(syncTimer);
   }, [sourceText, source, indent, sortKeys, mode, setSettings]);
 
   function editPane(pane: JsonPane, nextText: string) {
@@ -146,12 +145,12 @@ export function useJsonPrettify() {
     editPane("input", nextInput);
   }
 
-  function handleInputChange(event: ChangeEvent<HTMLTextAreaElement>) {
-    editPane("input", event.target.value);
+  function handleInputChange(nextInput: string) {
+    editPane("input", nextInput);
   }
 
-  function handleOutputChange(event: ChangeEvent<HTMLTextAreaElement>) {
-    editPane("output", event.target.value);
+  function handleOutputChange(nextOutput: string) {
+    editPane("output", nextOutput);
   }
 
   // The toggles below describe the output pane, so rebuilding always runs
@@ -178,10 +177,6 @@ export function useJsonPrettify() {
     setSettings((previous) => ({ ...previous, sortKeys: !previous.sortKeys }));
   }
 
-  function clearPane(pane: JsonPane) {
-    editPane(pane, "");
-  }
-
   const stats = useMemo(
     () => getJsonStats(settings.output),
     [settings.output]
@@ -206,7 +201,6 @@ export function useJsonPrettify() {
     handleIndentChange,
     setMode,
     toggleSortKeys,
-    clearPane,
     increaseFont,
     decreaseFont,
   };
