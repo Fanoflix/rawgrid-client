@@ -16,11 +16,11 @@ export function CommandPaletteTrigger() {
       onClick={() => dispatch(OPEN_COMMAND_PALETTE)}
       aria-label="open command palette"
       aria-keyshortcuts={isMac ? "Meta+K" : "Control+K"}
-      className="w-56 shrink-0 justify-start font-normal text-muted-foreground"
+      className="w-72 shrink-0 justify-start gap-2.5 font-normal text-muted-foreground"
     >
       <Search />
       <span className="flex-1 truncate text-left">do everything via keyboard</span>
-      <kbd className="rounded-sm border border-border px-1 font-mono text-[10px] leading-4">
+      <kbd className="px-1 font-mono text-[10px] leading-4">
         {isMac ? "⌘K" : "Ctrl K"}
       </kbd>
     </Button>
