@@ -1,11 +1,24 @@
-import { Pause, Play, RotateCcw } from "lucide-react";
+import { Pause, Play, RotateCcw, Volume2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { TIMER_PRESETS } from "@/tools/timer/lib/constants";
+import { isTimerSoundId, TIMER_SOUNDS } from "@/tools/timer/lib/sounds";
 import { useTimerWithCommands as useTimer } from "@/tools/timer/lib/use-timer-commands";
+
+const soundItems = TIMER_SOUNDS.map((sound) => ({
+  value: sound.id,
+  label: sound.label,
+}));
 
 export function TimerTool() {
   const {
@@ -24,6 +37,8 @@ export function TimerTool() {
     handleStop,
     dismissFinished,
     setDuration,
+    soundId,
+    setSoundId,
   } = useTimer();
 
   const isRunning = state.status === "running";
@@ -38,7 +53,7 @@ export function TimerTool() {
     <div
       onClick={justFinished ? dismissFinished : undefined}
       className={cn(
-        "flex h-full w-full flex-col transition-colors",
+        "relative flex h-full w-full flex-col transition-colors",
         isRunning && "bg-primary/5",
         justFinished && "animate-attention-surface cursor-pointer"
       )}
@@ -57,6 +72,32 @@ export function TimerTool() {
           justFinished && "animate-blink"
         )}
       />
+
+      <div className="absolute top-2 right-1 z-10">
+        <Select
+          value={soundId}
+          items={soundItems}
+          onValueChange={(value) => {
+            if (isTimerSoundId(value)) setSoundId(value);
+          }}
+        >
+          <SelectTrigger
+            aria-label="alarm sound"
+            title="alarm sound"
+            className="h-6 rounded-none border-border bg-background text-muted-foreground text-xs"
+          >
+            <Volume2 className="size-3.5" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {TIMER_SOUNDS.map((sound) => (
+              <SelectItem key={sound.id} value={sound.id}>
+                {sound.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 p-2">
         {isInputLocked ? (

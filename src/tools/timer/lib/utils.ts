@@ -1,4 +1,8 @@
 import type { TimerInput } from "@/tools/timer/lib/constants";
+import {
+  TIMER_SOUNDS,
+  type TimerSoundId,
+} from "@/tools/timer/lib/sounds";
 
 function getSafeNumber(value: string) {
   const parsed = Number(value || 0);
@@ -41,47 +45,6 @@ export function parseLegacyDurationString(value: string) {
   return Math.max(0, seconds) * 1000;
 }
 
-export function playTimerSound() {
-  try {
-    const AudioContextConstructor = getAudioContextConstructor();
-    if (!AudioContextConstructor) return;
-
-    const context = new AudioContextConstructor();
-
-    // Three short beeps carry a lot further than one, which matters when the
-    // timer is a small panel in the corner of a busy grid.
-    for (let index = 0; index < 3; index += 1) {
-      const startAt = context.currentTime + index * 0.22;
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-
-      oscillator.type = "sine";
-      oscillator.frequency.value = 880;
-
-      // Ramp the envelope instead of switching it, so there is no click.
-      gain.gain.setValueAtTime(0, startAt);
-      gain.gain.linearRampToValueAtTime(0.08, startAt + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.18);
-
-      oscillator.connect(gain);
-      gain.connect(context.destination);
-      oscillator.start(startAt);
-      oscillator.stop(startAt + 0.2);
-    }
-
-    // Release the hardware once the pattern has played out.
-    window.setTimeout(() => void context.close(), 1200);
-  } catch {
-    // ignore
-  }
-}
-
-interface WindowWithWebkitAudioContext extends Window {
-  AudioContext?: typeof AudioContext;
-  webkitAudioContext?: typeof AudioContext;
-}
-
-function getAudioContextConstructor() {
-  const windowWithWebkit = window as WindowWithWebkitAudioContext;
-  return windowWithWebkit.AudioContext || windowWithWebkit.webkitAudioContext;
+export function playTimerSound(soundId: TimerSoundId) {
+  TIMER_SOUNDS.find((sound) => sound.id === soundId)?.play();
 }

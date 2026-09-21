@@ -4,6 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToolHistory } from "@/lib/use-tool-history";
 import { TIMER_CONFIG, type TimerInput } from "@/tools/timer/lib/constants";
 import {
+  DEFAULT_TIMER_SOUND,
+  isTimerSoundId,
+  type TimerSoundId,
+} from "@/tools/timer/lib/sounds";
+import {
   formatDurationParts,
   parseDurationParts,
   parseLegacyDurationString,
@@ -55,6 +60,17 @@ function deserializeInput(value: string) {
   }
 }
 
+const SOUND_STORAGE_KEY = "timer-sound";
+
+function getInitialSound(): TimerSoundId {
+  try {
+    const stored = window.localStorage.getItem(SOUND_STORAGE_KEY);
+    return isTimerSoundId(stored) ? stored : DEFAULT_TIMER_SOUND;
+  } catch {
+    return DEFAULT_TIMER_SOUND;
+  }
+}
+
 export function useTimer() {
   const { value: input, setValue: setInput } = useToolHistory<TimerInput>({
     tool: "timer",
@@ -67,6 +83,9 @@ export function useTimer() {
   const [totalMs, setTotalMs] = useState(0);
   const [status, setStatus] = useState<TimerStatus>("idle");
   const [justFinished, setJustFinished] = useState(false);
+  const [soundId, setSoundIdState] = useState(getInitialSound);
+  // Read through a ref so a sound change mid-run doesn't rebuild the interval.
+  const soundIdRef = useRef(soundId);
   const endTimeRef = useRef<number | null>(null);
   const intervalRef = useRef<number | null>(null);
 
@@ -86,7 +105,7 @@ export function useTimer() {
     setTotalMs(0);
     setStatus("idle");
     setJustFinished(true);
-    playTimerSound();
+    playTimerSound(soundIdRef.current);
   }, [clearIntervalRef]);
 
   const tick = useCallback(() => {
@@ -203,6 +222,18 @@ export function useTimer() {
     [setInput]
   );
 
+  // Picking a sound plays it once so it can be auditioned.
+  const setSoundId = useCallback((next: TimerSoundId) => {
+    soundIdRef.current = next;
+    setSoundIdState(next);
+    playTimerSound(next);
+    try {
+      window.localStorage.setItem(SOUND_STORAGE_KEY, next);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   const dismissFinished = useCallback(() => setJustFinished(false), []);
 
   const setDuration = useCallback(
@@ -242,5 +273,7 @@ export function useTimer() {
     dismissFinished,
     setTime,
     setDuration,
+    soundId,
+    setSoundId,
   };
 }
