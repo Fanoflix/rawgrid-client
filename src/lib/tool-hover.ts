@@ -4,8 +4,3 @@
  * ten tools.
  */
 export const HOVER_COMMAND = "tool:hover";
-
-/** Payload used by slots that hold no tool. */
-export const EMPTY_SLOT = "__empty__";
-
-export const EMPTY_SLOT_HINT = "empty area, add a tool";

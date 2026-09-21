@@ -1,17 +1,17 @@
 import type { ReactNode } from "react";
-import { useDraggable } from "@dnd-kit/core";
-import { GripVertical, X } from "lucide-react";
+import { useDndContext, useDraggable } from "@dnd-kit/core";
+import { GripVertical } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { dispatch } from "@/lib/command-bus";
 import { HOVER_COMMAND } from "@/lib/tool-hover";
 import { ToolBaseContainer } from "@/components/tool-base-container";
+import type { ToolId } from "@/lib/tool-registry";
 
 interface DraggableToolProps {
-  toolId: string;
+  toolId: ToolId;
   slotIndex: number;
   isEditMode: boolean;
-  onHide: () => void;
   children: ReactNode;
 }
 
@@ -19,7 +19,6 @@ export function DraggableTool({
   toolId,
   slotIndex,
   isEditMode,
-  onHide,
   children,
 }: DraggableToolProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -27,6 +26,8 @@ export function DraggableTool({
     data: { slotIndex, toolId },
     disabled: !isEditMode,
   });
+  // While anything is being dragged, only the drop indicator should show.
+  const { active } = useDndContext();
 
   return (
     <div
@@ -35,26 +36,32 @@ export function DraggableTool({
       onMouseEnter={() => dispatch(HOVER_COMMAND, toolId)}
       onMouseLeave={() => dispatch(HOVER_COMMAND, "")}
     >
-      <ToolBaseContainer>{children}</ToolBaseContainer>
+      {/* Faded in edit mode so it's obvious the grid, not the tools, is live. */}
+      <div
+        className={cn(
+          "h-full w-full transition-opacity",
+          isEditMode && "opacity-40"
+        )}
+      >
+        <ToolBaseContainer>{children}</ToolBaseContainer>
+      </div>
 
+      {/* The whole space is the drag handle in edit mode. */}
       {isEditMode && (
-        <div className="absolute inset-0 z-10 rounded-md bg-background/50">
-          {/* Drag handle */}
-          <button
-            {...listeners}
-            {...attributes}
-            className="absolute left-1.5 top-1.5 z-20 flex cursor-grab items-center gap-1 rounded border bg-background px-1.5 py-1 text-foreground shadow-md hover:bg-muted active:cursor-grabbing"
-          >
-            <GripVertical className="size-4" />
-          </button>
-
-          {/* Hide button */}
-          <button
-            onClick={onHide}
-            className="absolute right-1.5 top-1.5 z-20 rounded border bg-background p-1 text-foreground shadow-md hover:bg-destructive hover:text-destructive-foreground"
-          >
-            <X className="size-4" />
-          </button>
+        <div
+          {...listeners}
+          {...attributes}
+          className={cn(
+            "group/drag absolute inset-0 z-10 flex cursor-grab items-center justify-center transition-colors active:cursor-grabbing",
+            !active && "hover:bg-primary/30"
+          )}
+        >
+          {!active && (
+            <span className="flex items-center gap-1 rounded-md bg-background px-2 py-1 text-foreground text-xs opacity-0 shadow-md transition-opacity select-none group-hover/drag:opacity-100">
+              <GripVertical className="size-4" />
+              Drag to move
+            </span>
+          )}
         </div>
       )}
     </div>
