@@ -1,5 +1,7 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
+import { subscribe } from "@/lib/command-bus";
+import { FONT_COMMANDS } from "@/lib/tool-hover";
 import { useToolState } from "@/lib/use-tool-state";
 
 export interface UseFontOptions {
@@ -30,13 +32,26 @@ export function useFont({ minSize, maxSize, defaultSize, tool }: UseFontOptions)
     deserialize: deserializeFontSize,
   });
 
-  function increaseFont() {
+  const increaseFont = useCallback(() => {
     setFontSize((size) => Math.min(size + 1, maxSize));
-  }
+  }, [maxSize, setFontSize]);
 
-  function decreaseFont() {
+  const decreaseFont = useCallback(() => {
     setFontSize((size) => Math.max(size - 1, minSize));
-  }
+  }, [minSize, setFontSize]);
+
+  useEffect(() => {
+    if (!tool) return;
+    const unsubs = [
+      subscribe(FONT_COMMANDS.increase, (toolId) => {
+        if (toolId === tool) increaseFont();
+      }),
+      subscribe(FONT_COMMANDS.decrease, (toolId) => {
+        if (toolId === tool) decreaseFont();
+      }),
+    ];
+    return () => unsubs.forEach((unsubscribe) => unsubscribe());
+  }, [tool, increaseFont, decreaseFont]);
 
   return {
     fontSize,
