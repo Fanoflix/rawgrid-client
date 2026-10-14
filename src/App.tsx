@@ -154,9 +154,18 @@ export function App() {
     );
   }
 
+  const focusedSlot =
+    focusedToolId === null ? -1 : toolsBySlot.indexOf(focusedToolId);
+
   function isNodeVisible(node: GridNode): boolean {
-    if (node.kind === "slot") return !hiddenSlots.includes(node.slot);
+    if (node.kind === "slot") {
+      return node.slot === focusedSlot || !hiddenSlots.includes(node.slot);
+    }
     return node.children.some(isNodeVisible);
+  }
+
+  function handleGroupLayoutChanged(sizes: Record<string, number>) {
+    if (focusedToolId === null) setPanelSizes(sizes);
   }
 
   // Hidden spaces aren't rendered at all; the visible siblings' sizes are
@@ -172,7 +181,7 @@ export function App() {
         direction={group.direction}
         className={className}
         defaultLayout={resolveGroupLayout(visibleChildren, panelSizes)}
-        onLayoutChanged={setPanelSizes}
+        onLayoutChanged={handleGroupLayoutChanged}
       >
         {visibleChildren.map((child, index) => {
           const childId = getGridNodeId(child);

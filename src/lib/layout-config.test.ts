@@ -27,13 +27,14 @@ describe("reconcileLayoutState", () => {
     expect(reconcileLayoutState(stored)).toEqual(stored);
   });
 
-  it("drops a focused tool that is hidden or unknown", () => {
+  it("keeps a focused tool even when its space is hidden, drops unknown ones", () => {
     const hidden = reconcileLayoutState({
       toolsBySlot: DEFAULT_TOOLS_BY_SLOT,
       hiddenSlots: [1],
       focusedToolId: DEFAULT_TOOLS_BY_SLOT[1],
     });
-    expect(hidden.focusedToolId).toBeNull();
+    expect(hidden.focusedToolId).toBe(DEFAULT_TOOLS_BY_SLOT[1]);
+    expect(hidden.hiddenSlots).toEqual([1]);
     const unknown = reconcileLayoutState({
       toolsBySlot: DEFAULT_TOOLS_BY_SLOT,
       focusedToolId: "nope",

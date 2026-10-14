@@ -133,22 +133,19 @@ export function reconcileLayoutState(stored: unknown): LayoutState {
     panelSizes: reconcilePanelSizes(candidate.panelSizes),
     focusedToolId: reconcileFocusedTool(
       candidate.focusedToolId,
-      tools.toolsBySlot,
-      hiddenSlots
+      tools.toolsBySlot
     ),
   };
 }
 
 function reconcileFocusedTool(
   stored: unknown,
-  toolsBySlot: ToolsBySlot,
-  hiddenSlots: number[]
+  toolsBySlot: ToolsBySlot
 ): ToolId | null {
   if (typeof stored !== "string" || !ALL_TOOL_IDS.includes(stored as ToolId)) {
     return null;
   }
-  const slot = toolsBySlot.indexOf(stored as ToolId);
-  return slot >= 0 && !hiddenSlots.includes(slot) ? (stored as ToolId) : null;
+  return toolsBySlot.includes(stored as ToolId) ? (stored as ToolId) : null;
 }
 
 function readLegacyLocalStorageLayout(): LayoutState | undefined {

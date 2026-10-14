@@ -94,13 +94,8 @@ export function useLayout() {
     (toolId: ToolId) => {
       setEditMode(false);
       persistLayoutState((current) => {
-        const slot = current.toolsBySlot.indexOf(toolId);
-        if (slot < 0) return current;
-        return {
-          ...current,
-          hiddenSlots: current.hiddenSlots.filter((hidden) => hidden !== slot),
-          focusedToolId: toolId,
-        };
+        if (!current.toolsBySlot.includes(toolId)) return current;
+        return { ...current, focusedToolId: toolId };
       });
     },
     [persistLayoutState]
