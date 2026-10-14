@@ -1,6 +1,6 @@
 import { useCallback, useMemo, type ChangeEvent } from "react";
 
-import { useToolHistory } from "@/lib/use-tool-history";
+import { useToolState } from "@/lib/use-tool-state";
 import { DEFAULT_TEXTAREA_COUNT } from "@/tools/stacked-textareas/lib/constants";
 
 function createDefaultEntries() {
@@ -13,10 +13,10 @@ function serializeEntries(entries: string[]) {
 
 function deserializeEntries(raw: string) {
   try {
-    const parsed = JSON.parse(raw) as string[];
+    const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return createDefaultEntries();
     if (parsed.length === 0) return createDefaultEntries();
-    return parsed.map((value) => value ?? "");
+    return parsed.map((value) => (typeof value === "string" ? value : ""));
   } catch {
     return createDefaultEntries();
   }
@@ -24,7 +24,7 @@ function deserializeEntries(raw: string) {
 
 export function useStackedTextareas() {
   const initialEntries = useMemo(() => createDefaultEntries(), []);
-  const { value: entries, setValue: setEntries } = useToolHistory<string[]>({
+  const { value: entries, setValue: setEntries } = useToolState<string[]>({
     tool: "stacked-textareas",
     initialValue: initialEntries,
     serialize: serializeEntries,

@@ -1,4 +1,6 @@
-import { openDB, type IDBPDatabase } from "idb";
+import { deleteDB, openDB } from "idb";
+
+import { readAppState, writeAppState } from "@/lib/storage";
 
 import {
   MARKDOWN_PICKER_TYPES,
@@ -36,12 +38,17 @@ export interface LoadedFile {
   lastModified: number;
 }
 
-const pickerWindow = window as unknown as FilePickerWindow;
+function getPickerWindow(): FilePickerWindow {
+  return typeof window === "undefined"
+    ? {}
+    : (window as unknown as FilePickerWindow);
+}
 
 export const hasFileSystemAccess =
-  typeof pickerWindow.showOpenFilePicker === "function";
+  typeof getPickerWindow().showOpenFilePicker === "function";
 
 export async function pickMarkdownFile(): Promise<FileSystemFileHandle | null> {
+  const pickerWindow = getPickerWindow();
   if (!pickerWindow.showOpenFilePicker) return null;
   try {
     const [handle] = await pickerWindow.showOpenFilePicker({
@@ -59,6 +66,7 @@ export async function pickMarkdownFile(): Promise<FileSystemFileHandle | null> {
 export async function pickSaveLocation(
   suggestedName: string
 ): Promise<FileSystemFileHandle | null> {
+  const pickerWindow = getPickerWindow();
   if (!pickerWindow.showSaveFilePicker) return null;
   try {
     return await pickerWindow.showSaveFilePicker({
@@ -157,41 +165,43 @@ export function downloadMarkdown(text: string, name: string) {
   window.setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-const DB_NAME = "rawgrid-md-builder";
-const STORE_NAME = "handles";
-const LAST_HANDLE_KEY = "last";
-
-let dbPromise: Promise<IDBPDatabase> | null = null;
-
-function getDb() {
-  if (!dbPromise) {
-    dbPromise = openDB(DB_NAME, 1, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME);
-        }
-      },
-    });
-  }
-  return dbPromise;
-}
+const LAST_HANDLE_KEY = "md-builder:last-handle";
+const LEGACY_DB_NAME = "rawgrid-md-builder";
+const LEGACY_STORE_NAME = "handles";
+const LEGACY_HANDLE_KEY = "last";
 
 export async function rememberHandle(handle: FileSystemFileHandle) {
   try {
-    const db = await getDb();
-    await db.put(STORE_NAME, handle, LAST_HANDLE_KEY);
+    await writeAppState(LAST_HANDLE_KEY, handle);
   } catch {
     return;
   }
 }
 
+async function recallLegacyHandle(): Promise<FileSystemFileHandle | null> {
+  if (!indexedDB.databases) return null;
+  const databases = await indexedDB.databases();
+  if (!databases.some((database) => database.name === LEGACY_DB_NAME)) {
+    return null;
+  }
+  const db = await openDB(LEGACY_DB_NAME, 1);
+  const handle = db.objectStoreNames.contains(LEGACY_STORE_NAME)
+    ? ((await db.get(LEGACY_STORE_NAME, LEGACY_HANDLE_KEY)) as
+        | FileSystemFileHandle
+        | undefined)
+    : undefined;
+  db.close();
+  await deleteDB(LEGACY_DB_NAME);
+  return handle?.kind === "file" ? handle : null;
+}
+
 export async function recallHandle(): Promise<FileSystemFileHandle | null> {
   try {
-    const db = await getDb();
-    const handle = (await db.get(STORE_NAME, LAST_HANDLE_KEY)) as
-      | FileSystemFileHandle
-      | undefined;
-    return handle?.kind === "file" ? handle : null;
+    const stored = await readAppState<FileSystemFileHandle>(LAST_HANDLE_KEY);
+    if (stored?.kind === "file") return stored;
+    const legacy = await recallLegacyHandle();
+    if (legacy) await writeAppState(LAST_HANDLE_KEY, legacy);
+    return legacy;
   } catch {
     return null;
   }

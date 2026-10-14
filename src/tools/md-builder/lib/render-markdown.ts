@@ -772,12 +772,11 @@ export function renderMarkdown(
   };
   let html = renderBlocks(context, splitSourceLines(source));
   for (const comment of context.comments) {
-    if (
-      comment.start === comment.end &&
-      !context.emittedPoints.has(comment.id)
-    ) {
-      html += pointMarker(context, comment.id);
-    }
+    const isEmitted =
+      comment.start === comment.end
+        ? context.emittedPoints.has(comment.id)
+        : html.includes(`${COMMENT_ID_ATTR}="${comment.id}"`);
+    if (!isEmitted) html += pointMarker(context, comment.id);
   }
   return html;
 }

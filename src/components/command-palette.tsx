@@ -3,6 +3,9 @@ import { Search } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { dispatch, subscribe } from "@/lib/command-bus";
+import { rankCommands } from "@/lib/command-search";
+import type { ToolId } from "@/lib/tool-registry";
+import { ALL_TOOL_IDS, TOOL_REGISTRY } from "@/lib/tool-registry";
 
 export const OPEN_COMMAND_PALETTE = "palette:open";
 
@@ -12,6 +15,7 @@ interface Command {
   group: string;
   command: string;
   param?: string;
+  payload?: string;
 }
 
 const COMMANDS: Command[] = [
@@ -160,9 +164,52 @@ const COMMANDS: Command[] = [
     group: "layout",
     command: "layout:edit",
   },
+  ...ALL_TOOL_IDS.map(
+    (toolId): Command => ({
+      id: `focus-${toolId}`,
+      label: TOOL_REGISTRY[toolId].name.toLowerCase(),
+      group: "focus",
+      command: "layout:focus",
+      payload: toolId,
+    })
+  ),
+  {
+    id: "layout-unfocus",
+    label: "exit focus mode",
+    group: "focus",
+    command: "layout:unfocus",
+  },
 ];
 
-export function CommandPalette() {
+const TOOL_BY_COMMAND_PREFIX: Record<string, ToolId> = {
+  timer: "timer",
+  jwt: "jwt-decoder",
+  timestamp: "unix-timestamp",
+  color: "color-picker",
+  youtube: "youtube-player",
+  notes: "stacked-textareas",
+  json: "json-search",
+  base64: "base64",
+  "json-prettify": "json-prettify",
+  "md-builder": "md-builder",
+};
+
+function toolForCommand(command: string): ToolId | null {
+  const prefix = command.split(":")[0];
+  return TOOL_BY_COMMAND_PREFIX[prefix] ?? null;
+}
+
+interface CommandPaletteProps {
+  focusedToolId: ToolId | null;
+  isToolVisible: (toolId: ToolId) => boolean;
+  onExitFocus: () => void;
+}
+
+export function CommandPalette({
+  focusedToolId,
+  isToolVisible,
+  onExitFocus,
+}: CommandPaletteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -173,13 +220,7 @@ export function CommandPalette() {
   const paramRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  const filtered = query
-    ? COMMANDS.filter(
-        (cmd) =>
-          cmd.label.includes(query.toLowerCase()) ||
-          cmd.group.includes(query.toLowerCase())
-      )
-    : COMMANDS;
+  const filtered = rankCommands(COMMANDS, query);
 
   function open() {
     setIsOpen(true);
@@ -195,7 +236,16 @@ export function CommandPalette() {
   }
 
   function executeCommand(cmd: Command, param?: string) {
-    dispatch(cmd.command, param);
+    const targetTool = toolForCommand(cmd.command);
+    if (
+      focusedToolId !== null &&
+      targetTool !== null &&
+      targetTool !== focusedToolId &&
+      isToolVisible(targetTool)
+    ) {
+      onExitFocus();
+    }
+    dispatch(cmd.command, cmd.payload ?? param);
     close();
   }
 

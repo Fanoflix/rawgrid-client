@@ -2,7 +2,7 @@ import type { ChangeEvent } from "react";
 import { useMemo, useState } from "react";
 
 import { useFont } from "@/lib/use-font";
-import { useToolHistory } from "@/lib/use-tool-history";
+import { useToolState } from "@/lib/use-tool-state";
 import {
   BASE64_CONFIG,
   DEFAULT_DECODED_VALUE,
@@ -37,10 +37,11 @@ function serializeBoxes(boxes: Base64Boxes) {
 
 function deserializeBoxes(raw: string): Base64Boxes {
   try {
-    const parsed = JSON.parse(raw) as Partial<Base64Boxes>;
+    const parsed = JSON.parse(raw) as Partial<Base64Boxes> | null;
+    if (!parsed || typeof parsed !== "object") return { ...DEFAULT_BOXES };
     return {
-      encoded: parsed?.encoded ?? "",
-      decoded: parsed?.decoded ?? "",
+      encoded: typeof parsed.encoded === "string" ? parsed.encoded : "",
+      decoded: typeof parsed.decoded === "string" ? parsed.decoded : "",
     };
   } catch {
     return { ...DEFAULT_BOXES };
@@ -49,7 +50,7 @@ function deserializeBoxes(raw: string): Base64Boxes {
 
 export function useBase64() {
   const initialValue = useMemo<Base64Boxes>(() => ({ ...DEFAULT_BOXES }), []);
-  const { value: boxes, setValue: setBoxes } = useToolHistory<Base64Boxes>({
+  const { value: boxes, setValue: setBoxes } = useToolState<Base64Boxes>({
     tool: "base64",
     initialValue,
     serialize: serializeBoxes,
@@ -60,6 +61,7 @@ export function useBase64() {
   const [decodedError, setDecodedError] = useState<string | null>(null);
 
   const { fontSize, increaseFont, decreaseFont } = useFont({
+    tool: "base64",
     defaultSize: BASE64_CONFIG.defaultFontSize,
     minSize: BASE64_CONFIG.minFontSize,
     maxSize: BASE64_CONFIG.maxFontSize,

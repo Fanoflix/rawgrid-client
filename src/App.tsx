@@ -1,4 +1,10 @@
-import { Fragment, useEffect, useState, type ReactNode } from "react";
+import {
+  Fragment,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   DndContext,
   DragOverlay,
@@ -13,6 +19,7 @@ import {
 import { CommandPalette } from "@/components/command-palette";
 import { DragOverlayContent } from "@/components/drag-overlay-content";
 import { DraggableTool } from "@/components/draggable-tool";
+import { FocusTabs } from "@/components/focus-tabs";
 import { GridSlot } from "@/components/grid-slot";
 import { TopNavbar } from "@/components/top-navbar";
 import {
@@ -23,12 +30,17 @@ import {
 import { subscribe } from "@/lib/command-bus";
 import { ghostModifier } from "@/lib/drag-ghost";
 import {
+  FOCUS_TABS_HEIGHT,
+  getGridNodeId,
   GRID_TREE,
+  isToolId,
+  resolveGroupLayout,
   type GridGroupNode,
   type GridNode,
 } from "@/lib/layout-config";
 import { useLayout } from "@/lib/use-layout";
 import { useThemeToggle } from "@/lib/use-theme-toggle";
+import { cn } from "@/lib/utils";
 import type { ToolId } from "@/lib/tool-registry";
 import { TOOL_REGISTRY } from "@/lib/tool-registry";
 
@@ -37,26 +49,66 @@ export function App() {
   const {
     toolsBySlot,
     hiddenSlots,
+    panelSizes,
+    focusedToolId,
+    layoutVersion,
+    isReady: isLayoutReady,
     canHideSlot,
     isEditMode,
     swapSlots,
     hideSlot,
+    setPanelSizes,
+    focusTool,
+    exitFocus,
+    isToolVisible,
   } = layoutState;
 
-  const { isDark, toggleTheme } = useThemeToggle();
+  const { setTheme } = useThemeToggle();
   const [activeToolId, setActiveToolId] = useState<ToolId | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [focusTop, setFocusTop] = useState(0);
 
   useEffect(() => {
     const unsubscribers = [
-      subscribe("theme:dark", () => { if (!isDark) toggleTheme(); }),
-      subscribe("theme:light", () => { if (isDark) toggleTheme(); }),
+      subscribe("theme:dark", () => setTheme(true)),
+      subscribe("theme:light", () => setTheme(false)),
       subscribe("layout:reset", () => layoutState.resetLayout()),
       subscribe("layout:edit", () =>
-        layoutState.setEditMode((isEditing) => !isEditing)
+        layoutState.setEditMode(!layoutState.isEditMode)
       ),
+      subscribe("layout:focus", (toolId) => {
+        if (toolId && isToolId(toolId)) focusTool(toolId);
+      }),
+      subscribe("layout:unfocus", () => exitFocus()),
     ];
     return () => unsubscribers.forEach((unsubscribe) => unsubscribe());
   });
+
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    const measure = () => setFocusTop(grid.getBoundingClientRect().top);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(document.body);
+    return () => observer.disconnect();
+  }, [isLayoutReady]);
+
+  useEffect(() => {
+    if (focusedToolId === null) return;
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      if (
+        event.target instanceof Element &&
+        event.target.closest("input, textarea, [contenteditable=true]")
+      ) {
+        return;
+      }
+      exitFocus();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [focusedToolId, exitFocus]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -87,6 +139,8 @@ export function App() {
         slotIndex={slotIndex}
         isEditMode={isEditMode}
         canHide={canHideSlot}
+        isFocused={focusedToolId === toolId}
+        focusTop={focusTop + FOCUS_TABS_HEIGHT}
         onHide={() => hideSlot(slotIndex)}
       >
         <DraggableTool
@@ -105,10 +159,6 @@ export function App() {
     return node.children.some(isNodeVisible);
   }
 
-  function getNodeId(node: GridNode) {
-    return node.kind === "slot" ? `slot-${node.slot}` : node.id;
-  }
-
   // Hidden spaces aren't rendered at all; the visible siblings' sizes are
   // rescaled to fill 100% of the group. Panels keep stable ids, so the group
   // re-lays itself out as they come and go without remounting the others.
@@ -117,9 +167,15 @@ export function App() {
     const totalSize = visibleChildren.reduce((sum, child) => sum + child.size, 0);
 
     return (
-      <ResizablePanelGroup direction={group.direction} className={className}>
+      <ResizablePanelGroup
+        id={group.id}
+        direction={group.direction}
+        className={className}
+        defaultLayout={resolveGroupLayout(visibleChildren, panelSizes)}
+        onLayoutChanged={setPanelSizes}
+      >
         {visibleChildren.map((child, index) => {
-          const childId = getNodeId(child);
+          const childId = getGridNodeId(child);
           return (
             <Fragment key={childId}>
               {index > 0 && <ResizableHandle />}
@@ -158,10 +214,27 @@ export function App() {
       <div className="flex h-screen w-full flex-col bg-background text-foreground">
         <TopNavbar layoutState={layoutState} />
         {/* The top edge belongs to the grid, not to whichever tool lands up there. */}
-        <div className="min-h-0 flex-1 border-t border-foreground/30">
-          {renderGroup(
-            GRID_TREE,
-            "overflow-y-auto min-h-full w-full max-w-screen"
+        <div
+          key={layoutVersion}
+          ref={gridRef}
+          className={cn(
+            "min-h-0 flex-1 border-t border-foreground/30",
+            focusedToolId !== null && "invisible"
+          )}
+        >
+          {isLayoutReady &&
+            renderGroup(
+              GRID_TREE,
+              "overflow-y-auto min-h-full w-full max-w-screen"
+            )}
+          {focusedToolId !== null && (
+            <FocusTabs
+              top={focusTop}
+              toolIds={toolsBySlot.filter((_, slot) => !hiddenSlots.includes(slot))}
+              hiddenToolIds={toolsBySlot.filter((_, slot) => hiddenSlots.includes(slot))}
+              focusedToolId={focusedToolId}
+              onSelect={focusTool}
+            />
           )}
         </div>
       </div>
@@ -178,7 +251,11 @@ export function App() {
         ) : null}
       </DragOverlay>
 
-      <CommandPalette />
+      <CommandPalette
+        focusedToolId={focusedToolId}
+        isToolVisible={isToolVisible}
+        onExitFocus={exitFocus}
+      />
     </DndContext>
   );
 }

@@ -8,7 +8,7 @@ import {
 } from "react";
 
 import { useFont } from "@/lib/use-font";
-import { useToolHistory } from "@/lib/use-tool-history";
+import { useToolState } from "@/lib/use-tool-state";
 import {
   JSON_SEARCH_CONFIG,
   JSON_SEARCH_DEFAULTS,
@@ -50,7 +50,7 @@ export function useJsonSearch() {
     value: storedQuery,
     setValue: setStoredQuery,
     isReady: isQueryReady,
-  } = useToolHistory<string>({
+  } = useToolState<string>({
     tool: "json-search-query",
     initialValue: JSON_SEARCH_DEFAULTS.query,
     serialize: serializeQuery,
@@ -60,7 +60,7 @@ export function useJsonSearch() {
     value: storedJson,
     setValue: setStoredJson,
     isReady: isJsonReady,
-  } = useToolHistory<string>({
+  } = useToolState<string>({
     tool: "json-search-json",
     initialValue: JSON_SEARCH_DEFAULTS.json,
     serialize: serializeJson,
@@ -68,6 +68,7 @@ export function useJsonSearch() {
   });
 
   const { fontSize, increaseFont, decreaseFont } = useFont({
+    tool: "json-search",
     defaultSize: JSON_SEARCH_CONFIG.defaultFontSize,
     minSize: JSON_SEARCH_CONFIG.minFontSize,
     maxSize: JSON_SEARCH_CONFIG.maxFontSize,

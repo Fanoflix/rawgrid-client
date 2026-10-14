@@ -1,7 +1,7 @@
 import type { ChangeEvent, KeyboardEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useToolHistory } from "@/lib/use-tool-history";
+import { useToolState } from "@/lib/use-tool-state";
 import { TIMER_CONFIG, type TimerInput } from "@/tools/timer/lib/constants";
 import {
   DEFAULT_TIMER_SOUND,
@@ -10,9 +10,8 @@ import {
 } from "@/tools/timer/lib/sounds";
 import {
   claimAlarm,
-  parseTimerRun,
   readTimerRun,
-  TIMER_RUN_STORAGE_KEY,
+  subscribeTimerRun,
   writeTimerRun,
   type TimerRun,
 } from "@/tools/timer/lib/timer-run-storage";
@@ -58,25 +57,28 @@ function serializeInput(value: TimerInput) {
 }
 
 function deserializeInput(value: string) {
+  let parsed: unknown = null;
   try {
-    const parsed = JSON.parse(value) as Partial<TimerInput>;
-    return normalizeInput(parsed);
+    parsed = JSON.parse(value);
   } catch {
-    const legacyMs = parseLegacyDurationString(value);
-    if (legacyMs === null) return TIMER_CONFIG.defaultInput;
-    return formatDurationParts(legacyMs);
+    parsed = null;
   }
+  if (parsed && typeof parsed === "object") {
+    return normalizeInput(parsed as Partial<TimerInput>);
+  }
+  const legacyMs = parseLegacyDurationString(
+    typeof parsed === "number" ? String(parsed) : value
+  );
+  if (legacyMs === null) return TIMER_CONFIG.defaultInput;
+  return formatDurationParts(legacyMs);
 }
 
-const SOUND_STORAGE_KEY = "timer-sound";
+function serializeSound(value: TimerSoundId) {
+  return value;
+}
 
-function getInitialSound(): TimerSoundId {
-  try {
-    const stored = window.localStorage.getItem(SOUND_STORAGE_KEY);
-    return isTimerSoundId(stored) ? stored : DEFAULT_TIMER_SOUND;
-  } catch {
-    return DEFAULT_TIMER_SOUND;
-  }
+function deserializeSound(value: string): TimerSoundId {
+  return isTimerSoundId(value) ? value : DEFAULT_TIMER_SOUND;
 }
 
 interface RestoredTimer {
@@ -118,24 +120,30 @@ function restoreTimer(run: TimerRun | null, now: number): RestoredTimer {
 }
 
 export function useTimer() {
-  const { value: input, setValue: setInput } = useToolHistory<TimerInput>({
+  const { value: input, setValue: setInput } = useToolState<TimerInput>({
     tool: "timer",
     initialValue: TIMER_CONFIG.defaultInput,
     serialize: serializeInput,
     deserialize: deserializeInput,
   });
 
-  const [initialTimer] = useState(() =>
-    restoreTimer(readTimerRun(), Date.now())
-  );
-  const [remainingMs, setRemainingMs] = useState(initialTimer.remainingMs);
-  const [totalMs, setTotalMs] = useState(initialTimer.totalMs);
-  const [status, setStatus] = useState<TimerStatus>(initialTimer.status);
-  const [justFinished, setJustFinished] = useState(initialTimer.justFinished);
-  const [soundId, setSoundIdState] = useState(getInitialSound);
+  const [remainingMs, setRemainingMs] = useState(0);
+  const [totalMs, setTotalMs] = useState(0);
+  const [status, setStatus] = useState<TimerStatus>("idle");
+  const [justFinished, setJustFinished] = useState(false);
+  const { value: soundId, setValue: setSoundIdState } =
+    useToolState<TimerSoundId>({
+      tool: "timer:sound",
+      initialValue: DEFAULT_TIMER_SOUND,
+      serialize: serializeSound,
+      deserialize: deserializeSound,
+    });
   // Read through a ref so a sound change mid-run doesn't rebuild the interval.
   const soundIdRef = useRef(soundId);
-  const endTimeRef = useRef<number | null>(initialTimer.endTime);
+  useEffect(() => {
+    soundIdRef.current = soundId;
+  }, [soundId]);
+  const endTimeRef = useRef<number | null>(null);
   const intervalRef = useRef<number | null>(null);
 
   const clearIntervalRef = useCallback(() => {
@@ -274,13 +282,16 @@ export function useTimer() {
   }, [clearIntervalRef, startInterval]);
 
   useEffect(() => {
-    function handleTimerRunChangedInAnotherTab(event: StorageEvent) {
-      if (event.key !== TIMER_RUN_STORAGE_KEY) return;
-      applyRestoredTimer(restoreTimer(parseTimerRun(event.newValue), Date.now()));
-    }
-    window.addEventListener("storage", handleTimerRunChangedInAnotherTab);
-    return () =>
-      window.removeEventListener("storage", handleTimerRunChangedInAnotherTab);
+    let isMounted = true;
+    const applyRun = (run: TimerRun | null) => {
+      if (isMounted) applyRestoredTimer(restoreTimer(run, Date.now()));
+    };
+    readTimerRun().then(applyRun);
+    const unsubscribe = subscribeTimerRun(applyRun);
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, [applyRestoredTimer]);
 
   useEffect(() => {
@@ -308,16 +319,14 @@ export function useTimer() {
   );
 
   // Picking a sound plays it once so it can be auditioned.
-  const setSoundId = useCallback((next: TimerSoundId) => {
-    soundIdRef.current = next;
-    setSoundIdState(next);
-    playTimerSound(next);
-    try {
-      window.localStorage.setItem(SOUND_STORAGE_KEY, next);
-    } catch {
-      // ignore
-    }
-  }, []);
+  const setSoundId = useCallback(
+    (next: TimerSoundId) => {
+      soundIdRef.current = next;
+      setSoundIdState(next);
+      playTimerSound(next);
+    },
+    [setSoundIdState]
+  );
 
   const dismissFinished = useCallback(() => setJustFinished(false), []);
 

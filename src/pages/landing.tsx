@@ -20,6 +20,8 @@ import { useSwipeNavigate } from "@/lib/use-swipe-navigate";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 
+const SALAR_URL = "https://github.com/TheSalarKhan";
+
 const TOOLS = [
   {
     icon: Clock,
@@ -60,6 +62,7 @@ const TOOLS = [
     icon: MessageSquareText,
     name: "md builder",
     description: "comment on a local markdown file and hand it to your agent",
+    credit: { label: "@TheSalarKhan", href: SALAR_URL },
   },
   {
     icon: StickyNote,
@@ -79,6 +82,13 @@ const TOOLS = [
 ];
 
 const SHOWCASES = [
+  {
+    imageName: "focus-mode-showcase",
+    imageAlt: "md builder filling the grid in focus mode with the other tools as tabs",
+    title: "focus on one tool",
+    description:
+      "hit the focus icon on any tool to give it the whole grid. the rest wait as tabs, and esc brings your layout back.",
+  },
   {
     imageName: "keyboard-nav-showcase",
     imageAlt: "command palette filtering timer actions",
@@ -296,6 +306,19 @@ export function LandingPage() {
                   <p className="text-xs text-muted-foreground">
                     {tool.description}
                   </p>
+                  {tool.credit && (
+                    <p className="text-[11px] text-muted-foreground/70">
+                      idea by{" "}
+                      <a
+                        href={tool.credit.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary"
+                      >
+                        {tool.credit.label}
+                      </a>
+                    </p>
+                  )}
                 </div>
               </div>
             ))}

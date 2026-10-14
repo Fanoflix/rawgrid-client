@@ -6,6 +6,7 @@ export interface MdBuilderConfig {
   excerptLength: number;
   focusScrollMs: number;
   blinkMs: number;
+  copiedFeedbackMs: number;
 }
 
 export const MD_BUILDER_CONFIG: MdBuilderConfig = {
@@ -16,6 +17,7 @@ export const MD_BUILDER_CONFIG: MdBuilderConfig = {
   excerptLength: 160,
   focusScrollMs: 250,
   blinkMs: 900,
+  copiedFeedbackMs: 1000,
 };
 
 export const DEFAULT_DOCUMENT_NAME = "untitled.md";
@@ -52,11 +54,11 @@ export const MD_BUILDER_TEXT = {
   save: "save",
   saveAs: "save as",
   open: "open",
-  upload: "upload markdown",
+  upload: "upload md",
   reopen: "reopen",
   refresh: "refresh",
   download: "download",
-  copy: "copy markdown",
+  copy: "copy as md",
   paste: "paste markdown",
   close: "close",
   unsaved: "unsaved",
