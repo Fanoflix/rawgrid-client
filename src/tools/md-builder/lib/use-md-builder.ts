@@ -2,7 +2,7 @@ import type { ChangeEvent, DragEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useFont } from "@/lib/use-font";
-import { useToolHistory } from "@/lib/use-tool-history";
+import { useToolState } from "@/lib/use-tool-state";
 import {
   DEFAULT_DOCUMENT_NAME,
   MD_BUILDER_CONFIG,
@@ -94,6 +94,7 @@ export interface MdBuilderState {
   composer: CommentComposer | null;
   confirmation: Confirmation | null;
   notice: string | null;
+  isCopied: boolean;
   fontSize: number;
   isCommentsCollapsed: boolean;
   hoveredCommentId: number | null;
@@ -121,6 +122,14 @@ function documentFromMarkdown(text: string, name: string): ReviewDocument {
     })),
     nextId: parsed.comments.length + 1,
   };
+}
+
+function serializeFlag(value: boolean) {
+  return value ? "1" : "0";
+}
+
+function deserializeFlag(raw: string) {
+  return raw === "1";
 }
 
 function serializeDocument(reviewDoc: ReviewDocument) {
@@ -159,7 +168,7 @@ export function useMdBuilder() {
     value: reviewDoc,
     setValue: setReviewDoc,
     isReady,
-  } = useToolHistory<ReviewDocument>({
+  } = useToolState<ReviewDocument>({
     tool: "md-builder",
     initialValue,
     serialize: serializeDocument,
@@ -180,7 +189,15 @@ export function useMdBuilder() {
   const [composer, setComposer] = useState<CommentComposer | null>(null);
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [isCommentsCollapsed, setIsCommentsCollapsed] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  const copiedTimerRef = useRef<number | null>(null);
+  const { value: isCommentsCollapsed, setValue: setIsCommentsCollapsed } =
+    useToolState<boolean>({
+      tool: "md-builder:comments-collapsed",
+      initialValue: false,
+      serialize: serializeFlag,
+      deserialize: deserializeFlag,
+    });
   const [hoveredCommentId, setHoveredCommentId] = useState<number | null>(
     null
   );
@@ -193,6 +210,7 @@ export function useMdBuilder() {
   const noticeTimerRef = useRef<number | null>(null);
 
   const { fontSize, increaseFont, decreaseFont } = useFont({
+    tool: "md-builder",
     defaultSize: MD_BUILDER_CONFIG.defaultFontSize,
     minSize: MD_BUILDER_CONFIG.minFontSize,
     maxSize: MD_BUILDER_CONFIG.maxFontSize,
@@ -419,8 +437,13 @@ export function useMdBuilder() {
   const copyMarkdown = useCallback(async () => {
     if (!reviewDoc.source) return;
     await navigator.clipboard.writeText(exportedMarkdown());
-    showNotice("copied");
-  }, [exportedMarkdown, reviewDoc.source, showNotice]);
+    setIsCopied(true);
+    if (copiedTimerRef.current) window.clearTimeout(copiedTimerRef.current);
+    copiedTimerRef.current = window.setTimeout(
+      () => setIsCopied(false),
+      MD_BUILDER_CONFIG.copiedFeedbackMs
+    );
+  }, [exportedMarkdown, reviewDoc.source]);
 
   async function copyAgentBrief() {
     await navigator.clipboard.writeText(MD_BUILDER_TEXT.agentBrief);
@@ -702,6 +725,7 @@ export function useMdBuilder() {
     composer,
     confirmation,
     notice,
+    isCopied,
     fontSize,
     isCommentsCollapsed,
     hoveredCommentId,

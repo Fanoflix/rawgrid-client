@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useFont } from "@/lib/use-font";
-import { useToolHistory } from "@/lib/use-tool-history";
+import { useToolState } from "@/lib/use-tool-state";
 import type { IndentId } from "@/tools/json-prettify/lib/constants";
 import {
   DEFAULT_INDENT,
@@ -53,11 +53,12 @@ function serializeSettings(settings: JsonPrettifySettings) {
 
 function deserializeSettings(raw: string): JsonPrettifySettings {
   try {
-    const parsed = JSON.parse(raw) as Partial<JsonPrettifySettings>;
-    const indent = parsed?.indent;
+    const parsed = JSON.parse(raw) as Partial<JsonPrettifySettings> | null;
+    if (!parsed || typeof parsed !== "object") return { ...DEFAULT_SETTINGS };
+    const indent = parsed.indent;
     return {
-      input: parsed?.input ?? "",
-      output: parsed?.output ?? "",
+      input: typeof parsed.input === "string" ? parsed.input : "",
+      output: typeof parsed.output === "string" ? parsed.output : "",
       indent: INDENT_OPTIONS.some((option) => option.id === indent)
         ? (indent as IndentId)
         : DEFAULT_INDENT,
@@ -72,7 +73,7 @@ function deserializeSettings(raw: string): JsonPrettifySettings {
 export function useJsonPrettify() {
   const initialValue = useMemo(() => ({ ...DEFAULT_SETTINGS }), []);
   const { value: settings, setValue: setSettings } =
-    useToolHistory<JsonPrettifySettings>({
+    useToolState<JsonPrettifySettings>({
       tool: "json-prettify",
       initialValue,
       serialize: serializeSettings,
@@ -85,6 +86,7 @@ export function useJsonPrettify() {
   const [isPending, setIsPending] = useState(false);
 
   const { fontSize, increaseFont, decreaseFont } = useFont({
+    tool: "json-prettify",
     defaultSize: JSON_PRETTIFY_CONFIG.defaultFontSize,
     minSize: JSON_PRETTIFY_CONFIG.minFontSize,
     maxSize: JSON_PRETTIFY_CONFIG.maxFontSize,

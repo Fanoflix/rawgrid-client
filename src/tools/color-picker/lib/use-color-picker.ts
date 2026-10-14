@@ -1,7 +1,7 @@
 import type { ChangeEvent } from "react";
 import { useMemo } from "react";
 
-import { useToolHistory } from "@/lib/use-tool-history";
+import { useToolState } from "@/lib/use-tool-state";
 import { DEFAULT_COLOR } from "@/tools/color-picker/lib/constants";
 import {
   formatHsl,
@@ -29,8 +29,10 @@ function serializeColor(value: string) {
   return value;
 }
 
+const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
+
 function deserializeColor(value: string) {
-  return value || DEFAULT_COLOR;
+  return HEX_COLOR_PATTERN.test(value) ? value.toLowerCase() : DEFAULT_COLOR;
 }
 
 function getColorOutput(color: string): ColorPickerOutput {
@@ -50,7 +52,7 @@ function getColorOutput(color: string): ColorPickerOutput {
 }
 
 export function useColorPicker() {
-  const { value: color, setValue: setColor } = useToolHistory<string>({
+  const { value: color, setValue: setColor } = useToolState<string>({
     tool: "color-picker",
     initialValue: DEFAULT_COLOR,
     serialize: serializeColor,

@@ -72,7 +72,7 @@ export function JsonSearchTool() {
             isParsing ? "blur-sm" : ""
           }`}
         >
-          <ResizablePanel defaultSize={50} minSize={20}>
+          <ResizablePanel defaultSize="50%" minSize="20%">
             <JsonSearchInput
               value={state.json}
               onChange={handleJsonChange}
@@ -80,7 +80,7 @@ export function JsonSearchTool() {
             />
           </ResizablePanel>
           <ResizableHandle />
-          <ResizablePanel defaultSize={50} minSize={20}>
+          <ResizablePanel defaultSize="50%" minSize="20%">
             <JsonSearchResults
               error={error}
               hasResults={hasResults}

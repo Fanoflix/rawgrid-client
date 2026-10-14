@@ -20,7 +20,7 @@ A browser-based developer toolbox with multiple utilities arranged in a resizabl
 | **Base64**            | Encode text to Base64 and decode it back, with UTF-8 safe conversion and inline errors on invalid input.                                               | Paste a Base64 blob from a config file into the left box, hit `decode`, and read the plain text on the right.                            |
 | **JSON Prettify**     | Format messy JSON with 2-space, 4-space, or tab indent. Minify, sort keys A-Z, and get line/column parse errors. Both panes are editable.                | Paste a one-line API response, read it indented, then hit `minify` to squash it back for a config file.                                  |
 | **JSON Search**       | Search large JSON documents for specific fields with configurable context lines. Uses a Web Worker for files over 250KB.                                | Query `names, privileges [0,4]` against an Elasticsearch role mapping JSON to extract just the fields you need with surrounding context. |
-| **MD Builder**        | Open a local markdown file, select text and leave threaded comments. Saving writes them into the file as CriticMarkup (`{==text==}{>>comment<<}`), and `refresh` reloads the file after someone else edits it. | Comment on a plan your coding agent wrote, save, ask the agent to reply or apply the comments, then hit `refresh` to read its answers in place. |
+| **MD Builder**        | Open a local markdown file, select text and leave threaded comments. Saving writes them into the file as CriticMarkup (`{==text==}{>>comment<<}`), and `refresh` reloads the file after someone else edits it. Idea by [@TheSalarKhan](https://github.com/TheSalarKhan), thank you. | Comment on a plan your coding agent wrote, save, ask the agent to reply or apply the comments, then hit `refresh` to read its answers in place. |
 
 ## UX Features
 
@@ -29,7 +29,8 @@ A browser-based developer toolbox with multiple utilities arranged in a resizabl
   - **Drag to move**: drag any space onto another to swap them. The drag preview snaps to the target space's size.
   - **Hide spaces**: hide any space and the spaces around it grow to fill the room. Bring them back one at a time from the `hidden spaces` menu, or hit `Reset` for the default layout.
 - **JSON editors**: the JWT decoder, JSON prettify, and JSON search use a code editor with syntax highlighting (One Dark Pro, One Light in light mode), bracket colors by depth, and indentation that follows the JSON structure.
-- **Command palette**: press `Ctrl/Cmd + K` to run actions across tools, such as starting the timer, loading JSON, decoding a token, switching theme, or toggling edit mode.
+- **Command palette**: press `Ctrl/Cmd + K` to run actions across tools, such as starting the timer, loading JSON, decoding a token, switching theme, or toggling edit mode. Results are ranked, so `md paste` finds the markdown paste command and `md play` lists the MD Builder commands before the timer.
+- **Focus mode**: click `focus mode` in the top bar or press `⌘⇧F` to give the tool under your cursor the whole grid. The other tools wait as tabs above it. Press `Escape`, click the button again, or run a palette command for another visible tool to get the layout back. Focus survives a reload.
 - **Hover hints**: hovering a tool shows its name and description in the top bar.
 - **Light and dark themes**: toggle from the top bar or the command palette.
 - **Persistent state**: tool inputs, layout, hidden spaces, theme, and the chosen alarm sound are saved in the browser and restored on reload.

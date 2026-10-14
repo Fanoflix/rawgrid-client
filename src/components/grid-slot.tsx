@@ -1,13 +1,16 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface GridSlotProps {
   slotIndex: number;
   isEditMode: boolean;
   canHide: boolean;
+  isFocused: boolean;
+  focusTop: number;
   onHide: () => void;
   children: ReactNode;
 }
@@ -16,6 +19,8 @@ export function GridSlot({
   slotIndex,
   isEditMode,
   canHide,
+  isFocused,
+  focusTop,
   onHide,
   children,
 }: GridSlotProps) {
@@ -24,8 +29,19 @@ export function GridSlot({
     data: { slotIndex },
   });
 
+  const focusStyle: CSSProperties | undefined = isFocused
+    ? { position: "fixed", top: focusTop, left: 0, right: 0, bottom: 0 }
+    : undefined;
+
   return (
-    <div ref={setNodeRef} className="relative h-full w-full">
+    <div
+      ref={setNodeRef}
+      style={focusStyle}
+      className={cn(
+        "relative h-full w-full",
+        isFocused && "visible z-30 h-auto w-auto bg-background"
+      )}
+    >
       {children}
 
       {isEditMode && isOver && (

@@ -109,7 +109,7 @@ export function JsonPrettifyTool() {
 
       <div className="min-h-0 flex-1">
         <ResizablePanelGroup direction="horizontal" className="h-full w-full">
-          <ResizablePanel defaultSize={50} minSize={20}>
+          <ResizablePanel defaultSize="50%" minSize="20%">
             <JsonPane
               label="input"
               value={state.input}
@@ -124,7 +124,7 @@ export function JsonPrettifyTool() {
 
           <ResizableHandle />
 
-          <ResizablePanel defaultSize={50} minSize={20}>
+          <ResizablePanel defaultSize="50%" minSize="20%">
             <JsonPane
               label={isMinified ? "minified" : "prettified"}
               info={statsLabel}

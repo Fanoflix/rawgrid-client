@@ -2,7 +2,7 @@ import type { ChangeEvent } from "react";
 import { useMemo, useState } from "react";
 
 import { useFont } from "@/lib/use-font";
-import { useToolHistory } from "@/lib/use-tool-history";
+import { useToolState } from "@/lib/use-tool-state";
 import { JWT_DECODER_CONFIG } from "@/tools/jwt-decoder/lib/constants";
 import { decodeJwt, encodeJwt } from "@/tools/jwt-decoder/lib/utils";
 
@@ -28,7 +28,7 @@ export const DEFAULT_DUMMY_VALUE =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30";
 
 export function useJwtDecoder() {
-  const { value: token, setValue: setStoredToken } = useToolHistory<string>({
+  const { value: token, setValue: setStoredToken } = useToolState<string>({
     tool: "jwt-decoder",
     initialValue: DEFAULT_DUMMY_VALUE,
     serialize: serializeToken,
@@ -36,6 +36,7 @@ export function useJwtDecoder() {
   });
 
   const { fontSize, increaseFont, decreaseFont } = useFont({
+    tool: "jwt-decoder",
     defaultSize: JWT_DECODER_CONFIG.defaultFontSize,
     minSize: JWT_DECODER_CONFIG.minFontSize,
     maxSize: JWT_DECODER_CONFIG.maxFontSize,

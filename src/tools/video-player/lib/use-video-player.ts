@@ -1,45 +1,52 @@
 import type { ChangeEvent, DragEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useToolHistory } from "@/lib/use-tool-history";
+import { deleteAppState, readAppState, writeAppState } from "@/lib/storage";
 import {
   createVideoObjectUrl,
   isAcceptedVideoFile,
   revokeVideoObjectUrl,
 } from "@/tools/video-player/lib/utils";
 
-function serializeFilename(value: string) {
-  return value;
-}
-
-function deserializeFilename(value: string) {
-  return value || "";
-}
+const VIDEO_FILE_KEY = "video-player:file";
 
 export function useVideoPlayer() {
-  const { value: filename, setValue: setFilename } = useToolHistory<string>({
-    tool: "video-player",
-    initialValue: "",
-    serialize: serializeFilename,
-    deserialize: deserializeFilename,
-  });
-
+  const [filename, setFilename] = useState("");
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const objectUrlRef = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const dragCounterRef = useRef(0);
+  const hasEditedRef = useRef(false);
+
+  const showFile = useCallback((file: File) => {
+    revokeVideoObjectUrl(objectUrlRef.current);
+    const url = createVideoObjectUrl(file);
+    objectUrlRef.current = url;
+    setVideoUrl(url);
+    setFilename(file.name);
+  }, []);
 
   useEffect(() => {
+    let isMounted = true;
+    readAppState<File>(VIDEO_FILE_KEY)
+      .then((stored) => {
+        if (isMounted && stored instanceof File && !hasEditedRef.current) {
+          showFile(stored);
+        }
+      })
+      .catch(() => undefined);
     return () => {
+      isMounted = false;
       revokeVideoObjectUrl(objectUrlRef.current);
     };
-  }, []);
+  }, [showFile]);
 
   const loadFile = useCallback(
     (file: File) => {
       setError(null);
+      hasEditedRef.current = true;
 
       if (!isAcceptedVideoFile(file)) {
         setError(
@@ -48,14 +55,10 @@ export function useVideoPlayer() {
         return;
       }
 
-      revokeVideoObjectUrl(objectUrlRef.current);
-
-      const url = createVideoObjectUrl(file);
-      objectUrlRef.current = url;
-      setVideoUrl(url);
-      setFilename(file.name);
+      showFile(file);
+      writeAppState(VIDEO_FILE_KEY, file).catch(() => undefined);
     },
-    [setFilename]
+    [showFile]
   );
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -102,11 +105,13 @@ export function useVideoPlayer() {
   }
 
   function handleClear() {
+    hasEditedRef.current = true;
     revokeVideoObjectUrl(objectUrlRef.current);
     objectUrlRef.current = null;
     setVideoUrl(null);
     setFilename("");
     setError(null);
+    deleteAppState(VIDEO_FILE_KEY).catch(() => undefined);
   }
 
   return {

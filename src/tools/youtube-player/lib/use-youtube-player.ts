@@ -1,7 +1,7 @@
 import type { ChangeEvent } from "react"
 import { useMemo } from "react"
 
-import { useToolHistory } from "@/lib/use-tool-history"
+import { useToolState } from "@/lib/use-tool-state"
 import {
   DEFAULT_VIDEO_ID,
   DEFAULT_YOUTUBE_URL,
@@ -17,7 +17,7 @@ function deserializeUrl(value: string) {
 }
 
 export function useYouTubePlayer() {
-  const { value: url, setValue: setUrl } = useToolHistory<string>({
+  const { value: url, setValue: setUrl } = useToolState<string>({
     tool: "youtube-player",
     initialValue: DEFAULT_YOUTUBE_URL,
     serialize: serializeUrl,

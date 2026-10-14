@@ -11,6 +11,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Copy,
   CornerDownRight,
   Ellipsis,
   FolderOpen,
@@ -154,43 +155,39 @@ export function MdBuilderTool() {
         )}
 
         <span className="ml-auto flex items-center gap-1">
-          {state.hasDocument ? (
-            <>
-              {state.hasHandle && (
-                <Button
-                  type="button"
-                  variant={state.isStale ? "primary-outline" : "outline"}
-                  size="xs"
-                  onClick={refresh}
-                  className={cn(state.isStale && "animate-attention-surface")}
-                >
-                  <RefreshCw />
-                  {state.isStale
-                    ? MD_BUILDER_TEXT.changedOnDisk
-                    : MD_BUILDER_TEXT.refresh}
-                </Button>
-              )}
-              <Button
-                type="button"
-                variant={state.isDirty ? "default" : "outline"}
-                size="xs"
-                onClick={() => void save()}
-              >
-                <Save />
-                {saveLabel}
-              </Button>
-            </>
-          ) : (
+          {state.hasDocument && state.isStale && (
             <Button
               type="button"
-              variant="outline"
+              variant="primary-outline"
               size="xs"
-              onClick={openFile}
+              onClick={refresh}
+              className="animate-attention-surface"
             >
-              <FolderOpen />
-              {MD_BUILDER_TEXT.open}
+              <RefreshCw />
+              {MD_BUILDER_TEXT.changedOnDisk}
             </Button>
           )}
+          <Button
+            type="button"
+            variant="outline"
+            size="xs"
+            disabled={!state.hasDocument}
+            onClick={() => void copyMarkdown()}
+            className={cn(state.isCopied && "text-green-500 hover:text-green-500")}
+          >
+            <Copy />
+            {MD_BUILDER_TEXT.copy}
+            {state.isCopied && <Check />}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="xs"
+            onClick={uploadFile}
+          >
+            <Upload />
+            {MD_BUILDER_TEXT.upload}
+          </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -206,11 +203,23 @@ export function MdBuilderTool() {
               <Ellipsis />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
-              <DropdownMenuItem onClick={openFile}>
-                {MD_BUILDER_TEXT.open}
+              <DropdownMenuItem
+                disabled={!state.hasDocument}
+                onClick={() => void save()}
+              >
+                <Save />
+                {saveLabel}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={uploadFile}>
-                {MD_BUILDER_TEXT.upload}
+              {state.hasHandle && (
+                <DropdownMenuItem onClick={refresh}>
+                  <RefreshCw />
+                  {MD_BUILDER_TEXT.refresh}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={openFile}>
+                <FolderOpen />
+                {MD_BUILDER_TEXT.open}
               </DropdownMenuItem>
               {state.rememberedName && (
                 <DropdownMenuItem onClick={reopenRemembered}>
@@ -221,12 +230,6 @@ export function MdBuilderTool() {
                 {MD_BUILDER_TEXT.paste}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                disabled={!state.hasDocument}
-                onClick={() => void copyMarkdown()}
-              >
-                {MD_BUILDER_TEXT.copy}
-              </DropdownMenuItem>
               {state.hasFileSystemAccess && (
                 <DropdownMenuItem
                   disabled={!state.hasDocument}
@@ -301,7 +304,7 @@ export function MdBuilderTool() {
               direction="horizontal"
               className="h-full w-full"
             >
-              <ResizablePanel defaultSize={66} minSize={30}>
+              <ResizablePanel defaultSize="66%" minSize="30%">
                 <DocumentPane
                   documentRef={documentRef}
                   html={state.html}
@@ -319,7 +322,7 @@ export function MdBuilderTool() {
                 />
               </ResizablePanel>
               <ResizableHandle />
-              <ResizablePanel defaultSize={34} minSize={18}>
+              <ResizablePanel defaultSize="34%" minSize="18%">
                 <CommentsPane
                   source={state.source}
                   comments={state.comments}
