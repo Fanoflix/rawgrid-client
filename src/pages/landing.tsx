@@ -8,6 +8,7 @@ import {
   FileJson,
   Hourglass,
   KeyRound,
+  MessageSquareText,
   Palette,
   Play,
   StickyNote,
@@ -54,6 +55,11 @@ const TOOLS = [
     icon: Binary,
     name: "base64",
     description: "encode text to base64 and decode it back",
+  },
+  {
+    icon: MessageSquareText,
+    name: "md builder",
+    description: "comment on a local markdown file and hand it to your agent",
   },
   {
     icon: StickyNote,
