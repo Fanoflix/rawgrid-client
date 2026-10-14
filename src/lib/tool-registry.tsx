@@ -5,6 +5,7 @@ import { ColorPickerTool } from "@/tools/color-picker/color-picker";
 import { JwtDecoderTool } from "@/tools/jwt-decoder/jwt-decoder";
 import { JsonPrettifyTool } from "@/tools/json-prettify/json-prettify";
 import { JsonSearchTool } from "@/tools/json-search/json-search";
+import { MdBuilderTool } from "@/tools/md-builder/md-builder";
 import { StackedTextareasTool } from "@/tools/stacked-textareas/stacked-textareas";
 import { TimerTool } from "@/tools/timer/timer";
 import { UnixTimestampTool } from "@/tools/unix-timestamp/unix-timestamp";
@@ -21,7 +22,8 @@ export type ToolId =
   | "stacked-textareas"
   | "json-search"
   | "base64"
-  | "json-prettify";
+  | "json-prettify"
+  | "md-builder";
 
 export interface ToolEntry {
   name: string;
@@ -80,6 +82,11 @@ export const TOOL_REGISTRY: Record<ToolId, ToolEntry> = {
     name: "JSON Prettify",
     description: "format, minify and sort json keys",
     component: JsonPrettifyTool,
+  },
+  "md-builder": {
+    name: "MD Builder",
+    description: "review a markdown file with comments for your agent",
+    component: MdBuilderTool,
   },
 };
 

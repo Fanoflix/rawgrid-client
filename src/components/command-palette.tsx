@@ -101,6 +101,42 @@ const COMMANDS: Command[] = [
     command: "json-prettify:pretty",
   },
   {
+    id: "md-builder-open",
+    label: "open file",
+    group: "md builder",
+    command: "md-builder:open",
+  },
+  {
+    id: "md-builder-upload",
+    label: "upload markdown",
+    group: "md builder",
+    command: "md-builder:upload",
+  },
+  {
+    id: "md-builder-save",
+    label: "save comments",
+    group: "md builder",
+    command: "md-builder:save",
+  },
+  {
+    id: "md-builder-refresh",
+    label: "reload from disk",
+    group: "md builder",
+    command: "md-builder:refresh",
+  },
+  {
+    id: "md-builder-paste",
+    label: "paste markdown",
+    group: "md builder",
+    command: "md-builder:paste",
+  },
+  {
+    id: "md-builder-copy",
+    label: "copy markdown",
+    group: "md builder",
+    command: "md-builder:copy",
+  },
+  {
     id: "theme-dark",
     label: "dark mode",
     group: "theme",

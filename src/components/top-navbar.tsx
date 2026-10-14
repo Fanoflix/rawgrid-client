@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pencil, RotateCcw } from "lucide-react";
 
 import { CommandPaletteTrigger } from "@/components/command-palette-trigger";
@@ -15,6 +15,13 @@ interface TopNavbarProps {
   layoutState: ReturnType<typeof useLayout>;
 }
 
+interface ToolHint {
+  toolId: ToolId;
+  isLeaving: boolean;
+}
+
+const HINT_EXIT_MS = 200;
+
 export function TopNavbar({ layoutState }: TopNavbarProps) {
   const {
     isEditMode,
@@ -25,16 +32,34 @@ export function TopNavbar({ layoutState }: TopNavbarProps) {
     resetLayout,
   } = layoutState;
 
-  const [hoveredToolId, setHoveredToolId] = useState<string | null>(null);
+  const [hint, setHint] = useState<ToolHint | null>(null);
+  const hintExitTimerRef = useRef<number | null>(null);
 
-  useEffect(
-    () => subscribe(HOVER_COMMAND, (toolId) => setHoveredToolId(toolId || null)),
-    []
-  );
+  useEffect(() => {
+    const unsubscribe = subscribe(HOVER_COMMAND, (toolId) => {
+      if (hintExitTimerRef.current) {
+        window.clearTimeout(hintExitTimerRef.current);
+        hintExitTimerRef.current = null;
+      }
+      if (toolId) {
+        setHint({ toolId: toolId as ToolId, isLeaving: false });
+        return;
+      }
+      setHint((current) => (current ? { ...current, isLeaving: true } : null));
+      hintExitTimerRef.current = window.setTimeout(() => {
+        hintExitTimerRef.current = null;
+        setHint((current) => (current?.isLeaving ? null : current));
+      }, HINT_EXIT_MS);
+    });
+    return () => {
+      unsubscribe();
+      if (hintExitTimerRef.current) {
+        window.clearTimeout(hintExitTimerRef.current);
+      }
+    };
+  }, []);
 
-  const hoveredTool = hoveredToolId
-    ? TOOL_REGISTRY[hoveredToolId as ToolId]
-    : null;
+  const hoveredTool = hint ? TOOL_REGISTRY[hint.toolId] : null;
 
   return (
     <nav
@@ -74,11 +99,14 @@ export function TopNavbar({ layoutState }: TopNavbarProps) {
           />
         </Button>
         {/* Keyed so each new hover replays the slide instead of swapping text in place. */}
-        {hoveredTool && (
+        {hint && hoveredTool && (
           <span
-            key={hoveredToolId}
+            key={hint.toolId}
             aria-live="polite"
-            className="animate-hint-in hint-flash flex min-w-0 items-center gap-1.5 pl-1 pr-2.5 rounded-[7px]"
+            className={cn(
+              "flex min-w-0 items-center gap-1.5 pl-1 pr-2.5 rounded-[7px]",
+              hint.isLeaving ? "animate-hint-out" : "animate-hint-in hint-flash"
+            )}
           >
             <span className="text-muted-foreground/40">/</span>
             <span className="truncate">{hoveredTool.name}</span>

@@ -23,7 +23,8 @@ export const DEFAULT_TOOLS_BY_SLOT: ToolsBySlot = [
   "stacked-textareas", // Slot 6: bottom-left-upper
   "color-picker", // Slot 7: bottom-left-lower
   "json-search", // Slot 8: bottom-center
-  "base64", // Slot 9: bottom-right
+  "base64", // Slot 9: bottom-center-right
+  "md-builder", // Slot 10: bottom-right
 ];
 
 export const SLOT_COUNT = DEFAULT_TOOLS_BY_SLOT.length;
@@ -177,8 +178,9 @@ export const GRID_TREE: GridGroupNode = {
             { kind: "slot", slot: 7, size: 32, minSize: 12 },
           ],
         },
-        { kind: "slot", slot: 8, size: 24, minSize: 12 },
-        { kind: "slot", slot: 9, size: 54, minSize: 15 },
+        { kind: "slot", slot: 8, size: 22, minSize: 12 },
+        { kind: "slot", slot: 9, size: 24, minSize: 12 },
+        { kind: "slot", slot: 10, size: 32, minSize: 15 },
       ],
     },
   ],

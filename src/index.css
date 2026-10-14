@@ -38,6 +38,7 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
+  --md-agent: oklch(0.6 0.16 250);
 }
 
 /* JSON editor syntax colors: One Dark Pro under .dark, One Light otherwise. */
@@ -150,6 +151,7 @@
   --animate-attention-surface: attention-surface 0.9s ease-in-out infinite;
   --animate-blink: blink 0.9s ease-in-out infinite;
   --animate-hint-in: hint-in 0.22s ease-out both;
+  --animate-hint-out: hint-out 0.18s ease-in both;
 }
 
 /* Keyed on the hovered tool, so moving between panels replays both animations. */
@@ -161,6 +163,17 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+@keyframes hint-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(0.4rem);
   }
 }
 
@@ -237,7 +250,8 @@
 /* No motion still needs to signal, so hold the lit state instead of dropping it. */
 @media (prefers-reduced-motion: reduce) {
   .animate-blink,
-  .animate-hint-in {
+  .animate-hint-in,
+  .animate-hint-out {
     animation: none;
   }
   .hint-flash::after {
@@ -301,4 +315,239 @@
   flex-shrink: 0;
   background-color: currentColor;
   mask: url("/rawgrid-logo.svg") center / contain no-repeat;
+}
+
+.md-doc {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.md-doc > :first-child {
+  margin-top: 0;
+}
+
+.md-doc h1,
+.md-doc h2,
+.md-doc h3,
+.md-doc h4,
+.md-doc h5,
+.md-doc h6 {
+  line-height: 1.25;
+  margin: 1.4em 0 0.4em;
+  font-weight: 600;
+}
+
+.md-doc h1 {
+  font-size: 1.7em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.2em;
+}
+
+.md-doc h2 {
+  font-size: 1.35em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.15em;
+}
+
+.md-doc h3 {
+  font-size: 1.15em;
+}
+
+.md-doc p {
+  margin: 0.6em 0;
+}
+
+.md-doc ul,
+.md-doc ol {
+  padding-left: 1.5em;
+  margin: 0.4em 0;
+}
+
+.md-doc ul {
+  list-style: disc;
+}
+
+.md-doc ol {
+  list-style: decimal;
+}
+
+.md-doc li > p {
+  margin: 0.2em 0;
+}
+
+.md-doc li.md-task {
+  list-style: none;
+  margin-left: -1.3em;
+}
+
+.md-doc li.md-task input {
+  margin-right: 0.5em;
+}
+
+.md-doc li.md-task > p:first-of-type {
+  display: inline;
+}
+
+.md-doc blockquote {
+  margin: 0.7em 0;
+  padding: 0.1em 0.9em;
+  border-left: 2px solid var(--border);
+  color: var(--muted-foreground);
+}
+
+.md-doc hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 1.4em 0;
+}
+
+.md-doc code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.88em;
+  background: color-mix(in oklab, var(--accent) 70%, transparent);
+  padding: 0.1em 0.3em;
+}
+
+.md-doc pre {
+  background: color-mix(in oklab, var(--accent) 70%, transparent);
+  padding: 0.7em 0.8em;
+  overflow-x: auto;
+  margin: 0.7em 0;
+}
+
+.md-doc pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.86em;
+  white-space: pre;
+}
+
+.md-doc table {
+  border-collapse: collapse;
+  margin: 0.8em 0;
+  display: block;
+  overflow-x: auto;
+}
+
+.md-doc th,
+.md-doc td {
+  border: 1px solid var(--border);
+  padding: 0.3em 0.7em;
+  vertical-align: top;
+}
+
+.md-doc th {
+  background: color-mix(in oklab, var(--accent) 70%, transparent);
+}
+
+.md-doc a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.md-doc .md-img {
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+.md-doc .md-hl {
+  background: color-mix(in oklab, var(--primary) 18%, transparent);
+  box-shadow: inset 0 -1px 0 color-mix(in oklab, var(--primary) 60%, transparent);
+  cursor: pointer;
+  transition: background-color 0.12s;
+}
+
+.md-doc .md-hl:hover,
+.md-doc .md-hl.md-active {
+  background: color-mix(in oklab, var(--primary) 34%, transparent);
+}
+
+.md-doc .md-pt {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin: 0 0.15em;
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.md-doc .md-pt.md-active {
+  background: color-mix(in oklab, var(--primary) 34%, transparent);
+}
+
+.md-doc .md-hl.md-pending {
+  background: color-mix(in oklab, var(--primary) 34%, transparent);
+  cursor: text;
+}
+
+.md-doc .md-hl.md-agent {
+  background: color-mix(in oklab, var(--md-agent) 22%, transparent);
+  box-shadow: inset 0 -1px 0 color-mix(in oklab, var(--md-agent) 60%, transparent);
+}
+
+.md-doc .md-hl.md-agent:hover,
+.md-doc .md-hl.md-agent.md-active,
+.md-doc .md-hl.md-agent.md-hovered {
+  background: color-mix(in oklab, var(--md-agent) 40%, transparent);
+}
+
+.md-doc .md-hl.md-hovered {
+  background: color-mix(in oklab, var(--primary) 34%, transparent);
+  outline: 1px solid color-mix(in oklab, var(--primary) 75%, transparent);
+  outline-offset: 0;
+}
+
+.md-doc .md-hl.md-agent.md-hovered {
+  outline-color: color-mix(in oklab, var(--md-agent) 75%, transparent);
+}
+
+.md-doc .md-pt.md-agent {
+  color: var(--md-agent);
+}
+
+.md-doc .md-pt.md-agent.md-active,
+.md-doc .md-pt.md-hovered {
+  background: color-mix(in oklab, var(--primary) 34%, transparent);
+}
+
+.md-doc .md-pt.md-hovered {
+  outline: 1px solid color-mix(in oklab, var(--primary) 75%, transparent);
+  outline-offset: 0;
+}
+
+.md-doc .md-pt.md-agent.md-hovered {
+  background: color-mix(in oklab, var(--md-agent) 40%, transparent);
+  outline-color: color-mix(in oklab, var(--md-agent) 75%, transparent);
+}
+
+@keyframes md-blink {
+  0%,
+  50%,
+  100% {
+    filter: none;
+    outline-color: transparent;
+  }
+  25%,
+  75% {
+    filter: brightness(1.8) saturate(1.4);
+    outline-color: var(--md-blink-color);
+  }
+}
+
+.md-doc .md-blink {
+  --md-blink-color: var(--primary);
+  outline: 1px solid transparent;
+  outline-offset: 0;
+  animation: md-blink 0.9s ease-in-out both;
+}
+
+.md-doc .md-blink.md-agent {
+  --md-blink-color: var(--md-agent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-doc .md-blink {
+    animation: none;
+  }
 }
