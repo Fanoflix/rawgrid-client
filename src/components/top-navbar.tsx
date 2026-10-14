@@ -29,7 +29,7 @@ interface ToolHint {
 const HINT_EXIT_MS = 200;
 const IS_MAC =
   typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
-const FOCUS_HOTKEY_LABEL = IS_MAC ? "⌘⇧F" : "ctrl⇧F";
+const FOCUS_HOTKEY_KEYS = IS_MAC ? ["⌘", "⇧", "F"] : ["ctrl", "⇧", "F"];
 
 function isFocusHotkey(event: KeyboardEvent) {
   const hasModifier = IS_MAC ? event.metaKey : event.ctrlKey;
@@ -191,8 +191,10 @@ export function TopNavbar({ layoutState }: TopNavbarProps) {
           >
             <FocusIcon isOff={isFocused} className="size-3" />
             focus mode
-            <kbd className="rounded border border-current/20 px-1 text-[10px] opacity-70">
-              {FOCUS_HOTKEY_LABEL}
+            <kbd className="inline-flex h-4 items-center gap-0.5 rounded border border-current/20 px-1 font-sans text-[10px] leading-none tracking-wide opacity-70">
+              {FOCUS_HOTKEY_KEYS.map((key) => (
+                <span key={key}>{key}</span>
+              ))}
             </kbd>
           </TooltipTrigger>
           <TooltipContent side="bottom">
