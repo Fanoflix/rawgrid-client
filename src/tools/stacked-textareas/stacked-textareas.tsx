@@ -110,6 +110,7 @@ function StackedTextareaRow({
   canRemove,
 }: StackedTextareaRowProps) {
   const { fontSize, increaseFont, decreaseFont } = useFont({
+    tool: "stacked-textareas",
     defaultSize: 12,
     minSize: 10,
     maxSize: 36,

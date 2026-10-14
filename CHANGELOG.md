@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.2
+
+### UX
+
+- `⌘⇧+` and `⌘⇧-` (`ctrl` on other systems) change the font size of the tool under your cursor instead of zooming the page. In focus mode they apply to the focused tool.
+- The stacked textareas share one font size, so the hotkey and the buttons change every row together.
+
 ## 1.0.1
 
 ### Fixes

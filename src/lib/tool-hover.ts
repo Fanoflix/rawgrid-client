@@ -4,3 +4,8 @@
  * ten tools.
  */
 export const HOVER_COMMAND = "tool:hover";
+
+export const FONT_COMMANDS = {
+  increase: "font:increase",
+  decrease: "font:decrease",
+} as const;

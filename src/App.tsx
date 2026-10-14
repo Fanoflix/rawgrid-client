@@ -27,8 +27,9 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { subscribe } from "@/lib/command-bus";
+import { dispatch, subscribe } from "@/lib/command-bus";
 import { ghostModifier } from "@/lib/drag-ghost";
+import { FONT_COMMANDS, HOVER_COMMAND } from "@/lib/tool-hover";
 import {
   FOCUS_TABS_HEIGHT,
   getGridNodeId,
@@ -43,6 +44,16 @@ import { useThemeToggle } from "@/lib/use-theme-toggle";
 import { cn } from "@/lib/utils";
 import type { ToolId } from "@/lib/tool-registry";
 import { TOOL_REGISTRY } from "@/lib/tool-registry";
+
+const IS_MAC =
+  typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+
+const FONT_HOTKEY_CODES: Record<string, keyof typeof FONT_COMMANDS | undefined> = {
+  Equal: "increase",
+  NumpadAdd: "increase",
+  Minus: "decrease",
+  NumpadSubtract: "decrease",
+};
 
 export function App() {
   const layoutState = useLayout();
@@ -66,6 +77,7 @@ export function App() {
   const { setTheme } = useThemeToggle();
   const [activeToolId, setActiveToolId] = useState<ToolId | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const hoveredToolRef = useRef<ToolId | null>(null);
   const [focusTop, setFocusTop] = useState(0);
 
   useEffect(() => {
@@ -93,6 +105,28 @@ export function App() {
     observer.observe(document.body);
     return () => observer.disconnect();
   }, [isLayoutReady]);
+
+  useEffect(
+    () =>
+      subscribe(HOVER_COMMAND, (toolId) => {
+        hoveredToolRef.current = toolId && isToolId(toolId) ? toolId : null;
+      }),
+    []
+  );
+
+  useEffect(() => {
+    function handleFontHotkey(event: KeyboardEvent) {
+      const hasModifier = IS_MAC ? event.metaKey : event.ctrlKey;
+      if (!hasModifier || !event.shiftKey) return;
+      const direction = FONT_HOTKEY_CODES[event.code];
+      if (!direction) return;
+      event.preventDefault();
+      const target = hoveredToolRef.current ?? focusedToolId;
+      if (target) dispatch(FONT_COMMANDS[direction], target);
+    }
+    window.addEventListener("keydown", handleFontHotkey);
+    return () => window.removeEventListener("keydown", handleFontHotkey);
+  }, [focusedToolId]);
 
   useEffect(() => {
     if (focusedToolId === null) return;
