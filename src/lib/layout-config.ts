@@ -69,32 +69,25 @@ function parseJson(value: string | null): unknown {
   }
 }
 
-function reconcileToolsBySlot(stored: unknown): {
-  toolsBySlot: ToolsBySlot;
-  emptySlots: number[];
-} | null {
-  if (!Array.isArray(stored) || stored.length !== SLOT_COUNT) return null;
+function reconcileToolsBySlot(stored: unknown): ToolsBySlot | null {
+  if (!Array.isArray(stored) || stored.length === 0) return null;
 
   const seenTools = new Set<ToolId>();
-  const toolOrNullBySlot = stored.map((entry): ToolId | null => {
-    if (!ALL_TOOL_IDS.includes(entry) || seenTools.has(entry)) return null;
-    seenTools.add(entry);
-    return entry as ToolId;
-  });
-  const missingTools = ALL_TOOL_IDS.filter((id) => !seenTools.has(id));
-  const emptySlots = toolOrNullBySlot.flatMap((tool, slot) =>
-    tool ? [] : [slot]
+  const toolOrNullBySlot = Array.from(
+    { length: SLOT_COUNT },
+    (_, slot): ToolId | null => {
+      const entry = stored[slot];
+      if (!ALL_TOOL_IDS.includes(entry) || seenTools.has(entry)) return null;
+      seenTools.add(entry);
+      return entry as ToolId;
+    }
   );
-  if (missingTools.length !== emptySlots.length) return null;
-
-  return {
-    toolsBySlot: toolOrNullBySlot.map((tool) => tool ?? missingTools.shift()!),
-    emptySlots,
-  };
+  const missingTools = ALL_TOOL_IDS.filter((id) => !seenTools.has(id));
+  return toolOrNullBySlot.map((tool) => tool ?? missingTools.shift()!);
 }
 
-function reconcileHiddenSlots(stored: unknown, emptySlots: number[]) {
-  const hiddenSlots = new Set<number>(emptySlots);
+function reconcileHiddenSlots(stored: unknown) {
+  const hiddenSlots = new Set<number>();
   if (Array.isArray(stored)) {
     for (const slot of stored) {
       if (Number.isInteger(slot) && slot >= 0 && slot < SLOT_COUNT) {
@@ -120,21 +113,17 @@ function reconcilePanelSizes(stored: unknown): PanelSizes {
 export function reconcileLayoutState(stored: unknown): LayoutState {
   if (!stored || typeof stored !== "object") return getDefaultLayoutState();
   const candidate = stored as Partial<Record<keyof LayoutState, unknown>>;
-  const tools = reconcileToolsBySlot(candidate.toolsBySlot);
-  if (!tools) return getDefaultLayoutState();
+  const toolsBySlot = reconcileToolsBySlot(candidate.toolsBySlot);
+  if (!toolsBySlot) return getDefaultLayoutState();
   const hiddenSlots = reconcileHiddenSlots(
-    candidate.hiddenSlots ?? DEFAULT_HIDDEN_SLOTS,
-    tools.emptySlots
+    candidate.hiddenSlots ?? DEFAULT_HIDDEN_SLOTS
   );
   if (!hiddenSlots) return getDefaultLayoutState();
   return {
-    toolsBySlot: tools.toolsBySlot,
+    toolsBySlot,
     hiddenSlots,
     panelSizes: reconcilePanelSizes(candidate.panelSizes),
-    focusedToolId: reconcileFocusedTool(
-      candidate.focusedToolId,
-      tools.toolsBySlot
-    ),
+    focusedToolId: reconcileFocusedTool(candidate.focusedToolId, toolsBySlot),
   };
 }
 

@@ -19,7 +19,9 @@
     <script>
       (function(l) {
         if (l.search[1] === '/') {
-          var decoded = l.search.slice(1).split('&').map(function(s) {
+          var decoded = l.search.slice(1).split('&').filter(function(s) {
+            return !/^r=\d+$/.test(s)
+          }).map(function(s) {
             return s.replace(/~and~/g, '&')
           }).join('?');
           window.history.replaceState(null, null,

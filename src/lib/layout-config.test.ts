@@ -42,17 +42,34 @@ describe("reconcileLayoutState", () => {
     expect(unknown.focusedToolId).toBeNull();
   });
 
-  it("resets when the slot count no longer matches", () => {
-    const stored = { toolsBySlot: DEFAULT_TOOLS_BY_SLOT.slice(0, SLOT_COUNT - 1) };
-    expect(reconcileLayoutState(stored)).toEqual(getDefaultLayoutState());
+  it("keeps an older layout with fewer slots and puts new tools in the new slots", () => {
+    const older = [...DEFAULT_TOOLS_BY_SLOT.slice(0, SLOT_COUNT - 1)].reverse();
+    const reconciled = reconcileLayoutState({
+      toolsBySlot: older,
+      hiddenSlots: [2],
+      panelSizes: { "slot-0": 30 },
+    });
+    expect(reconciled.toolsBySlot.slice(0, SLOT_COUNT - 1)).toEqual(older);
+    expect(reconciled.toolsBySlot[SLOT_COUNT - 1]).toBe(
+      DEFAULT_TOOLS_BY_SLOT[SLOT_COUNT - 1]
+    );
+    expect(reconciled.hiddenSlots).toEqual([2]);
+    expect(reconciled.panelSizes).toEqual({ "slot-0": 30 });
   });
 
-  it("fills unknown or duplicate tools with the missing ones and hides them", () => {
+  it("replaces unknown or duplicate tools with the missing ones in place", () => {
     const toolsBySlot = [...DEFAULT_TOOLS_BY_SLOT];
     toolsBySlot[3] = "retired-tool" as never;
     const reconciled = reconcileLayoutState({ toolsBySlot, hiddenSlots: [] });
     expect(reconciled.toolsBySlot[3]).toBe(DEFAULT_TOOLS_BY_SLOT[3]);
-    expect(reconciled.hiddenSlots).toEqual([3]);
+    expect(reconciled.hiddenSlots).toEqual([]);
+  });
+
+  it("truncates a layout that has more slots than the grid", () => {
+    const reconciled = reconcileLayoutState({
+      toolsBySlot: [...DEFAULT_TOOLS_BY_SLOT, "extra"],
+    });
+    expect(reconciled.toolsBySlot).toEqual(DEFAULT_TOOLS_BY_SLOT);
   });
 
   it("uses the default hidden slots when none are stored", () => {
