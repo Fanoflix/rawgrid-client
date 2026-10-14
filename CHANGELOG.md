@@ -2,31 +2,49 @@
 
 ## 1.0.0
 
-### Focus mode
+### New tools
 
-The headline of this release. Hover any tool and click the focus icon next to its name in the top bar, or pick "focus <tool>" from the command palette, and that tool takes over the whole grid. Every other tool stays loaded and waits in a tab strip above it, visible ones first and hidden ones washed out at the end, so you can jump between tools with one click. Press `Escape`, click the slashed focus icon, or run a palette command for another visible tool, and your saved layout comes straight back. Focus mode survives a reload.
+**MD Builder.** Review a markdown file with comments an agent can read and answer.
 
-### MD Builder
+- Open a local `.md` file (saves back to it on Chrome and Edge), upload a copy, drag it in, or paste.
+- Select text and add a comment. Reply, edit and delete.
+- Save writes the comments into the file as CriticMarkup: `{==text==}{>>comment<<}`.
+- The tool tells you when the file changed on disk, so you can reload the agent's replies.
+- Agent replies show in blue. The comment panel collapses into a minimap.
+- One click copies a short brief that explains the format to an agent.
 
-A new tool for reviewing a markdown file with comments that a coding agent can read and answer. Open a local `.md` file with write-back on Chrome and Edge, upload a copy, drag it in, or paste. Select text and leave threaded comments. Saving writes them into the file as CriticMarkup (`{==text==}{>>comment<<}`), and the tool flags when the file changes on disk so you can reload the agent's replies. Agent replies are tinted blue, the comment panel collapses into a minimap, and there is a one-click brief that explains the format to an agent.
+Idea by [@TheSalarKhan](https://github.com/TheSalarKhan). Thank you.
 
-Idea by [@TheSalarKhan](https://github.com/TheSalarKhan), thank you.
+### UX
 
-### Ranked command palette
+**Focus mode.** The big one.
 
-Searching the palette ranks instead of filtering. "md paste" finds the paste command and "md play" lists the MD Builder commands before the timer. Short typos are forgiven.
+- Hover a tool and click the focus icon next to its name, or run "focus <tool>" from the palette.
+- That tool fills the grid. The others wait in a tab strip above it. Hidden tools sit at the end, washed out.
+- Press `Escape`, click the slashed focus icon, or run a palette command for another visible tool to get your layout back.
+- Focus mode survives a reload.
 
-### Everything in one place
+**Command palette.**
 
-All tool state, the grid layout, the size of every space, the timer run, the video you loaded and your font sizes now live in a single IndexedDB database. Old data migrates on first load. Clearing a field now survives a reload, edits made during the first moments after load are no longer overwritten, and the last edit before closing a tab is no longer lost.
+- Results are ranked, not filtered. "md paste" finds paste markdown. "md play" lists the MD Builder commands before the timer.
+- Small typos still match.
 
-### Fixes
+**Your data.**
 
-- The top bar hint slides out to the right instead of snapping away.
-- Theme commands from the palette always apply, and the landing page no longer loads in the wrong theme.
-- Inner panel splits inside tools were being read as pixels and are now real percentages.
-- Hidden spaces no longer reappear when a layout was saved without them.
+- Everything is saved in one place: tool inputs, the layout, the size of every space, the running timer, the video you loaded, and font sizes.
+- Old data moves over on first load.
+- Clearing a field stays cleared after a reload.
+- Edits made right after the page loads are no longer lost.
+- The last edit before closing a tab is no longer lost.
+
+**Fixes.**
+
+- The tool name in the top bar slides out to the right instead of snapping away.
+- Theme commands from the palette always work. The landing page loads in the right theme.
+- Splits inside tools were read as pixels. They are percentages now.
+- Hidden spaces no longer come back on their own.
 
 ### For contributors
 
-`AGENTS.md` documents the codebase, the persistence rules, a blueprint for adding a tool and the gotchas found along the way. Vitest is set up with unit tests and seeded fuzz tests for the markdown renderer, the CriticMarkup round trip and the palette matcher.
+- `AGENTS.md` explains the codebase, how data is saved, how to add a tool, and the gotchas.
+- Tests run with `yarn test`. They include fuzz tests for the markdown renderer, the CriticMarkup round trip and the palette matcher.
