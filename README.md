@@ -30,7 +30,7 @@ A browser-based developer toolbox with multiple utilities arranged in a resizabl
   - **Hide spaces**: hide any space and the spaces around it grow to fill the room. Bring them back one at a time from the `hidden spaces` menu, or hit `Reset` for the default layout.
 - **JSON editors**: the JWT decoder, JSON prettify, and JSON search use a code editor with syntax highlighting (One Dark Pro, One Light in light mode), bracket colors by depth, and indentation that follows the JSON structure.
 - **Command palette**: press `Ctrl/Cmd + K` to run actions across tools, such as starting the timer, loading JSON, decoding a token, switching theme, or toggling edit mode. Results are ranked, so `md paste` finds the markdown paste command and `md play` lists the MD Builder commands before the timer.
-- **Focus mode**: hover a tool and click the crosshair next to its name in the top bar to give it the whole grid. The other tools stay loaded but hidden. Press `Escape`, click the slashed crosshair, or run a palette command for another visible tool to get the layout back. Focus survives a reload.
+- **Focus mode**: click `focus mode` in the top bar or press `⌘⇧F` to give the tool under your cursor the whole grid. The other tools wait as tabs above it. Press `Escape`, click the button again, or run a palette command for another visible tool to get the layout back. Focus survives a reload.
 - **Hover hints**: hovering a tool shows its name and description in the top bar.
 - **Light and dark themes**: toggle from the top bar or the command palette.
 - **Persistent state**: tool inputs, layout, hidden spaces, theme, and the chosen alarm sound are saved in the browser and restored on reload.

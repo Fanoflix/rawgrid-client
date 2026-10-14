@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pencil, RotateCcw } from "lucide-react";
 
 import { CommandPaletteTrigger } from "@/components/command-palette-trigger";
@@ -27,7 +27,14 @@ interface ToolHint {
 }
 
 const HINT_EXIT_MS = 200;
-const HINT_LINGER_MS = 700;
+const IS_MAC =
+  typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+const FOCUS_HOTKEY_LABEL = IS_MAC ? "⌘⇧F" : "ctrl⇧F";
+
+function isFocusHotkey(event: KeyboardEvent) {
+  const hasModifier = IS_MAC ? event.metaKey : event.ctrlKey;
+  return hasModifier && event.shiftKey && event.key.toLowerCase() === "f";
+}
 
 export function TopNavbar({ layoutState }: TopNavbarProps) {
   const {
@@ -43,64 +50,59 @@ export function TopNavbar({ layoutState }: TopNavbarProps) {
   } = layoutState;
 
   const [hint, setHint] = useState<ToolHint | null>(null);
-  const hintTimerRef = useRef<number | null>(null);
-
-  const clearHintTimer = useCallback(() => {
-    if (hintTimerRef.current) {
-      window.clearTimeout(hintTimerRef.current);
-      hintTimerRef.current = null;
-    }
-  }, []);
-
-  const beginHintExit = useCallback(() => {
-    clearHintTimer();
-    hintTimerRef.current = window.setTimeout(() => {
-      setHint((current) => (current ? { ...current, isLeaving: true } : null));
-      hintTimerRef.current = window.setTimeout(() => {
-        hintTimerRef.current = null;
-        setHint((current) => (current?.isLeaving ? null : current));
-      }, HINT_EXIT_MS);
-    }, HINT_LINGER_MS);
-  }, [clearHintTimer]);
+  const hintExitTimerRef = useRef<number | null>(null);
+  const lastHoveredRef = useRef<ToolId | null>(null);
 
   useEffect(() => {
     const unsubscribe = subscribe(HOVER_COMMAND, (toolId) => {
+      if (hintExitTimerRef.current) {
+        window.clearTimeout(hintExitTimerRef.current);
+        hintExitTimerRef.current = null;
+      }
       if (toolId) {
-        clearHintTimer();
+        lastHoveredRef.current = toolId as ToolId;
         setHint({ toolId: toolId as ToolId, isLeaving: false });
         return;
       }
-      beginHintExit();
+      setHint((current) => (current ? { ...current, isLeaving: true } : null));
+      hintExitTimerRef.current = window.setTimeout(() => {
+        hintExitTimerRef.current = null;
+        setHint((current) => (current?.isLeaving ? null : current));
+      }, HINT_EXIT_MS);
     });
     return () => {
       unsubscribe();
-      clearHintTimer();
+      if (hintExitTimerRef.current) {
+        window.clearTimeout(hintExitTimerRef.current);
+      }
     };
-  }, [beginHintExit, clearHintTimer]);
+  }, []);
 
-  const shownHint: ToolHint | null = focusedToolId
-    ? { toolId: focusedToolId, isLeaving: false }
-    : hint;
-  const hoveredTool = shownHint ? TOOL_REGISTRY[shownHint.toolId] : null;
-  const isHintFocused = focusedToolId !== null;
+  const isFocused = focusedToolId !== null;
 
-  function handleHintMouseEnter() {
-    if (isHintFocused) return;
-    clearHintTimer();
-    setHint((current) =>
-      current?.isLeaving ? { ...current, isLeaving: false } : current
+  function toggleFocusMode() {
+    if (isFocused) {
+      exitFocus();
+      return;
+    }
+    const firstVisible = toolsBySlot.find(
+      (_, slot) => !hiddenSlots.includes(slot)
     );
+    const target = lastHoveredRef.current ?? firstVisible;
+    if (target) focusTool(target);
   }
 
-  function handleHintMouseLeave() {
-    if (!isHintFocused) beginHintExit();
-  }
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (!isFocusHotkey(event)) return;
+      event.preventDefault();
+      toggleFocusMode();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  });
 
-  function handleFocusToggle() {
-    if (!shownHint) return;
-    if (isHintFocused) exitFocus();
-    else focusTool(shownHint.toolId);
-  }
+  const hoveredTool = hint ? TOOL_REGISTRY[hint.toolId] : null;
 
   return (
     <nav
@@ -139,19 +141,13 @@ export function TopNavbar({ layoutState }: TopNavbarProps) {
             className="size-3 invert dark:invert-0"
           />
         </Button>
-        {/* Keyed so each new hover replays the slide instead of swapping text in place. */}
-        {shownHint && hoveredTool && (
+        {hint && hoveredTool && (
           <span
-            key={shownHint.toolId}
+            key={hint.toolId}
             aria-live="polite"
-            onMouseEnter={handleHintMouseEnter}
-            onMouseLeave={handleHintMouseLeave}
             className={cn(
-              "flex min-w-0 items-center gap-1.5 pl-1 pr-1 rounded-[7px]",
-              shownHint.isLeaving
-                ? "animate-hint-out"
-                : "animate-hint-in hint-flash",
-              isHintFocused && "bg-primary/15"
+              "flex min-w-0 items-center gap-1.5 pl-1 pr-2.5 rounded-[7px]",
+              hint.isLeaving ? "animate-hint-out" : "animate-hint-in hint-flash"
             )}
           >
             <span className="text-muted-foreground/40">/</span>
@@ -159,24 +155,6 @@ export function TopNavbar({ layoutState }: TopNavbarProps) {
             <span className="truncate text-muted-foreground">
               {hoveredTool.description}
             </span>
-            <Tooltip>
-              <TooltipTrigger
-                type="button"
-                delay={300}
-                className={cn(
-                  buttonVariants({ variant: "ghost", size: "icon-xs" }),
-                  "shrink-0"
-                )}
-                onClick={handleFocusToggle}
-                aria-label={isHintFocused ? "exit focus mode" : "focus this tool"}
-                aria-pressed={isHintFocused}
-              >
-                <FocusIcon isOff={isHintFocused} className="size-3.5" />
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                {isHintFocused ? "exit focus mode (esc)" : "focus mode"}
-              </TooltipContent>
-            </Tooltip>
           </span>
         )}
       </p>
@@ -197,6 +175,32 @@ export function TopNavbar({ layoutState }: TopNavbarProps) {
             </Button>
           </>
         )}
+
+        <Tooltip>
+          <TooltipTrigger
+            type="button"
+            delay={300}
+            className={cn(
+              buttonVariants({
+                variant: isFocused ? "default" : "outline",
+                size: "xs",
+              })
+            )}
+            onClick={toggleFocusMode}
+            aria-pressed={isFocused}
+          >
+            <FocusIcon isOff={isFocused} className="size-3" />
+            focus mode
+            <kbd className="rounded border border-current/20 px-1 text-[10px] opacity-70">
+              {FOCUS_HOTKEY_LABEL}
+            </kbd>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            {isFocused
+              ? "back to your layout (esc)"
+              : "give the hovered tool the whole grid"}
+          </TooltipContent>
+        </Tooltip>
 
         <Button
           size="xs"

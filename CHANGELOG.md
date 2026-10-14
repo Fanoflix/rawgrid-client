@@ -19,9 +19,9 @@ Idea by [@TheSalarKhan](https://github.com/TheSalarKhan). Thank you.
 
 **Focus mode.** The big one.
 
-- Hover a tool and click the focus icon next to its name, or run "focus <tool>" from the palette.
-- That tool fills the grid. The others wait in a tab strip above it. Hidden tools sit at the end, washed out.
-- Press `Escape`, click the slashed focus icon, or run a palette command for another visible tool to get your layout back.
+- Click "focus mode" in the top bar, press `⌘⇧F`, or run "focus <tool>" from the palette.
+- The tool under your cursor fills the grid. The others wait in a tab strip above it. Hidden tools sit at the end, washed out.
+- Press `Escape`, click the button again, or run a palette command for another visible tool to get your layout back.
 - Focus mode survives a reload.
 
 **Command palette.**
