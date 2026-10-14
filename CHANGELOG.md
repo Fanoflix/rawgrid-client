@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1
+
+### Fixes
+
+- Reloading the tools page right after a deploy could bring back the previous version for a few minutes. The page now skips the browser cache on that path.
+- Adding a new tool no longer resets your layout. Your arrangement, hidden spaces and sizes stay, and the new tool takes the new space.
+
 ## 1.0.0
 
 ### New tools

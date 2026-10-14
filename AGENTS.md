@@ -59,7 +59,8 @@ Rules:
 ## Grid and layout
 
 - The grid is a tree in `GRID_TREE`. Groups have string ids. Slots are numbered and render as panels with id `slot-N`. Sizes in the tree are percentages used only when nothing is stored.
-- Every tool has exactly one slot. `SLOT_COUNT` is the length of `DEFAULT_TOOLS_BY_SLOT`. Adding a tool changes the count and resets every user's saved layout to the default once. That is accepted.
+- Every tool has exactly one slot. `SLOT_COUNT` is the length of `DEFAULT_TOOLS_BY_SLOT`. Adding a tool appends a slot. Saved layouts keep their existing assignments, hidden slots and sizes, and the new tool lands in the new slot. Removed or unknown tools are replaced in place by whichever registered tools are missing. Always append new slots at the end of `DEFAULT_TOOLS_BY_SLOT`, never insert in the middle, or stored assignments shift.
+- GitHub Pages serves `index.html` with a 10-minute cache. A reload on `/tools` goes through `public/404.html`, which redirects to `/?/tools` with a timestamp so the browser never reuses a pre-deploy copy; the script in `index.html` strips that timestamp. Keep both in sync.
 - Hidden slots are not rendered. The visible siblings are rescaled to fill the group.
 - Panel sizes are saved per panel id from `onLayoutChanged` and restored through `defaultLayout` only when every visible panel in the group has a stored size. The library keeps its own in-memory layouts during a session, so reset bumps a `layoutVersion` key to remount the grid.
 - The layout hydrates asynchronously. The grid renders only once `isReady` is true.
