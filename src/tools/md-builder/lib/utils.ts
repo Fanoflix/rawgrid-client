@@ -1,20 +1,3 @@
-const AUTHOR_PREFIX_PATTERN = /^([a-z][a-z0-9 _-]{0,15}):\s+/i;
-
-export interface AttributedNote {
-  author: string | null;
-  text: string;
-}
-
-export function splitAuthor(note: string): AttributedNote {
-  const match = AUTHOR_PREFIX_PATTERN.exec(note);
-  if (!match) return { author: null, text: note };
-  return { author: match[1].toLowerCase(), text: note.slice(match[0].length) };
-}
-
-export function isAgentComment(notes: string[]) {
-  return notes.length > 0 && splitAuthor(notes[0]).author !== null;
-}
-
 function easeOutCubic(progress: number) {
   return 1 - Math.pow(1 - progress, 3);
 }

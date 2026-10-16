@@ -21,15 +21,15 @@ describe("settingsToJson", () => {
     ).toEqual({
       fontSize: 120,
       fonts: { ui: "nunito-sans", mono: "fira-code" },
-      light: { primary: "#e7000b", accent: "#1a83db" },
-      dark: { primary: "#123456", accent: "#1a83db" },
+      light: { primary: "#e7000b" },
+      dark: { primary: "#123456" },
     });
   });
 
   it("round-trips through the parser", () => {
     const settings = {
       fontScaleLevel: -1,
-      theme: { fonts: { ui: "inter" }, light: { accent: "#00ff00" }, dark: {} },
+      theme: { fonts: { ui: "inter" }, light: { primary: "#00ff00" }, dark: {} },
     };
     expect(parseSettingsJson(settingsToJson(settings))).toEqual({ settings, errors: null });
   });
@@ -64,15 +64,17 @@ describe("parseSettingsJson", () => {
       JSON.stringify({
         fontSize: 115,
         fonts: { ui: "comic-sans", mono: 3 },
-        dark: { primary: "red", accent: "#12" },
+        light: { primary: "#12" },
+        dark: { primary: "red", accent: "#1a83db" },
       })
     );
     expect(result.errors?.map((error) => error.path)).toEqual([
       "fontSize",
       "fonts.ui",
       "fonts.mono",
-      "dark.primary",
+      "light.primary",
       "dark.accent",
+      "dark.primary",
     ]);
   });
 
@@ -94,9 +96,7 @@ describe("findSettingsFields", () => {
       ["fonts.ui", "nunito-sans"],
       ["fonts.mono", "system"],
       ["light.primary", "#e7000b"],
-      ["light.accent", "#1a83db"],
       ["dark.primary", "#fb2c36"],
-      ["dark.accent", "#1a83db"],
     ]);
     const lightPrimary = fields[2];
     expect(text.slice(lightPrimary.from, lightPrimary.to)).toBe('"#e7000b"');

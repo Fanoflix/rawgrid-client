@@ -5,6 +5,7 @@ import { CommandPaletteTrigger } from "@/components/command-palette-trigger";
 import { FocusIcon } from "@/components/focus-icon";
 import { HiddenSpacesMenu } from "@/components/hidden-spaces-menu";
 import { SettingsDialog } from "@/components/settings-dialog";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Tooltip,
   TooltipContent,
@@ -213,6 +214,7 @@ export function TopNavbar({ layoutState }: TopNavbarProps) {
           {isEditMode ? "done" : "edit spaces"}
         </Button>
 
+        <ThemeToggle />
         <SettingsDialog />
       </div>
     </nav>

@@ -19,13 +19,13 @@ describe("withoutDefaults", () => {
     expect(
       withoutDefaults({
         fonts: { ui: "nunito-sans", mono: "fira-code" },
-        light: { primary: "#E7000B", accent: "#0F0" },
-        dark: {},
+        light: { primary: "#E7000B" },
+        dark: { primary: "#0F0" },
       })
     ).toEqual({
       fonts: { mono: "fira-code" },
-      light: { accent: "#00ff00" },
-      dark: {},
+      light: {},
+      dark: { primary: "#00ff00" },
     });
   });
 
@@ -34,7 +34,7 @@ describe("withoutDefaults", () => {
       withoutDefaults({
         fonts: { ui: "comic-sans" },
         light: { primary: 12 as unknown as string },
-        dark: { accent: "blue" },
+        dark: { primary: "blue" },
       })
     ).toEqual({ fonts: {}, light: {}, dark: {} });
   });
@@ -49,13 +49,13 @@ describe("customThemeCss", () => {
     const css = customThemeCss({
       fonts: { mono: "jetbrains-mono" },
       light: { primary: "#1e3a8a" },
-      dark: { accent: "#22c55e" },
+      dark: { primary: "#facc15" },
     });
     expect(css).toBe(
       [
         ':root:root { --font-code: "JetBrains Mono Variable", monospace; }',
         "html:not(.dark) { --primary: #1e3a8a; --primary-foreground: oklch(0.985 0 0); }",
-        "html.dark { --md-agent: #22c55e; }",
+        "html.dark { --primary: #facc15; --primary-foreground: oklch(0.141 0.005 285.823); }",
       ].join("\n")
     );
   });

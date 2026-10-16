@@ -11,14 +11,8 @@ export const PENDING_CLASS = "md-pending";
 export const POINT_CLASS = "md-pt";
 export const PENDING_COMMENT_ID = 0;
 
-export const AGENT_CLASS = "md-agent";
-
 const POINT_ICON =
   '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
-
-export interface RenderOptions {
-  agentCommentIds?: ReadonlySet<number>;
-}
 
 interface SourceLine {
   text: string;
@@ -39,7 +33,6 @@ interface TableCell {
 interface RenderContext {
   comments: ReviewComment[];
   emittedPoints: Set<number>;
-  agentCommentIds: ReadonlySet<number>;
 }
 
 const LIST_PATTERN = /^(\s*)([-*+]|\d{1,9}[.)])(\s+|$)(.*)$/;
@@ -99,16 +92,11 @@ function startsBlock(text: string) {
   );
 }
 
-function toneClass(context: RenderContext, id: number) {
-  return context.agentCommentIds.has(id) ? ` ${AGENT_CLASS}` : "";
-}
-
-function pointMarker(context: RenderContext, id: number) {
-  return `<span class="${POINT_CLASS}${toneClass(context, id)}" ${COMMENT_ID_ATTR}="${id}" title="comment">${POINT_ICON}</span>`;
+function pointMarker(id: number) {
+  return `<span class="${POINT_CLASS}" ${COMMENT_ID_ATTR}="${id}" title="comment">${POINT_ICON}</span>`;
 }
 
 function textSpan(
-  context: RenderContext,
   start: number,
   end: number,
   shown: string,
@@ -118,7 +106,7 @@ function textSpan(
   const highlightClass =
     comment?.id === PENDING_COMMENT_ID
       ? `${HIGHLIGHT_CLASS} ${PENDING_CLASS}`
-      : `${HIGHLIGHT_CLASS}${comment ? toneClass(context, comment.id) : ""}`;
+      : HIGHLIGHT_CLASS;
   const highlight = comment
     ? ` class="${highlightClass}" ${COMMENT_ID_ATTR}="${comment.id}"`
     : "";
@@ -151,7 +139,7 @@ function renderSourceRange(
         continue;
       }
       context.emittedPoints.add(point.id);
-      html += pointMarker(context, point.id);
+      html += pointMarker(point.id);
     }
     return html;
   };
@@ -161,10 +149,10 @@ function renderSourceRange(
     for (const point of points) {
       if (point.start < end) {
         context.emittedPoints.add(point.id);
-        html += pointMarker(context, point.id);
+        html += pointMarker(point.id);
       }
     }
-    return html + textSpan(context, start, end, shown, false, ranged[0] ?? null);
+    return html + textSpan(start, end, shown, false, ranged[0] ?? null);
   }
 
   const cuts = new Set<number>([start, end]);
@@ -183,7 +171,7 @@ function renderSourceRange(
     const owner =
       ranged.find((comment) => comment.start <= from && comment.end >= to) ??
       null;
-    html += textSpan(context, 
+    html += textSpan(
       from,
       to,
       shown.slice(from - start, to - start),
@@ -193,7 +181,7 @@ function renderSourceRange(
   }
   if (end === start) {
     html += emitPointsAt(start);
-    html += textSpan(context, start, end, "", true, null);
+    html += textSpan(start, end, "", true, null);
   } else {
     html += emitPointsAt(end);
   }
@@ -762,13 +750,11 @@ function renderBlocks(context: RenderContext, lines: SourceLine[]): string {
 
 export function renderMarkdown(
   source: string,
-  comments: ReviewComment[],
-  options: RenderOptions = {}
+  comments: ReviewComment[]
 ): string {
   const context: RenderContext = {
     comments: sortComments(comments),
     emittedPoints: new Set(),
-    agentCommentIds: options.agentCommentIds ?? new Set(),
   };
   let html = renderBlocks(context, splitSourceLines(source));
   for (const comment of context.comments) {
@@ -776,7 +762,7 @@ export function renderMarkdown(
       comment.start === comment.end
         ? context.emittedPoints.has(comment.id)
         : html.includes(`${COMMENT_ID_ATTR}="${comment.id}"`);
-    if (!isEmitted) html += pointMarker(context, comment.id);
+    if (!isEmitted) html += pointMarker(comment.id);
   }
   return html;
 }

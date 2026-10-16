@@ -1,7 +1,7 @@
 import { hexToRgb, parseHexInput } from "@/tools/color-picker/lib/utils";
 
 export type ThemeMode = "light" | "dark";
-export type ThemeColorKey = "primary" | "accent";
+export type ThemeColorKey = "primary";
 export type FontSlot = "ui" | "mono";
 
 export type ModeColors = Partial<Record<ThemeColorKey, string>>;
@@ -19,7 +19,7 @@ export interface FontOption {
 }
 
 export const THEME_MODES: readonly ThemeMode[] = ["light", "dark"];
-export const THEME_COLOR_KEYS: readonly ThemeColorKey[] = ["primary", "accent"];
+export const THEME_COLOR_KEYS: readonly ThemeColorKey[] = ["primary"];
 export const FONT_SLOTS: readonly FontSlot[] = ["ui", "mono"];
 
 export const CUSTOM_THEME_STORAGE = {
@@ -31,8 +31,8 @@ export const CUSTOM_THEME_STORAGE = {
 export const EMPTY_CUSTOM_THEME: CustomTheme = { fonts: {}, light: {}, dark: {} };
 
 export const DEFAULT_THEME_COLORS: Record<ThemeMode, Record<ThemeColorKey, string>> = {
-  light: { primary: "#e7000b", accent: "#1a83db" },
-  dark: { primary: "#fb2c36", accent: "#1a83db" },
+  light: { primary: "#e7000b" },
+  dark: { primary: "#fb2c36" },
 };
 
 export const FONT_OPTIONS: Record<FontSlot, readonly FontOption[]> = {
@@ -63,7 +63,6 @@ export const DEFAULT_FONTS: Record<FontSlot, string> = {
 
 const COLOR_VARIABLES: Record<ThemeColorKey, string> = {
   primary: "--primary",
-  accent: "--md-agent",
 };
 
 const FONT_VARIABLES: Record<FontSlot, string> = {

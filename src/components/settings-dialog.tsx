@@ -26,10 +26,10 @@ import {
 import { Slider } from "@/components/ui/slider";
 import {
   FONT_OPTIONS,
+  THEME_COLOR_KEYS,
   effectiveColor,
   effectiveFont,
   type FontSlot,
-  type ThemeColorKey,
 } from "@/lib/custom-theme";
 import {
   FONT_SCALE,
@@ -59,11 +59,8 @@ const SETTINGS_TEXT = {
   dark: "dark",
   modifying: "modifying",
   themeMode: "theme mode",
-  colorLabels: { primary: "primary", accent: "accent" },
-  colorHints: {
-    primary: "buttons, highlights, active states",
-    accent: "agent comments in md builder",
-  },
+  colorLabels: { primary: "primary" },
+  colorHints: { primary: "buttons, highlights, active states" },
   resetMode: "reset colors for this mode",
   hexLabel: "hex",
   jsonHint:
@@ -272,7 +269,7 @@ function ThemeColorsSetting() {
         <span className="font-medium text-foreground">{mode}</span>{" "}
         {SETTINGS_TEXT.themeMode}
       </p>
-      {(["primary", "accent"] as const satisfies readonly ThemeColorKey[]).map((key) => (
+      {THEME_COLOR_KEYS.map((key) => (
         <div key={key} className="flex items-center gap-2">
           <span className="flex min-w-0 flex-col">
             <span className="font-medium">{SETTINGS_TEXT.colorLabels[key]}</span>

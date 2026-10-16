@@ -68,7 +68,6 @@ import { useMdBuilderWithCommands as useMdBuilder } from "@/tools/md-builder/lib
 import {
   isSubmitShortcut,
   scrollToCenter,
-  splitAuthor,
 } from "@/tools/md-builder/lib/utils";
 
 const ACTIVE_CLASS = "md-active";
@@ -301,7 +300,6 @@ export function MdBuilderTool() {
                 fontSize={state.fontSize}
                 comments={state.comments}
                 activeCommentId={state.activeCommentId}
-                agentCommentIds={state.agentCommentIds}
                 onFocusComment={focusComment}
                 onExpand={toggleCommentsCollapsed}
               />
@@ -334,7 +332,6 @@ export function MdBuilderTool() {
                   source={state.source}
                   comments={state.comments}
                   activeCommentId={state.activeCommentId}
-                  agentCommentIds={state.agentCommentIds}
                   onFocusComment={focusComment}
                   onHoverComment={hoverComment}
                   onReply={addReply}
@@ -596,7 +593,6 @@ interface CommentsPaneProps {
   source: string;
   comments: ReviewComment[];
   activeCommentId: number | null;
-  agentCommentIds: ReadonlySet<number>;
   onFocusComment: (id: number | null) => void;
   onHoverComment: (id: number | null) => void;
   onReply: (id: number, note: string) => void;
@@ -609,7 +605,6 @@ function CommentsPane({
   source,
   comments,
   activeCommentId,
-  agentCommentIds,
   onFocusComment,
   onHoverComment,
   onReply,
@@ -661,7 +656,6 @@ function CommentsPane({
                   MD_BUILDER_CONFIG.excerptLength
                 )}
                 isActive={comment.id === activeCommentId}
-                isAgent={agentCommentIds.has(comment.id)}
                 onFocus={() => onFocusComment(comment.id)}
                 onHover={(isHovering) =>
                   onHoverComment(isHovering ? comment.id : null)
@@ -689,7 +683,6 @@ interface CommentMinimapProps {
   fontSize: number;
   comments: ReviewComment[];
   activeCommentId: number | null;
-  agentCommentIds: ReadonlySet<number>;
   onFocusComment: (id: number | null) => void;
   onExpand: () => void;
 }
@@ -705,7 +698,6 @@ function CommentMinimap({
   fontSize,
   comments,
   activeCommentId,
-  agentCommentIds,
   onFocusComment,
   onExpand,
 }: CommentMinimapProps) {
@@ -825,13 +817,8 @@ function CommentMinimap({
             <span
               className={cn(
                 "h-0.5 w-full transition-[height,background-color]",
-                agentCommentIds.has(marker.id)
-                  ? "bg-(--md-agent)/80 group-hover/marker:bg-(--md-agent)"
-                  : "bg-primary/80 group-hover/marker:bg-primary",
-                marker.id === activeCommentId &&
-                  (agentCommentIds.has(marker.id)
-                    ? "h-1 bg-(--md-agent)"
-                    : "h-1 bg-primary")
+                "bg-primary/80 group-hover/marker:bg-primary",
+                marker.id === activeCommentId && "h-1 bg-primary"
               )}
             />
           </button>
@@ -845,7 +832,6 @@ interface CommentCardProps {
   comment: ReviewComment;
   excerpt: string;
   isActive: boolean;
-  isAgent: boolean;
   onFocus: () => void;
   onHover: (isHovering: boolean) => void;
   onReply: (note: string) => void;
@@ -857,7 +843,6 @@ function CommentCard({
   comment,
   excerpt,
   isActive,
-  isAgent,
   onFocus,
   onHover,
   onReply,
@@ -876,16 +861,15 @@ function CommentCard({
     <div
       {...{ [COMMENT_ID_ATTR]: comment.id }}
       className={cn(
-        "flex flex-col gap-1 border border-border p-2 transition-colors",
-        isAgent ? "bg-(--md-agent)/8" : "bg-background",
-        isActive && (isAgent ? "border-(--md-agent)" : "border-primary")
+        "flex flex-col gap-1 border border-border bg-background p-2 transition-colors",
+        isActive && "border-primary"
       )}
       onClick={handleCardClick}
       onMouseEnter={() => onHover(true)}
       onMouseLeave={() => onHover(false)}
     >
       {comment.end > comment.start && (
-        <Quote isAgent={isAgent}>{excerpt}</Quote>
+        <Quote>{excerpt}</Quote>
       )}
 
       {comment.notes.map((note, index) => (
@@ -949,8 +933,6 @@ function NoteView({
   onDelete,
   onReply,
 }: NoteViewProps) {
-  const { author, text } = splitAuthor(note);
-
   return (
     <div
       className={cn(
@@ -958,14 +940,7 @@ function NoteView({
         isReply && "ml-2 border-l-2 border-border pl-2"
       )}
     >
-      <p
-        className={cn(
-          "whitespace-pre-wrap text-xs wrap-break-word",
-          author && "text-(--md-agent)"
-        )}
-      >
-        {text}
-      </p>
+      <p className="whitespace-pre-wrap text-xs wrap-break-word">{note}</p>
       <span className="absolute -top-1 right-0 flex gap-0 bg-background opacity-0 transition-opacity group-hover/note:opacity-100 focus-within:opacity-100">
         <Button
           type="button"
@@ -1066,17 +1041,11 @@ function ReplySeparator() {
 
 interface QuoteProps {
   children: ReactNode;
-  isAgent?: boolean;
 }
 
-function Quote({ children, isAgent = false }: QuoteProps) {
+function Quote({ children }: QuoteProps) {
   return (
-    <p
-      className={cn(
-        "border-l-2 pl-2 text-11 text-muted-foreground wrap-break-word",
-        isAgent ? "border-(--md-agent)/70" : "border-primary/60"
-      )}
-    >
+    <p className="border-l-2 border-primary/60 pl-2 text-11 text-muted-foreground wrap-break-word">
       {children}
     </p>
   );

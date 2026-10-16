@@ -35,7 +35,7 @@ A browser-based developer toolbox with multiple utilities arranged in a resizabl
 - **Font hotkeys**: `⌘⇧+` and `⌘⇧-` (`ctrl` elsewhere) change the font size of the tool under your cursor instead of zooming the page.
 - **Font size**: scale every font from 90% to 150% from the settings button in the top bar or the command palette. Each tool's own font size scales with it.
 - **Light and dark themes**: switch from the settings button in the top bar or the command palette.
-- **Custom theme**: pick primary and accent colors per mode and the ui and code fonts in settings, or edit everything as JSON and copy it to share.
+- **Custom theme**: pick the primary color per mode and the ui and code fonts in settings, or edit everything as JSON and copy it to share.
 - **Persistent state**: tool inputs, layout, hidden spaces, theme, font size, and the chosen alarm sound are saved in the browser and restored on reload.
 - **Copy buttons**: hover an output to copy it.
 

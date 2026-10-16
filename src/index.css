@@ -44,7 +44,6 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
-  --md-agent: oklch(0.6 0.16 250);
   --font-scale: 1;
   --font-ui: "Nunito Sans Variable", sans-serif;
   --font-code: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -501,44 +500,16 @@
   cursor: text;
 }
 
-.md-doc .md-hl.md-agent {
-  background: color-mix(in oklab, var(--md-agent) 22%, transparent);
-  box-shadow: inset 0 -1px 0 color-mix(in oklab, var(--md-agent) 60%, transparent);
-}
-
-.md-doc .md-hl.md-agent:hover,
-.md-doc .md-hl.md-agent.md-active,
-.md-doc .md-hl.md-agent.md-hovered {
-  background: color-mix(in oklab, var(--md-agent) 40%, transparent);
-}
-
 .md-doc .md-hl.md-hovered {
   background: color-mix(in oklab, var(--primary) 34%, transparent);
   outline: 1px solid color-mix(in oklab, var(--primary) 75%, transparent);
   outline-offset: 0;
 }
 
-.md-doc .md-hl.md-agent.md-hovered {
-  outline-color: color-mix(in oklab, var(--md-agent) 75%, transparent);
-}
-
-.md-doc .md-pt.md-agent {
-  color: var(--md-agent);
-}
-
-.md-doc .md-pt.md-agent.md-active,
 .md-doc .md-pt.md-hovered {
   background: color-mix(in oklab, var(--primary) 34%, transparent);
-}
-
-.md-doc .md-pt.md-hovered {
   outline: 1px solid color-mix(in oklab, var(--primary) 75%, transparent);
   outline-offset: 0;
-}
-
-.md-doc .md-pt.md-agent.md-hovered {
-  background: color-mix(in oklab, var(--md-agent) 40%, transparent);
-  outline-color: color-mix(in oklab, var(--md-agent) 75%, transparent);
 }
 
 @keyframes md-blink {
@@ -560,10 +531,6 @@
   outline: 1px solid transparent;
   outline-offset: 0;
   animation: md-blink 0.9s ease-in-out both;
-}
-
-.md-doc .md-blink.md-agent {
-  --md-blink-color: var(--md-agent);
 }
 
 @media (prefers-reduced-motion: reduce) {
