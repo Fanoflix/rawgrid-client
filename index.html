@@ -13,6 +13,22 @@
         } catch (error) {
           document.documentElement.classList.add("dark");
         }
+        try {
+          var level = Number(window.localStorage.getItem("font-scale"));
+          if (Number.isInteger(level) && level !== 0) {
+            level = Math.min(5, Math.max(-1, level));
+            document.documentElement.style.setProperty("--font-scale", String(1 + level / 10));
+          }
+        } catch (error) {}
+        try {
+          var css = window.localStorage.getItem("custom-theme-css");
+          if (css) {
+            var style = document.createElement("style");
+            style.id = "custom-theme";
+            style.textContent = css;
+            document.head.appendChild(style);
+          }
+        } catch (error) {}
       })();
     </script>
     <!-- GitHub Pages SPA redirect handler (works with public/404.html) -->

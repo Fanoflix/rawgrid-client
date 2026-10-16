@@ -23,7 +23,18 @@ Commands: `yarn dev`, `yarn build` (runs `tsc -b` first), `yarn lint`, `yarn tes
 | `src/lib/use-layout.ts` | Layout state hook: swap, hide, show, reset, panel sizes, readiness. |
 | `src/lib/storage.ts` | The one IndexedDB database. Tool payloads and app-level values. |
 | `src/lib/use-tool-state.ts` | The hook every tool uses to persist its state. |
-| `src/lib/use-font.ts` | Font size with optional persistence per tool. |
+| `src/lib/use-font.ts` | Font size with optional persistence per tool, multiplied by the global font scale. |
+| `src/lib/font-scale.ts` | Font scale levels, their percentages and palette commands. Pure, unit tested. |
+| `src/lib/use-font-scale.ts` | Global font scale store. Sets `--font-scale` on `<html>`. |
+| `src/lib/use-overflow-tooltip.ts` | Finds cut-off text under the pointer inside `[data-overflow-tooltip]` areas. |
+| `src/lib/custom-theme.ts` | Custom colors and fonts: defaults, font options, the CSS they produce, readable text on primary. Pure, unit tested. |
+| `src/lib/use-custom-theme.ts` | Custom theme store. Writes the `<style id="custom-theme">` element and localStorage. |
+| `src/lib/settings-json.ts` | The settings JSON: export with every key, strict parsing, and finding color and font values in the editor's syntax tree. Pure, unit tested. |
+| `src/lib/settings-field-widgets.ts` | CodeMirror widgets that put a color swatch or a font ▾ before each pickable value in the settings JSON. |
+| `src/lib/use-settings-dialog.ts` | Settings modal open state and the "ESC goes back to the palette" rule. |
+| `src/components/settings-dialog.tsx` | The settings modal: font size, fonts, theme mode and colors, and the "edit in json" view. |
+| `src/components/edit-spaces-exit-dialog.tsx` | Asks whether to keep layout changes when ESC leaves edit spaces mode. |
+| `src/components/overflow-tooltip.tsx` | The one instant tooltip for cut-off header text, mounted once in `App.tsx`. |
 | `src/lib/command-bus.ts` | Tiny pub/sub. Commands are strings, payloads are strings. |
 | `src/lib/command-search.ts` | Ranked matcher behind the command palette. |
 | `src/components/command-palette.tsx` | The palette and its hard-coded `COMMANDS` list. |
@@ -47,7 +58,7 @@ Use the hooks and helpers, not idb directly:
 - `readAppState`, `writeAppState`, `deleteAppState` and `subscribeAppState` for app-level values. Writes broadcast to other tabs through a `BroadcastChannel`.
 - `readAppStateWithLocalStorageFallback` migrates a legacy localStorage key once, then deletes it.
 
-Theme is the one exception. It stays in localStorage because `index.html` reads it before first paint to avoid a flash, and `use-theme-toggle.ts` is a shared external store so every caller sees the same value.
+Theme, font scale and the custom theme are the exceptions. They stay in localStorage because `index.html` reads them before first paint to avoid a flash, and `use-theme-toggle.ts`, `use-font-scale.ts` and `use-custom-theme.ts` are shared external stores so every caller sees the same value. The font scale key is `font-scale` and holds the level, -1 to 5. The custom theme is stored twice: `custom-theme` holds the values and `custom-theme-css` holds the CSS built from them, so `index.html` only has to drop that CSS into a `<style>` element without knowing the format.
 
 Rules:
 
@@ -68,6 +79,7 @@ Rules:
 - The "focus mode" button sits left of "edit spaces" in the top bar and toggles with `⌘⇧F` (`ctrl⇧F` elsewhere). Entering focuses the last hovered tool, or the first visible one. The button uses `FocusIcon` in `src/components/focus-icon.tsx`, the lucide focus glyph with a slash variant for exit.
 - Focusing a hidden tool does not unhide it. Its slot is rendered only while it is focused (see `isNodeVisible` in `App.tsx`), and panel size changes are not persisted while any tool is focused, so the extra panel never pollutes the saved sizes.
 - In focus mode a `FocusTabs` strip sits above the focused slot, listing every visible tool. The slot's fixed top offset is `focusTop + FOCUS_TABS_HEIGHT`, so change both together.
+- ESC in edit spaces mode exits it. If spaces were moved, hidden or shown since entering, it asks first: keep changes, discard (restores the layout from when edit mode started) or keep editing. The "done" button always keeps changes.
 - The palette has one "focus <tool>" command per tool, generated from the registry, plus "exit focus mode". Commands can carry a fixed `payload`, which is how those entries pass the tool id.
 
 ## Command palette
@@ -87,9 +99,12 @@ Rules:
 5. Add the id to `DEFAULT_TOOLS_BY_SLOT` and a `{ kind: "slot", slot: N, size, minSize }` node in `GRID_TREE`. Add `N` to `DEFAULT_HIDDEN_SLOTS` to hide it by default.
 6. Add entries to `COMMANDS` in `command-palette.tsx`. Ids are `<id>-<action>`, command strings are `<id>:<action>`, labels and groups are lowercase.
 7. Add a card to `TOOLS` in `src/pages/landing.tsx` with a lucide icon, and a row to the README table.
-8. The tool fills a panel. Its root is `flex h-full w-full flex-col`, usually with `overflow-hidden`. The header bar is `h-8 border-b border-border px-1 gap-1` starting with `ToolInfo` and ending with `FontSizeButtons` in an `ml-auto` span. Meta labels are `font-mono text-[10px] text-muted-foreground`. Error strips are `bg-destructive/10 text-destructive`. All UI copy is lowercase.
+8. The tool fills a panel. Its root is `flex h-full w-full flex-col`, usually with `overflow-hidden`. The header bar is `h-8 border-b border-border px-1 gap-1` with `data-overflow-tooltip`, starting with `ToolInfo` and ending with `FontSizeButtons` in an `ml-auto` span. Meta labels are `font-mono text-10 text-muted-foreground`. Error strips are `bg-destructive/10 text-destructive`. All UI copy is lowercase.
 
 Style rules that apply everywhere:
+
+- Never size text in raw pixels such as `text-[10px]`. Use the Tailwind sizes or `text-10`, `text-11` and `text-13`. Those tokens are multiplied by `--font-scale` in `index.css`; a raw pixel size ignores the user's font scale. A per-tool font size from `useFont` is already scaled.
+- Tool header bars carry `data-overflow-tooltip`. To let a header label shrink, give the item `min-w-0 shrink` and put its text in a `truncate` span. Buttons are `shrink-0` by default. Cut-off text in the area then shows its full text in an instant tooltip.
 
 - No code comments. Names carry the meaning.
 - Named exports only. Files and folders are kebab-case. Imports use `@/` paths and are ordered React, third party, `@/components`, `@/lib`, `@/tools`.
@@ -111,6 +126,10 @@ Style rules that apply everywhere:
 - **Adjacent point comments merge.** `{==a==}{>>n1<<}{>>n2<<}` can only parse as one thread, so a point comment that starts exactly where the previous comment's notes end is ambiguous by the spec. The UI never creates one, since point comments only come from files. The fuzz test generator avoids it on purpose.
 - **A comment covering only markdown syntax has no text to highlight.** The renderer appends a fallback marker at the end of the document for any comment that produced no span, so its card still has an anchor.
 - **Comments in the sidebar are keyed by `data-c`.** The document, the cards and the minimap all look up a comment by that attribute. Keep it on anything that represents a comment.
+- **Custom theme CSS must beat the defaults without fighting the mode.** Colors are written under `html:not(.dark)` and `html.dark`, which outrank `:root` and `.dark` in `index.css` while staying mode-exclusive. A plain `:root` override would leak a light color into dark mode. Fonts go on `:root:root` through `--font-ui` and `--font-code`, which `--font-sans` and `--font-mono` point at.
+- **The settings JSON is strict on purpose.** Unknown keys and bad values are listed with their path and nothing is applied. Missing keys mean the default. A new setting needs a key in `settings-json.ts`, a test, and, if it is a color or font, a path in `fieldForPath` so the editor shows a picker for it.
+- **ESC is shared.** `isPageEscape` in `utils.ts` ignores ESC from inputs and from anything inside a dialog, so the focus mode and edit spaces handlers never fire under a modal. Base UI does not mark ESC as handled.
+- **`cn()` drops font size tokens it does not know.** tailwind-merge reads `text-11` as a text color, so `cn("text-11 text-muted-foreground")` silently loses the size. Every custom `--text-*` token in `index.css` must also be listed under `theme.text` in `src/lib/utils.ts`.
 - **Lint has pre-existing failures** in `tool-registry.tsx` (non-component export), `use-json-search.ts` (setState in effect) and three shadcn files. Do not fix them as a side effect of other work. Lint the files you touched.
 - **Two timers for the timer tool.** The entered duration is tool state. The running countdown is app state so other tabs can follow it. Keep them separate.
 - **File handles are structured-cloneable.** `FileSystemFileHandle` and `File` can be stored in `app-state` directly. Permission to read a stored handle must be re-requested after a reload.

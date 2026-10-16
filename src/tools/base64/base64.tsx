@@ -22,7 +22,10 @@ export function Base64Tool() {
 
   return (
     <div className="flex h-full w-full flex-col gap-0">
-      <div className="flex h-8 items-center gap-1 border-b border-border px-1">
+      <div
+        data-overflow-tooltip
+        className="flex h-8 items-center gap-1 border-b border-border px-1"
+      >
         <ToolInfo
           name="base64"
           description="encode text to base64 and decode it back."
@@ -33,7 +36,7 @@ export function Base64Tool() {
         {!state.isInSync && (
           <span
             role="status"
-            className="flex min-w-0 items-center gap-1 text-[10px] text-muted-foreground"
+            className="flex min-w-0 items-center gap-1 text-10 text-muted-foreground"
           >
             <TriangleAlert className="size-3 shrink-0 text-destructive" />
             <span className="truncate">out of sync</span>
@@ -109,7 +112,7 @@ function Base64Box({
   return (
     <div className={cn("flex min-w-0 flex-1 flex-col", className)}>
       <div className="flex h-7 shrink-0 items-center gap-1 border-b border-border px-1">
-        <span className="bg-accent/50 p-1 font-mono text-[10px] text-muted-foreground">
+        <span className="bg-accent/50 p-1 font-mono text-10 text-muted-foreground">
           {label}
         </span>
         <Button
@@ -140,7 +143,7 @@ function Base64Box({
       </div>
 
       {error && (
-        <p className="shrink-0 border-t border-border bg-destructive/10 px-1 py-1 font-mono text-[10px] text-destructive">
+        <p className="shrink-0 border-t border-border bg-destructive/10 px-1 py-1 font-mono text-10 text-destructive">
           {error}
         </p>
       )}

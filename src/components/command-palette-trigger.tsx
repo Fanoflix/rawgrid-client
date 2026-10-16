@@ -20,7 +20,7 @@ export function CommandPaletteTrigger() {
     >
       <Search />
       <span className="flex-1 truncate text-left">do everything via keyboard</span>
-      <kbd className="px-1 font-mono text-[10px] leading-4">
+      <kbd className="px-1 font-mono text-10 leading-4">
         {isMac ? "⌘K" : "Ctrl K"}
       </kbd>
     </Button>

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0
+
+### UX
+
+- A settings button (cog) in the top bar opens a settings modal. The palette opens it too with "open settings"; ESC then takes you back to the palette. The theme button moved into it.
+- Pick the primary and accent color for light and dark mode separately, plus the ui font and the code font. Changes apply as you make them and survive reloads without a flash.
+- "Edit in json" shows every setting as JSON. Colors have a swatch that opens a picker and fonts have a ▾ that opens the font list. Valid JSON applies as you type; unknown keys or bad values are listed and nothing is applied. Copy it to share a theme.
+- ESC leaves edit spaces mode. If you changed the layout, it asks whether to keep or discard the changes.
+- The font size slider scales every font in the app from 90% to 150% in 10% steps, like browser zoom but for text only. Each tool's own font size scales with it. The palette has "bigger text", "smaller text" and "reset text size".
+- When a tool header label is cut off, hovering it shows the full text right away.
+
 ## 1.0.2
 
 ### UX

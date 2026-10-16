@@ -13,7 +13,12 @@ import {
   syntaxHighlighting,
   syntaxTree,
 } from "@codemirror/language";
-import { Compartment, EditorState, RangeSetBuilder } from "@codemirror/state";
+import {
+  Compartment,
+  EditorState,
+  RangeSetBuilder,
+  type Extension,
+} from "@codemirror/state";
 import {
   Decoration,
   type DecorationSet,
@@ -36,6 +41,7 @@ import { cn } from "@/lib/utils";
 export interface JsonEditorHandle {
   /** Empties the editor as an edit, so ctrl+z brings the text back. */
   clear: () => void;
+  replaceRange: (from: number, to: number, text: string) => void;
 }
 
 interface JsonEditorProps {
@@ -45,6 +51,7 @@ interface JsonEditorProps {
   placeholder?: string;
   ariaLabel?: string;
   className?: string;
+  extensions?: Extension[];
   ref?: Ref<JsonEditorHandle>;
 }
 
@@ -78,7 +85,7 @@ const theme = EditorView.theme({
   "&": { height: "100%", backgroundColor: "transparent" },
   "&.cm-focused": { outline: "none" },
   ".cm-scroller": {
-    fontFamily: "var(--font-mono, ui-monospace, monospace)",
+    fontFamily: "var(--font-code)",
     lineHeight: WRAPPED_LINE_HEIGHT,
     overflow: "auto",
   },
@@ -143,6 +150,7 @@ export function JsonEditor({
   placeholder = "",
   ariaLabel,
   className,
+  extensions = [],
   ref,
 }: JsonEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -165,6 +173,9 @@ export function JsonEditor({
       view.dispatch({ changes: { from: 0, to: view.state.doc.length } });
       view.focus();
     },
+    replaceRange(from, to, text) {
+      viewRef.current?.dispatch({ changes: { from, to, insert: text } });
+    },
   }));
 
   // Created once; value and font size are pushed in by the effects below.
@@ -186,6 +197,7 @@ export function JsonEditor({
           EditorView.lineWrapping,
           placeholderExtension(placeholder),
           theme,
+          ...extensions,
           fontSizeCompartment.current.of(fontSizeTheme(fontSize)),
           EditorView.contentAttributes.of({
             "aria-label": ariaLabel ?? "",
@@ -317,7 +329,7 @@ export function JsonEditor({
             aria-label={`copy key ${hoveredProperty.keyText}`}
             title="copy key"
             className={cn(
-              "size-4 font-mono text-[10px] leading-none",
+              "size-4 font-mono text-10 leading-none",
               copiedPart === "key" && "text-green-500 hover:text-green-500",
             )}
           >
@@ -332,7 +344,7 @@ export function JsonEditor({
             aria-label={`copy value of ${hoveredProperty.keyText}`}
             title="copy value"
             className={cn(
-              "size-4 font-mono text-[10px] leading-none",
+              "size-4 font-mono text-10 leading-none",
               copiedPart === "value" && "text-green-500 hover:text-green-500",
             )}
           >

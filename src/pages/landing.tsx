@@ -273,7 +273,7 @@ export function LandingPage() {
             <CallToActionButtons />
           </div>
 
-          <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[13px] text-muted-foreground/70">
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-13 text-muted-foreground/70">
             {HIGHLIGHTS.map((highlight, index) => (
               <Fragment key={highlight}>
                 {index > 0 && <span className="text-border">|</span>}
@@ -307,7 +307,7 @@ export function LandingPage() {
                     {tool.description}
                   </p>
                   {tool.credit && (
-                    <p className="text-[11px] text-muted-foreground/70">
+                    <p className="text-11 text-muted-foreground/70">
                       idea by{" "}
                       <a
                         href={tool.credit.href}

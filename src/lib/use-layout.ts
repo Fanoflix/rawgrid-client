@@ -17,6 +17,7 @@ export function useLayout() {
   );
   const [isReady, setIsReady] = useState(false);
   const [isEditMode, setEditMode] = useState(false);
+  const [editStartLayout, setEditStartLayout] = useState<LayoutState | null>(null);
   const [layoutVersion, setLayoutVersion] = useState(0);
   const hasEditedRef = useRef(false);
   const { toolsBySlot, hiddenSlots, panelSizes, focusedToolId } = layoutState;
@@ -85,13 +86,35 @@ export function useLayout() {
             : { ...current, focusedToolId: null }
         );
       }
+      setEditStartLayout(next ? layoutState : null);
       setEditMode(next);
     },
-    [persistLayoutState]
+    [layoutState, persistLayoutState]
   );
+
+  const hasEditChanges =
+    isEditMode &&
+    editStartLayout !== null &&
+    (editStartLayout.toolsBySlot.join() !== toolsBySlot.join() ||
+      editStartLayout.hiddenSlots.join() !== hiddenSlots.join());
+
+  const discardEditChanges = useCallback(() => {
+    if (editStartLayout) {
+      persistLayoutState((current) => ({
+        ...current,
+        toolsBySlot: editStartLayout.toolsBySlot,
+        hiddenSlots: editStartLayout.hiddenSlots,
+        panelSizes: editStartLayout.panelSizes,
+      }));
+      setLayoutVersion((version) => version + 1);
+    }
+    setEditStartLayout(null);
+    setEditMode(false);
+  }, [editStartLayout, persistLayoutState]);
 
   const focusTool = useCallback(
     (toolId: ToolId) => {
+      setEditStartLayout(null);
       setEditMode(false);
       persistLayoutState((current) => {
         if (!current.toolsBySlot.includes(toolId)) return current;
@@ -151,7 +174,9 @@ export function useLayout() {
     isReady,
     canHideSlot,
     isEditMode,
+    hasEditChanges,
     setEditMode: setEditModeExclusive,
+    discardEditChanges,
     swapSlots,
     hideSlot,
     showSlot,

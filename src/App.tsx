@@ -19,8 +19,10 @@ import {
 import { CommandPalette } from "@/components/command-palette";
 import { DragOverlayContent } from "@/components/drag-overlay-content";
 import { DraggableTool } from "@/components/draggable-tool";
+import { EditSpacesExitDialog } from "@/components/edit-spaces-exit-dialog";
 import { FocusTabs } from "@/components/focus-tabs";
 import { GridSlot } from "@/components/grid-slot";
+import { OverflowTooltip } from "@/components/overflow-tooltip";
 import { TopNavbar } from "@/components/top-navbar";
 import {
   ResizableHandle,
@@ -39,9 +41,12 @@ import {
   type GridGroupNode,
   type GridNode,
 } from "@/lib/layout-config";
+import { FONT_SCALE_COMMANDS } from "@/lib/font-scale";
+import { useEditModeEscape } from "@/lib/use-edit-mode-escape";
+import { useFontScale } from "@/lib/use-font-scale";
 import { useLayout } from "@/lib/use-layout";
 import { useThemeToggle } from "@/lib/use-theme-toggle";
-import { cn } from "@/lib/utils";
+import { cn, isPageEscape } from "@/lib/utils";
 import type { ToolId } from "@/lib/tool-registry";
 import { TOOL_REGISTRY } from "@/lib/tool-registry";
 
@@ -75,6 +80,9 @@ export function App() {
   } = layoutState;
 
   const { setTheme } = useThemeToggle();
+  const editModeEscape = useEditModeEscape(layoutState);
+  const { increaseFontScale, decreaseFontScale, resetFontScale } =
+    useFontScale();
   const [activeToolId, setActiveToolId] = useState<ToolId | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const hoveredToolRef = useRef<ToolId | null>(null);
@@ -84,6 +92,9 @@ export function App() {
     const unsubscribers = [
       subscribe("theme:dark", () => setTheme(true)),
       subscribe("theme:light", () => setTheme(false)),
+      subscribe(FONT_SCALE_COMMANDS.increase, increaseFontScale),
+      subscribe(FONT_SCALE_COMMANDS.decrease, decreaseFontScale),
+      subscribe(FONT_SCALE_COMMANDS.reset, resetFontScale),
       subscribe("layout:reset", () => layoutState.resetLayout()),
       subscribe("layout:edit", () =>
         layoutState.setEditMode(!layoutState.isEditMode)
@@ -131,14 +142,7 @@ export function App() {
   useEffect(() => {
     if (focusedToolId === null) return;
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key !== "Escape" || event.defaultPrevented) return;
-      if (
-        event.target instanceof Element &&
-        event.target.closest("input, textarea, [contenteditable=true]")
-      ) {
-        return;
-      }
-      exitFocus();
+      if (isPageEscape(event)) exitFocus();
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -256,6 +260,7 @@ export function App() {
     >
       <div className="flex h-screen w-full flex-col bg-background text-foreground">
         <TopNavbar layoutState={layoutState} />
+        <OverflowTooltip />
         {/* The top edge belongs to the grid, not to whichever tool lands up there. */}
         <div
           key={layoutVersion}
@@ -294,6 +299,12 @@ export function App() {
         ) : null}
       </DragOverlay>
 
+      <EditSpacesExitDialog
+        isOpen={editModeEscape.isExitConfirmOpen}
+        onKeepEditing={editModeEscape.keepEditing}
+        onDiscard={editModeEscape.discardChanges}
+        onKeep={editModeEscape.keepChanges}
+      />
       <CommandPalette
         focusedToolId={focusedToolId}
         isToolVisible={isToolVisible}

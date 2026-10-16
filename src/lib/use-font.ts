@@ -2,6 +2,7 @@ import { useCallback, useEffect } from "react";
 
 import { subscribe } from "@/lib/command-bus";
 import { FONT_COMMANDS } from "@/lib/tool-hover";
+import { useFontScale } from "@/lib/use-font-scale";
 import { useToolState } from "@/lib/use-tool-state";
 
 export interface UseFontOptions {
@@ -25,7 +26,8 @@ export function useFont({ minSize, maxSize, defaultSize, tool }: UseFontOptions)
     [defaultSize, maxSize, minSize]
   );
 
-  const { value: fontSize, setValue: setFontSize } = useToolState<number>({
+  const { scale } = useFontScale();
+  const { value: baseFontSize, setValue: setFontSize } = useToolState<number>({
     tool: tool ? `${tool}:font-size` : null,
     initialValue: defaultSize,
     serialize: serializeFontSize,
@@ -54,7 +56,7 @@ export function useFont({ minSize, maxSize, defaultSize, tool }: UseFontOptions)
   }, [tool, increaseFont, decreaseFont]);
 
   return {
-    fontSize,
+    fontSize: baseFontSize * scale,
     increaseFont,
     decreaseFont,
   };

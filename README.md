@@ -33,8 +33,10 @@ A browser-based developer toolbox with multiple utilities arranged in a resizabl
 - **Focus mode**: click `focus mode` in the top bar or press `⌘⇧F` to give the tool under your cursor the whole grid. The other tools wait as tabs above it. Press `Escape`, click the button again, or run a palette command for another visible tool to get the layout back. Focus survives a reload.
 - **Hover hints**: hovering a tool shows its name and description in the top bar.
 - **Font hotkeys**: `⌘⇧+` and `⌘⇧-` (`ctrl` elsewhere) change the font size of the tool under your cursor instead of zooming the page.
-- **Light and dark themes**: toggle from the top bar or the command palette.
-- **Persistent state**: tool inputs, layout, hidden spaces, theme, and the chosen alarm sound are saved in the browser and restored on reload.
+- **Font size**: scale every font from 90% to 150% from the settings button in the top bar or the command palette. Each tool's own font size scales with it.
+- **Light and dark themes**: switch from the settings button in the top bar or the command palette.
+- **Custom theme**: pick primary and accent colors per mode and the ui and code fonts in settings, or edit everything as JSON and copy it to share.
+- **Persistent state**: tool inputs, layout, hidden spaces, theme, font size, and the chosen alarm sound are saved in the browser and restored on reload.
 - **Copy buttons**: hover an output to copy it.
 
 ## Getting Started

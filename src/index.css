@@ -2,6 +2,12 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/nunito-sans";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/ibm-plex-sans";
+@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/geist-mono";
+@import "@fontsource-variable/fira-code";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -39,6 +45,9 @@
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
   --md-agent: oklch(0.6 0.16 250);
+  --font-scale: 1;
+  --font-ui: "Nunito Sans Variable", sans-serif;
+  --font-code: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 /* JSON editor syntax colors: One Dark Pro under .dark, One Light otherwise. */
@@ -108,7 +117,18 @@
 }
 
 @theme inline {
-  --font-sans: "Nunito Sans Variable", sans-serif;
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-code);
+  --text-10: calc(10px * var(--font-scale));
+  --text-11: calc(11px * var(--font-scale));
+  --text-13: calc(13px * var(--font-scale));
+  --text-xs: calc(0.75rem * var(--font-scale));
+  --text-sm: calc(0.875rem * var(--font-scale));
+  --text-base: calc(1rem * var(--font-scale));
+  --text-lg: calc(1.125rem * var(--font-scale));
+  --text-xl: calc(1.25rem * var(--font-scale));
+  --text-2xl: calc(1.5rem * var(--font-scale));
+  --text-3xl: calc(1.875rem * var(--font-scale));
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -288,7 +308,7 @@
 }
 
 .tool-base {
-  font-size: clamp(12px, 1.6cqi, 14px);
+  font-size: calc(clamp(12px, 1.6cqi, 14px) * var(--font-scale));
 }
 
 .tool-base input,
@@ -402,7 +422,7 @@
 }
 
 .md-doc code {
-  font-family: var(--font-mono, ui-monospace, monospace);
+  font-family: var(--font-code);
   font-size: 0.88em;
   background: color-mix(in oklab, var(--accent) 70%, transparent);
   padding: 0.1em 0.3em;

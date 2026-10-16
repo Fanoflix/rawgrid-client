@@ -18,7 +18,10 @@ export function JwtDecoderTool() {
 
   return (
     <div className="flex h-full w-full flex-col gap-0">
-      <div className="flex items-center border-b border-border px-1 h-8 gap-1">
+      <div
+        data-overflow-tooltip
+        className="flex items-center border-b border-border px-1 h-8 gap-1"
+      >
         <ToolInfo
           name="jwt decoder"
           description="decode jwt header + payload as json."

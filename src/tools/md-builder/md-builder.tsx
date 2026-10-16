@@ -126,7 +126,10 @@ export function MdBuilderTool() {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <div className="flex h-8 shrink-0 items-center gap-1 border-b border-border px-1">
+      <div
+        data-overflow-tooltip
+        className="flex h-8 shrink-0 items-center gap-1 border-b border-border px-1"
+      >
         <ToolInfo
           name="md builder"
           description="review a markdown file with comments an agent can read."
@@ -135,7 +138,7 @@ export function MdBuilderTool() {
         />
 
         {state.hasDocument && (
-          <span className="flex min-w-0 items-center gap-1 font-mono text-[10px] text-muted-foreground">
+          <span className="flex min-w-0 items-center gap-1 font-mono text-10 text-muted-foreground">
             <span className="truncate">{state.name}</span>
             {state.isDirty && (
               <span className="shrink-0 text-primary">
@@ -148,23 +151,23 @@ export function MdBuilderTool() {
         {state.notice && (
           <span
             role="status"
-            className="truncate font-mono text-[10px] text-muted-foreground"
+            className="truncate font-mono text-10 text-muted-foreground"
           >
             {state.notice}
           </span>
         )}
 
-        <span className="ml-auto flex items-center gap-1">
+        <span className="ml-auto flex min-w-0 items-center gap-1">
           {state.hasDocument && state.isStale && (
             <Button
               type="button"
               variant="primary-outline"
               size="xs"
               onClick={refresh}
-              className="animate-attention-surface"
+              className="min-w-0 shrink animate-attention-surface"
             >
               <RefreshCw />
-              {MD_BUILDER_TEXT.changedOnDisk}
+              <span className="truncate">{MD_BUILDER_TEXT.changedOnDisk}</span>
             </Button>
           )}
           <Button
@@ -173,10 +176,13 @@ export function MdBuilderTool() {
             size="xs"
             disabled={!state.hasDocument}
             onClick={() => void copyMarkdown()}
-            className={cn(state.isCopied && "text-green-500 hover:text-green-500")}
+            className={cn(
+              "min-w-0 shrink",
+              state.isCopied && "text-green-500 hover:text-green-500"
+            )}
           >
             <Copy />
-            {MD_BUILDER_TEXT.copy}
+            <span className="truncate">{MD_BUILDER_TEXT.copy}</span>
             {state.isCopied && <Check />}
           </Button>
           <Button
@@ -184,9 +190,10 @@ export function MdBuilderTool() {
             variant="outline"
             size="xs"
             onClick={uploadFile}
+            className="min-w-0 shrink"
           >
             <Upload />
-            {MD_BUILDER_TEXT.upload}
+            <span className="truncate">{MD_BUILDER_TEXT.upload}</span>
           </Button>
 
           <DropdownMenu>
@@ -564,7 +571,7 @@ function ComposerPopover({ composer, onSubmit, onCancel }: ComposerPopoverProps)
         className="min-h-14 border-border"
       />
       <div className="flex items-center gap-1">
-        <span className="font-mono text-[10px] text-muted-foreground/70">
+        <span className="font-mono text-10 text-muted-foreground/70">
           {MD_BUILDER_TEXT.submitHint}
         </span>
         <span className="ml-auto flex gap-1">
@@ -622,7 +629,7 @@ function CommentsPane({
   return (
     <div className="flex h-full w-full flex-col border-l border-border">
       <div className="flex h-7 shrink-0 items-center gap-1 border-b border-border px-1">
-        <span className="bg-accent/50 p-1 font-mono text-[10px] text-muted-foreground">
+        <span className="bg-accent/50 p-1 font-mono text-10 text-muted-foreground">
           {MD_BUILDER_TEXT.commentsTitle}
           {comments.length > 0 && ` (${comments.length})`}
         </span>
@@ -1066,7 +1073,7 @@ function Quote({ children, isAgent = false }: QuoteProps) {
   return (
     <p
       className={cn(
-        "border-l-2 pl-2 text-[11px] text-muted-foreground wrap-break-word",
+        "border-l-2 pl-2 text-11 text-muted-foreground wrap-break-word",
         isAgent ? "border-(--md-agent)/70" : "border-primary/60"
       )}
     >
@@ -1120,7 +1127,7 @@ function EmptyState({
           {MD_BUILDER_TEXT.paste}
         </Button>
       </div>
-      <p className="font-mono text-[10px] text-muted-foreground/70">
+      <p className="font-mono text-10 text-muted-foreground/70">
         or {MD_BUILDER_TEXT.dropHint} here
       </p>
     </div>
