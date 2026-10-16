@@ -4,6 +4,7 @@ import { Pencil, RotateCcw } from "lucide-react";
 import { CommandPaletteTrigger } from "@/components/command-palette-trigger";
 import { FocusIcon } from "@/components/focus-icon";
 import { HiddenSpacesMenu } from "@/components/hidden-spaces-menu";
+import { SettingsDialog } from "@/components/settings-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Tooltip,
@@ -191,7 +192,7 @@ export function TopNavbar({ layoutState }: TopNavbarProps) {
           >
             <FocusIcon isOff={isFocused} className="size-3" />
             focus mode
-            <kbd className="inline-flex h-4 items-center gap-0.5 rounded border border-current/20 px-1 font-sans text-[10px] leading-none tracking-wide opacity-70">
+            <kbd className="inline-flex h-4 items-center gap-0.5 rounded border border-current/20 px-1 font-sans text-10 leading-none tracking-wide opacity-70">
               {FOCUS_HOTKEY_KEYS.map((key) => (
                 <span key={key}>{key}</span>
               ))}
@@ -214,6 +215,7 @@ export function TopNavbar({ layoutState }: TopNavbarProps) {
         </Button>
 
         <ThemeToggle />
+        <SettingsDialog />
       </div>
     </nav>
   );

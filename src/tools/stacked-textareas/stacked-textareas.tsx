@@ -47,8 +47,11 @@ export function StackedTextareasTool() {
 
   return (
     <div className="flex h-full w-full flex-col gap-0">
-      <div className="flex h-8 shrink-0 items-center justify-between border-b border-border px-1 py-0.5">
-        <span className="text-[10px] text-muted-foreground font-mono">
+      <div
+        data-overflow-tooltip
+        className="flex h-8 shrink-0 items-center justify-between gap-1 border-b border-border px-1 py-0.5"
+      >
+        <span className="min-w-0 truncate text-10 text-muted-foreground font-mono">
           {headerInfo}
         </span>
 
@@ -58,8 +61,9 @@ export function StackedTextareasTool() {
           size="xs"
           onClick={handleAddEntry}
           aria-label="add textarea"
+          className="min-w-0 shrink"
         >
-          add text area
+          <span className="truncate">add text area</span>
         </Button>
       </div>
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">

@@ -21,7 +21,10 @@ export function UnixTimestampTool() {
 
   return (
     <div className="flex h-full w-full flex-col gap-0">
-      <div className="flex h-8 w-full shrink-0 items-center gap-1 border-b border-border px-1">
+      <div
+        data-overflow-tooltip
+        className="flex h-8 w-full shrink-0 items-center gap-1 border-b border-border px-1"
+      >
         <Input
           value={state.input}
           onChange={handleInputChange}

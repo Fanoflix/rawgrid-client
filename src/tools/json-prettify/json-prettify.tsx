@@ -44,7 +44,10 @@ export function JsonPrettifyTool() {
 
   return (
     <div className="flex h-full w-full flex-col gap-0 overflow-hidden">
-      <div className="flex h-8 shrink-0 items-center gap-1 border-b border-border px-1">
+      <div
+        data-overflow-tooltip
+        className="flex h-8 shrink-0 items-center gap-1 border-b border-border px-1"
+      >
         <ToolInfo
           name="json prettify"
           description="format messy json, or squash it back down."
@@ -79,8 +82,9 @@ export function JsonPrettifyTool() {
           size="xs"
           onClick={() => setMode(isMinified ? "pretty" : "minified")}
           aria-pressed={isMinified}
+          className="min-w-0 shrink"
         >
-          minify
+          <span className="truncate">minify</span>
         </Button>
 
         <Button
@@ -89,14 +93,15 @@ export function JsonPrettifyTool() {
           size="xs"
           onClick={toggleSortKeys}
           aria-pressed={state.sortKeys}
+          className="min-w-0 shrink"
         >
-          sort keys
+          <span className="truncate">sort keys</span>
         </Button>
 
         {state.isPending && (
           <span
             role="status"
-            className="font-mono text-[10px] text-muted-foreground"
+            className="min-w-0 truncate font-mono text-10 text-muted-foreground"
           >
             syncing…
           </span>
@@ -205,7 +210,7 @@ function JsonPane({
       </div>
 
       {error && (
-        <p className="shrink-0 border-t border-border bg-destructive/10 px-1 py-1 font-mono text-[10px] text-destructive">
+        <p className="shrink-0 border-t border-border bg-destructive/10 px-1 py-1 font-mono text-10 text-destructive">
           {error}
         </p>
       )}
@@ -222,11 +227,11 @@ interface PanelHeaderProps {
 function PanelHeader({ label, info, children }: PanelHeaderProps) {
   return (
     <div className="flex h-7 shrink-0 items-center gap-1 border-b border-border px-1">
-      <span className="bg-accent/50 p-1 font-mono text-[10px] text-muted-foreground">
+      <span className="bg-accent/50 p-1 font-mono text-10 text-muted-foreground">
         {label}
       </span>
       {info && (
-        <span className="truncate font-mono text-[10px] text-muted-foreground/70">
+        <span className="truncate font-mono text-10 text-muted-foreground/70">
           {info}
         </span>
       )}

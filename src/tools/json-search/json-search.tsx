@@ -29,7 +29,10 @@ export function JsonSearchTool() {
 
   return (
     <div className="flex h-full w-full flex-col gap-0 overflow-hidden">
-      <div className="group items-center px-1 flex w-full gap-1 border-b border-border h-8">
+      <div
+        data-overflow-tooltip
+        className="group items-center px-1 flex w-full gap-1 border-b border-border h-8"
+      >
         <ToolInfo
           name="json search"
           description="find field matches with optional line context."
@@ -37,7 +40,7 @@ export function JsonSearchTool() {
           detailed={
             <div className="flex flex-col gap-1">
               <div
-                className="font-mono text-[11px] text-foreground"
+                className="font-mono text-11 text-foreground"
                 style={{
                   fontFamily:
                     "Consolas, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace",

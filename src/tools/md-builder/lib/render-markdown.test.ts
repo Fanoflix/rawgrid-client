@@ -137,19 +137,14 @@ describe("renderMarkdown", () => {
     expect(html).toContain('class="md-hl md-pending" data-c="0"');
   });
 
-  it("tags agent comments with the agent class", () => {
-    const html = renderMarkdown(
-      "alpha beta",
-      [
-        { id: 1, start: 0, end: 5, notes: ["agent: note"] },
-        { id: 2, start: 6, end: 6, notes: ["agent: point"] },
-        { id: 3, start: 6, end: 10, notes: ["mine"] },
-      ],
-      { agentCommentIds: new Set([1, 2]) }
-    );
-    expect(html).toContain('class="md-hl md-agent" data-c="1"');
-    expect(html).toContain('class="md-pt md-agent" data-c="2"');
-    expect(html).toContain('class="md-hl" data-c="3"');
+  it("renders comments the same whoever wrote them", () => {
+    const html = renderMarkdown("alpha beta", [
+      { id: 1, start: 0, end: 5, notes: ["Questions:\n\n1. what does this mean?"] },
+      { id: 2, start: 6, end: 6, notes: ["agent: point"] },
+    ]);
+    expect(html).toContain('class="md-hl" data-c="1"');
+    expect(html).toContain('class="md-pt" data-c="2"');
+    expect(html).not.toContain("md-agent");
   });
 
   it("escapes html in the source", () => {

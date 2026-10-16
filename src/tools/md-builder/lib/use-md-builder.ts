@@ -42,7 +42,6 @@ import {
   selectedSourceRange,
   selectionRect,
 } from "@/tools/md-builder/lib/selection";
-import { isAgentComment } from "@/tools/md-builder/lib/utils";
 
 export interface ReviewDocument {
   name: string;
@@ -99,7 +98,6 @@ export interface MdBuilderState {
   isCommentsCollapsed: boolean;
   hoveredCommentId: number | null;
   focusTick: number;
-  agentCommentIds: ReadonlySet<number>;
 }
 
 const EMPTY_DOCUMENT: ReviewDocument = {
@@ -216,16 +214,6 @@ export function useMdBuilder() {
     maxSize: MD_BUILDER_CONFIG.maxFontSize,
   });
 
-  const agentCommentIds = useMemo(
-    () =>
-      new Set(
-        reviewDoc.comments
-          .filter((comment) => isAgentComment(comment.notes))
-          .map((comment) => comment.id)
-      ),
-    [reviewDoc.comments]
-  );
-
   const html = useMemo(() => {
     const pendingHighlight: ReviewComment[] = composer
       ? [
@@ -237,12 +225,11 @@ export function useMdBuilder() {
           },
         ]
       : [];
-    return renderMarkdown(
-      reviewDoc.source,
-      [...reviewDoc.comments, ...pendingHighlight],
-      { agentCommentIds }
-    );
-  }, [reviewDoc.source, reviewDoc.comments, composer, agentCommentIds]);
+    return renderMarkdown(reviewDoc.source, [
+      ...reviewDoc.comments,
+      ...pendingHighlight,
+    ]);
+  }, [reviewDoc.source, reviewDoc.comments, composer]);
 
   const showNotice = useCallback((message: string) => {
     setNotice(message);
@@ -730,7 +717,6 @@ export function useMdBuilder() {
     isCommentsCollapsed,
     hoveredCommentId,
     focusTick,
-    agentCommentIds,
   };
 
   return {

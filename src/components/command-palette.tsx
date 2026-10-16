@@ -4,6 +4,8 @@ import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { dispatch, subscribe } from "@/lib/command-bus";
 import { rankCommands } from "@/lib/command-search";
+import { FONT_SCALE_COMMANDS } from "@/lib/font-scale";
+import { SETTINGS_COMMANDS, SETTINGS_SOURCES } from "@/lib/use-settings-dialog";
 import type { ToolId } from "@/lib/tool-registry";
 import { ALL_TOOL_IDS, TOOL_REGISTRY } from "@/lib/tool-registry";
 
@@ -153,6 +155,31 @@ const COMMANDS: Command[] = [
     command: "theme:light",
   },
   {
+    id: "settings-open",
+    label: "open settings",
+    group: "settings",
+    command: SETTINGS_COMMANDS.open,
+    payload: SETTINGS_SOURCES.palette,
+  },
+  {
+    id: "font-scale-increase",
+    label: "bigger text",
+    group: "font scale",
+    command: FONT_SCALE_COMMANDS.increase,
+  },
+  {
+    id: "font-scale-decrease",
+    label: "smaller text",
+    group: "font scale",
+    command: FONT_SCALE_COMMANDS.decrease,
+  },
+  {
+    id: "font-scale-reset",
+    label: "reset text size",
+    group: "font scale",
+    command: FONT_SCALE_COMMANDS.reset,
+  },
+  {
     id: "layout-reset",
     label: "reset layout",
     group: "layout",
@@ -230,6 +257,11 @@ export function CommandPalette({
     setParamValue("");
   }
 
+  function reopen() {
+    setIsOpen(true);
+    setActiveCommand(null);
+  }
+
   function close() {
     setIsOpen(false);
     setActiveCommand(null);
@@ -259,6 +291,7 @@ export function CommandPalette({
   }
 
   useEffect(() => subscribe(OPEN_COMMAND_PALETTE, open));
+  useEffect(() => subscribe(SETTINGS_COMMANDS.returnToPalette, reopen));
 
   // Cmd+K / Ctrl+K global listener
   useEffect(() => {
@@ -362,7 +395,7 @@ export function CommandPalette({
                 placeholder="type a command..."
                 className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
               />
-              <kbd className="shrink-0 rounded border bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+              <kbd className="shrink-0 rounded border bg-muted px-1.5 py-0.5 text-10 text-muted-foreground">
                 esc
               </kbd>
             </div>

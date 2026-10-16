@@ -866,6 +866,48 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fontsource-variable/fira-code@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource-variable/fira-code@npm:5.3.0"
+  checksum: 10c0/83f228dbd1a8ba478f85604b0d111edfd742d824647e0179cca0dcdd7945c087e1f023052c4b96a47da8af4ca0a4b00eeb4438012aad86d1fa0d4a4702a8ada3
+  languageName: node
+  linkType: hard
+
+"@fontsource-variable/geist-mono@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource-variable/geist-mono@npm:5.3.0"
+  checksum: 10c0/21a4097b3ccce08cbc181199f68a9193adc17d997ef8d883eab7565c6d79a82b2f8d7656f32f97b66f1f0b4ebba78a1a822c6318d55e0c5f572d74683ab036ee
+  languageName: node
+  linkType: hard
+
+"@fontsource-variable/geist@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource-variable/geist@npm:5.3.0"
+  checksum: 10c0/6b1d1d249643377c885d040769bf0964f242e8d03c4470535329ad4eed3d30a8134fea0d45c0b99b8069924a1f506a3bcb5b8d9cea77b7b5234dc7dd57371842
+  languageName: node
+  linkType: hard
+
+"@fontsource-variable/ibm-plex-sans@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource-variable/ibm-plex-sans@npm:5.3.0"
+  checksum: 10c0/3fe44e92a441c956654d08be2fc1310f5527e241961f1386f4dcbe1ecfee4d3a387e1ca8b108afa48184647f3aa9db0d6547c2dd63a0442c2d369401c9a2e306
+  languageName: node
+  linkType: hard
+
+"@fontsource-variable/inter@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource-variable/inter@npm:5.3.0"
+  checksum: 10c0/46fbe41e8482a718f99634c8254346c6081d615415059be12e177224c903d688199125967825e75d4b8122668fd83f70880e11d4e02d08c20b503c65fe2a96d1
+  languageName: node
+  linkType: hard
+
+"@fontsource-variable/jetbrains-mono@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource-variable/jetbrains-mono@npm:5.3.0"
+  checksum: 10c0/ba983321b530a56696b12390a377c79a962376a33359eeda37c9a2141450802e0b630e6c232d90aab0281179e623d01c77d1bc8059ce595fe865fbc6d6022ffb
+  languageName: node
+  linkType: hard
+
 "@fontsource-variable/nunito-sans@npm:^5.2.7":
   version: 5.2.7
   resolution: "@fontsource-variable/nunito-sans@npm:5.2.7"
@@ -4854,6 +4896,12 @@ __metadata:
     "@codemirror/view": "npm:^6.43.12"
     "@dnd-kit/core": "npm:^6.3.1"
     "@eslint/js": "npm:^9.39.1"
+    "@fontsource-variable/fira-code": "npm:^5.3.0"
+    "@fontsource-variable/geist": "npm:^5.3.0"
+    "@fontsource-variable/geist-mono": "npm:^5.3.0"
+    "@fontsource-variable/ibm-plex-sans": "npm:^5.3.0"
+    "@fontsource-variable/inter": "npm:^5.3.0"
+    "@fontsource-variable/jetbrains-mono": "npm:^5.3.0"
     "@fontsource-variable/nunito-sans": "npm:^5.2.7"
     "@lezer/common": "npm:^1.5.2"
     "@lezer/highlight": "npm:^1.2.3"

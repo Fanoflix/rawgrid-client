@@ -20,8 +20,11 @@ export function VideoPlayerTool() {
 
   return (
     <div className="flex h-full w-full flex-col gap-0">
-      <div className="flex h-8 items-center justify-between border-b border-border px-2">
-        <span className="truncate text-[10px] font-mono text-muted-foreground">
+      <div
+        data-overflow-tooltip
+        className="flex h-8 items-center justify-between gap-1 border-b border-border px-2"
+      >
+        <span className="truncate text-10 font-mono text-muted-foreground">
           {filename || "no file loaded"}
         </span>
         <div className="flex gap-0">
@@ -77,11 +80,11 @@ export function VideoPlayerTool() {
             <span className="text-xs text-muted-foreground">
               drop a video file here
             </span>
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-10 text-muted-foreground">
               mp4, webm, ogg, mov, mkv, avi
             </span>
             {error && (
-              <span className="text-[10px] text-destructive">{error}</span>
+              <span className="text-10 text-destructive">{error}</span>
             )}
           </div>
         )}
