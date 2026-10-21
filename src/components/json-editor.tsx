@@ -34,6 +34,7 @@ import {
   isBracket,
   jsonTagHighlighter,
 } from "@/lib/json-highlight";
+import { Hint } from "@/components/hint";
 import { Button } from "@/components/ui/button";
 import { findJsonPropertyOnLine } from "@/lib/json-property";
 import { cn } from "@/lib/utils";
@@ -321,35 +322,39 @@ export function JsonEditor({
           className="absolute z-10 flex gap-0.5"
           style={{ top: hoveredProperty.top, left: hoveredProperty.left }}
         >
-          <Button
-            type="button"
-            variant="outline"
-            size="icon-xs"
-            onClick={() => copyPart("key", hoveredProperty.keyText)}
-            aria-label={`copy key ${hoveredProperty.keyText}`}
-            title="copy key"
-            className={cn(
-              "size-4 font-mono text-10 leading-none",
-              copiedPart === "key" && "text-green-500 hover:text-green-500",
-            )}
-          >
-            k
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon-xs"
-            onClick={() => copyPart("value", hoveredProperty.valueText)}
-            disabled={hoveredProperty.valueText === null}
-            aria-label={`copy value of ${hoveredProperty.keyText}`}
-            title="copy value"
-            className={cn(
-              "size-4 font-mono text-10 leading-none",
-              copiedPart === "value" && "text-green-500 hover:text-green-500",
-            )}
-          >
-            v
-          </Button>
+          <Hint label="copy key">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-xs"
+              onClick={() => copyPart("key", hoveredProperty.keyText)}
+              aria-label={`copy key ${hoveredProperty.keyText}`}
+              className={cn(
+                "size-4 font-mono text-10 leading-none",
+                copiedPart === "key" && "text-green-500 hover:text-green-500",
+              )}
+            >
+              k
+            </Button>
+          </Hint>
+          <Hint label="copy value">
+            <span className="flex">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-xs"
+                onClick={() => copyPart("value", hoveredProperty.valueText)}
+                disabled={hoveredProperty.valueText === null}
+                aria-label={`copy value of ${hoveredProperty.keyText}`}
+                className={cn(
+                  "size-4 font-mono text-10 leading-none",
+                  copiedPart === "value" && "text-green-500 hover:text-green-500",
+                )}
+              >
+                v
+              </Button>
+            </span>
+          </Hint>
         </div>
       )}
     </div>

@@ -36,6 +36,7 @@ Commands: `yarn dev`, `yarn build` (runs `tsc -b` first), `yarn lint`, `yarn tes
 | `src/components/edit-spaces-exit-dialog.tsx` | Asks whether to keep layout changes when ESC leaves edit spaces mode. |
 | `src/components/kbd.tsx` | The one keyboard shortcut chip (secondary background). Use it for every shortcut shown in the UI. |
 | `src/components/overflow-tooltip.tsx` | The one instant tooltip for cut-off header text, mounted once in `App.tsx`. |
+| `src/components/hint.tsx` | `Hint`, the small instant tooltip for hover hints. Use it instead of `title` attributes. Wrap a disabled button in a `span` so the hint still shows. |
 | `src/lib/client-mcp.ts` | Tab side of `@rawgrid/client-mcp`: finds agent sessions on the local ports, connects, registers tools and answers calls. |
 | `packages/client-mcp/` | The `@rawgrid/client-mcp` npm package, a Yarn workspace. A stdio MCP server the agent starts, plus a `127.0.0.1` WebSocket the tab connects to. Its README documents the protocol. |
 | `src/lib/command-bus.ts` | Tiny pub/sub. Commands are strings, payloads are strings. |

@@ -4,6 +4,7 @@ import {
   overlapsComment,
   sortComments,
 } from "@/tools/md-builder/lib/critic-markup";
+import { MD_BUILDER_CONFIG } from "@/tools/md-builder/lib/constants";
 
 export interface ReviewDocument {
   name: string;
@@ -626,12 +627,18 @@ export function documentSnapshot(published: ReviewDocument, log: LiveLog) {
   };
 }
 
+export function trimQuote(quote: string, edge = MD_BUILDER_CONFIG.eventQuoteEdge) {
+  if (quote.length <= edge * 2) return quote;
+  return `${quote.slice(0, edge)}…${quote.slice(-edge)}`;
+}
+
 export function eventForAgent(event: ActivityEvent) {
   return {
     seq: event.seq,
     type: event.type,
     threadId: event.threadId === null ? null : threadKey(event.threadId),
-    quote: event.quote,
+    quote: trimQuote(event.quote),
+    quoteLength: event.quote.length,
     note: stripAuthor(splitNoteTime(event.note).text),
   };
 }

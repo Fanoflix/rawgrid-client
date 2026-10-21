@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 const AREA_SELECTOR = "[data-overflow-tooltip]";
+const HINT_SELECTOR = "[data-hint]";
 
 export interface OverflowTooltipTarget {
   element: HTMLElement;
@@ -18,6 +19,7 @@ function isCutOff(element: HTMLElement) {
 
 function findCutOffElement(target: EventTarget | null) {
   if (!(target instanceof Element)) return null;
+  if (target.closest(HINT_SELECTOR)) return null;
   const area = target.closest(AREA_SELECTOR);
   if (!area) return null;
   for (

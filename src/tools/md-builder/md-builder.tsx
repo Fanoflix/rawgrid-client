@@ -14,6 +14,7 @@ import {
   Copy,
   Ellipsis,
   FolderOpen,
+  Info,
   MessageSquarePlus,
   Pencil,
   Radio,
@@ -27,6 +28,7 @@ import {
 
 import { CopyButton } from "@/components/copy-button";
 import { FontSizeButtons } from "@/components/font-size-buttons";
+import { Hint } from "@/components/hint";
 import { Kbd } from "@/components/kbd";
 import { ToolInfo } from "@/components/tool-info";
 import {
@@ -74,6 +76,7 @@ import {
   PENDING_REPLY_DELAY_S,
   MD_BUILDER_CONFIG,
   MD_BUILDER_TEXT,
+  PASTED_DOCUMENT_NAME,
 } from "@/tools/md-builder/lib/constants";
 import type { ReviewComment } from "@/tools/md-builder/lib/critic-markup";
 import { excerptOf } from "@/tools/md-builder/lib/critic-markup";
@@ -183,7 +186,21 @@ export function MdBuilderTool() {
 
         {state.hasDocument && (
           <span className="flex min-w-0 items-center gap-1 font-mono text-10 text-muted-foreground">
-            <span className="truncate">{state.name}</span>
+            <Hint
+              side="bottom"
+              label={
+                <FileDetails
+                  name={state.name}
+                  hasHandle={state.hasHandle}
+                  agentFolder={live.state.connected?.cwd ?? null}
+                />
+              }
+            >
+              <span className="flex min-w-0 cursor-default items-center gap-1">
+                <span className="truncate">{state.name}</span>
+                <Info className="size-2.5 shrink-0" />
+              </span>
+            </Hint>
             {state.isDirty && (
               <span className="shrink-0 text-primary">
                 ● {MD_BUILDER_TEXT.unsaved}
@@ -819,17 +836,18 @@ function CommentsPane({
           </SidebarTabButton>
         </div>
         {tab === "comments" && newThreadCount > 0 && (
-          <Button
-            type="button"
-            variant="primary-outline"
-            size="xs"
-            onClick={onNextNew}
-            aria-label={MD_BUILDER_TEXT.nextNew}
-            title={MD_BUILDER_TEXT.nextNew}
-          >
-            {newThreadCount} {MD_BUILDER_TEXT.newNotes}
-            <ChevronRight />
-          </Button>
+          <Hint label={MD_BUILDER_TEXT.nextNew}>
+            <Button
+              type="button"
+              variant="primary-outline"
+              size="xs"
+              onClick={onNextNew}
+              aria-label={MD_BUILDER_TEXT.nextNew}
+            >
+              {newThreadCount} {MD_BUILDER_TEXT.newNotes}
+              <ChevronRight />
+            </Button>
+          </Hint>
         )}
         <Button
           type="button"
@@ -935,6 +953,33 @@ interface ResolvedCardProps {
   onReopen: () => void;
 }
 
+interface FileDetailsProps {
+  name: string;
+  hasHandle: boolean;
+  agentFolder: string | null;
+}
+
+function FileDetails({ name, hasHandle, agentFolder }: FileDetailsProps) {
+  const origin = hasHandle
+    ? MD_BUILDER_TEXT.fileFromDisk
+    : name === PASTED_DOCUMENT_NAME
+      ? MD_BUILDER_TEXT.fileFromPaste
+      : MD_BUILDER_TEXT.fileFromUpload;
+
+  return (
+    <span className="flex flex-col gap-0.5">
+      <span className="text-foreground">{name}</span>
+      <span className="text-muted-foreground">{origin}</span>
+      {hasHandle && <span className="text-muted-foreground">{MD_BUILDER_TEXT.fileFolderHidden}</span>}
+      {agentFolder && (
+        <span className="text-muted-foreground">
+          {MD_BUILDER_TEXT.fileAgentFolder} <span className="text-foreground">{agentFolder}</span>
+        </span>
+      )}
+    </span>
+  );
+}
+
 function ResolvedCard({ thread, onReopen }: ResolvedCardProps) {
   const quote = thread.quote.replace(/\s+/g, " ").slice(0, MD_BUILDER_CONFIG.excerptLength);
 
@@ -942,17 +987,19 @@ function ResolvedCard({ thread, onReopen }: ResolvedCardProps) {
     <div className="flex flex-col gap-1 border border-border bg-background p-2">
       <div className="flex items-start gap-1">
         <div className="min-w-0 flex-1">{quote && <Quote>{quote}</Quote>}</div>
-        <span title={thread.canReopen ? undefined : MD_BUILDER_TEXT.reopenUnavailable}>
-          <Button
-            type="button"
-            variant="outline"
-            size="xs"
-            disabled={!thread.canReopen}
-            onClick={onReopen}
-          >
-            {MD_BUILDER_TEXT.reopenThread}
-          </Button>
-        </span>
+        <Hint label={thread.canReopen ? null : MD_BUILDER_TEXT.reopenUnavailable}>
+          <span>
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              disabled={!thread.canReopen}
+              onClick={onReopen}
+            >
+              {MD_BUILDER_TEXT.reopenThread}
+            </Button>
+          </span>
+        </Hint>
       </div>
       {thread.notes.map((note, index) => (
         <div key={index} className="flex gap-1.5">
@@ -1188,17 +1235,18 @@ function CommentCard({
         <div className="min-w-0 flex-1">
           {comment.end > comment.start && <Quote>{excerpt}</Quote>}
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-xs"
-          className="shrink-0 text-muted-foreground hover:text-primary"
-          onClick={onResolve}
-          aria-label={MD_BUILDER_TEXT.resolveThread}
-          title={MD_BUILDER_TEXT.resolveThread}
-        >
-          <Check />
-        </Button>
+        <Hint label={MD_BUILDER_TEXT.resolveThread}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            className="shrink-0 text-muted-foreground hover:text-primary"
+            onClick={onResolve}
+            aria-label={MD_BUILDER_TEXT.resolveThread}
+          >
+            <Check />
+          </Button>
+        </Hint>
       </div>
 
       <AnimatePresence initial={false}>
@@ -1311,13 +1359,14 @@ function NoteView({ note, isNew, isDimmed, isReply, onEdit, onDelete }: NoteView
 
       <span className="absolute -top-1 right-0 flex items-center gap-0 bg-background opacity-0 transition-opacity group-hover/note:opacity-100 focus-within:opacity-100">
         {time && (
-          <time
-            dateTime={at ?? undefined}
-            title={time.full}
-            className="px-1 font-mono text-10 whitespace-nowrap text-muted-foreground"
-          >
-            {time.short}
-          </time>
+          <Hint label={time.full}>
+            <time
+              dateTime={at ?? undefined}
+              className="px-1 font-mono text-10 whitespace-nowrap text-muted-foreground"
+            >
+              {time.short}
+            </time>
+          </Hint>
         )}
         <Button
           type="button"
@@ -1702,27 +1751,25 @@ function SessionList({ state, onConnect }: SessionListProps) {
             <span className="flex items-center gap-1 truncate">
               {session.agentName ?? MD_BUILDER_TEXT.liveUnknownAgent}
               {!session.isAgentActive && (
-                <span
-                  title={MD_BUILDER_TEXT.liveIdleHint}
-                  className="font-mono text-10 text-muted-foreground"
-                >
-                  · {MD_BUILDER_TEXT.liveIdle}
-                </span>
+                <Hint label={MD_BUILDER_TEXT.liveIdleHint}>
+                  <span className="font-mono text-10 text-muted-foreground">
+                    · {MD_BUILDER_TEXT.liveIdle}
+                  </span>
+                </Hint>
               )}
             </span>
-            <span
-              title={session.isOutdated ? MD_BUILDER_TEXT.liveOutdatedHint : undefined}
-              className="truncate text-10 text-muted-foreground"
-            >
-              {[
-                session.isOutdated
-                  ? MD_BUILDER_TEXT.liveOutdated
-                  : sessionHostLabel(session.hostKind, session.hostApp),
-                `${MD_BUILDER_TEXT.liveStarted} ${timeSince(session.startedAt, state.scannedAt)}`,
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            </span>
+            <Hint label={session.isOutdated ? MD_BUILDER_TEXT.liveOutdatedHint : null}>
+              <span className="truncate text-10 text-muted-foreground">
+                {[
+                  session.isOutdated
+                    ? MD_BUILDER_TEXT.liveOutdated
+                    : sessionHostLabel(session.hostKind, session.hostApp),
+                  `${MD_BUILDER_TEXT.liveStarted} ${timeSince(session.startedAt, state.scannedAt)}`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            </Hint>
             <span className="truncate font-mono text-10 text-muted-foreground">{session.cwd}</span>
           </span>
           {session.isTaken ? (

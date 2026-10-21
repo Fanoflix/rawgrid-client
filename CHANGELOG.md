@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.2
+
+### UX
+
+- Hovering the file name in md builder shows where the document came from: opened from disk, uploaded or pasted. When an agent is connected it also shows the agent's project folder. An info icon after the name marks the tooltip. Browsers never share a file's folder, so the tooltip says the full path isn't known rather than guessing one.
+- Every hover hint in the app is now a small tooltip that appears at once, replacing the browser's slow native ones. That covers reopen, resolve, next new note, note times, the live panel's idle and outdated labels, the timer buttons, the jwt decoder's confirm button and the json editor's copy buttons. Disabled buttons, such as reopen when the quoted text changed, still explain why.
+
+### Fixes
+
+- A comment on a long passage no longer floods the agent. `wait_for_activity` sends a quote longer than 600 characters as its first and last 300 characters plus `quoteLength`, so a thread on a whole 80,000-character document arrives as a small event instead of an 80 KB one. `get_document` still returns the full quote. The change is in the md builder tab, so it needs no new `@rawgrid/client-mcp`.
+
 ## 1.2.1
 
 ### Upgrading
