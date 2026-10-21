@@ -1,5 +1,6 @@
 import { Pause, Play, RotateCcw, Volume2 } from "lucide-react";
 
+import { Hint } from "@/components/hint";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -81,15 +82,16 @@ export function TimerTool() {
             if (isTimerSoundId(value)) setSoundId(value);
           }}
         >
-          <SelectTrigger
-            size="xs"
-            aria-label="alarm sound"
-            title="alarm sound"
-            className="border-border bg-background text-muted-foreground"
-          >
-            <Volume2 className="size-3.5" />
-            <SelectValue />
-          </SelectTrigger>
+          <Hint label="alarm sound">
+            <SelectTrigger
+              size="xs"
+              aria-label="alarm sound"
+              className="border-border bg-background text-muted-foreground"
+            >
+              <Volume2 className="size-3.5" />
+              <SelectValue />
+            </SelectTrigger>
+          </Hint>
           <SelectContent>
             {TIMER_SOUNDS.map((sound) => (
               <SelectItem key={sound.id} value={sound.id}>
@@ -155,43 +157,50 @@ export function TimerTool() {
 
         <div className="flex items-center justify-center gap-0">
           {isRunning ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="border-border"
-              onClick={handlePause}
-              aria-label="pause"
-              title="pause"
-            >
-              <Pause className="fill-current" />
-            </Button>
+            <Hint label="pause">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="border-border"
+                onClick={handlePause}
+                aria-label="pause"
+              >
+                <Pause className="fill-current" />
+              </Button>
+            </Hint>
           ) : (
-            <Button
-              type="button"
-              variant={isPaused ? "ghost" : "default"}
-              size="icon-sm"
-              className={cn(isPaused && "border-border")}
-              onClick={handlePlay}
-              disabled={!canStart}
-              aria-label={isPaused ? "resume" : "start"}
-              title={isPaused ? "resume" : "start (enter)"}
-            >
-              <Play className="fill-current" />
-            </Button>
+            <Hint label={isPaused ? "resume" : "start (enter)"}>
+              <span>
+                <Button
+                  type="button"
+                  variant={isPaused ? "ghost" : "default"}
+                  size="icon-sm"
+                  className={cn(isPaused && "border-border")}
+                  onClick={handlePlay}
+                  disabled={!canStart}
+                  aria-label={isPaused ? "resume" : "start"}
+                >
+                  <Play className="fill-current" />
+                </Button>
+              </span>
+            </Hint>
           )}
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            className="border-border"
-            onClick={handleStop}
-            disabled={state.status === "idle"}
-            aria-label="reset"
-            title="reset"
-          >
-            <RotateCcw />
-          </Button>
+          <Hint label="reset">
+            <span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="border-border"
+                onClick={handleStop}
+                disabled={state.status === "idle"}
+                aria-label="reset"
+              >
+                <RotateCcw />
+              </Button>
+            </span>
+          </Hint>
         </div>
 
         {!isInputLocked && !justFinished && (

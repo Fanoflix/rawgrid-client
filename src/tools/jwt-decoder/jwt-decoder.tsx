@@ -1,5 +1,6 @@
 import { CopyButton } from "@/components/copy-button";
 import { FontSizeButtons } from "@/components/font-size-buttons";
+import { Hint } from "@/components/hint";
 import { ToolInfo } from "@/components/tool-info";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,17 +39,19 @@ export function JwtDecoderTool() {
           className="rounded-none text-xs font-medium truncate"
         />
         {state.hasDraft && (
-          <Button
-            type="button"
-            variant="primary-outline"
-            size="xs"
-            onClick={confirmEdits}
-            disabled={state.draftError !== null}
-            title={state.draftError ?? "rebuild the token from the edited json"}
-            className="shrink-0"
-          >
-            {state.draftError ?? "confirm edits"}
-          </Button>
+          <Hint label={state.draftError ?? "rebuild the token from the edited json"}>
+            <span className="shrink-0">
+              <Button
+                type="button"
+                variant="primary-outline"
+                size="xs"
+                onClick={confirmEdits}
+                disabled={state.draftError !== null}
+              >
+                {state.draftError ?? "confirm edits"}
+              </Button>
+            </span>
+          </Hint>
         )}
       </div>
       <div className="relative flex-1 min-h-0 group">
