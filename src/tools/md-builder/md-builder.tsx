@@ -209,43 +209,6 @@ export function MdBuilderTool() {
           </span>
         )}
 
-        {state.agentStatus && hasAgentStarted ? (
-          <span
-            aria-live="polite"
-            className={cn(
-              "flex min-w-0 shrink items-center gap-1 font-mono text-10",
-              state.agentStatus.isWorking ? "md-agent-hue" : "text-muted-foreground"
-            )}
-          >
-            <span
-              className={cn(
-                "size-1.5 shrink-0 rounded-full",
-                state.agentStatus.isWorking ? "animate-pulse bg-current" : "bg-muted-foreground/60"
-              )}
-            />
-            <span className="truncate">
-              {live.state.connected?.agentName ?? MD_BUILDER_TEXT.liveUnknownAgent}
-              {" · "}
-              {state.agentStatus.text}
-            </span>
-          </span>
-        ) : (
-          live.state.connected &&
-          !hasAgentStarted && (
-            <span
-              aria-live="polite"
-              className="flex min-w-0 shrink items-center gap-1 font-mono text-10 text-muted-foreground"
-            >
-              <LiveDot isActive={false} />
-              <span className="md-breathing truncate text-orange-500 dark:text-orange-400">
-                {live.state.connected.agentName ?? MD_BUILDER_TEXT.liveUnknownAgent}
-                {" · "}
-                {state.isAgentAway ? MD_BUILDER_TEXT.liveHeaderAway : MD_BUILDER_TEXT.liveHeaderWaiting}
-              </span>
-            </span>
-          )
-        )}
-
         {state.notice && (
           <span
             role="status"
@@ -267,6 +230,42 @@ export function MdBuilderTool() {
               <RefreshCw />
               <span className="truncate">{MD_BUILDER_TEXT.changedOnDisk}</span>
             </Button>
+          )}
+          {state.agentStatus && hasAgentStarted ? (
+            <span
+              aria-live="polite"
+              className={cn(
+                "mr-2 flex min-w-0 shrink-100 items-center gap-1 font-mono text-10",
+                state.agentStatus.isWorking ? "md-agent-hue" : "text-muted-foreground"
+              )}
+            >
+              <span
+                className={cn(
+                  "size-1.5 shrink-0 rounded-full",
+                  state.agentStatus.isWorking ? "animate-pulse bg-current" : "bg-muted-foreground/60"
+                )}
+              />
+              <span className="truncate">
+                {live.state.connected?.agentName ?? MD_BUILDER_TEXT.liveUnknownAgent}
+                {" · "}
+                {state.agentStatus.text}
+              </span>
+            </span>
+          ) : (
+            live.state.connected &&
+            !hasAgentStarted && (
+              <span
+                aria-live="polite"
+                className="mr-2 flex min-w-0 shrink-100 items-center gap-1 font-mono text-10 text-muted-foreground"
+              >
+                <LiveDot isActive={false} />
+                <span className="md-breathing truncate text-orange-500 dark:text-orange-400">
+                  {live.state.connected.agentName ?? MD_BUILDER_TEXT.liveUnknownAgent}
+                  {" · "}
+                  {state.isAgentAway ? MD_BUILDER_TEXT.liveHeaderAway : MD_BUILDER_TEXT.liveHeaderWaiting}
+                </span>
+              </span>
+            )
           )}
           {state.hasDocument && (
             <LivePanel
