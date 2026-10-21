@@ -267,6 +267,34 @@ describe("mcp server", () => {
     );
   });
 
+  it("keeps the tab's tools listed while the tab reloads and only announces real changes", async () => {
+    const bridge = await bridgeOnFreePort();
+    const client = await connectedAgent(bridge);
+    let announcements = 0;
+    client.setNotificationHandler(ToolListChangedNotificationSchema, () => {
+      announcements += 1;
+    });
+    const first = await connectTab(bridge.port);
+    register(first);
+    await first.next("session");
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(announcements).toBe(1);
+
+    first.socket.close();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect((await client.listTools()).tools.map((tool) => tool.name)).toContain("echo");
+
+    const second = await connectTab(bridge.port);
+    register(second);
+    await second.next("session");
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(announcements).toBe(1);
+
+    register(second, [ECHO_TOOL, READ_TOOL]);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(announcements).toBe(2);
+  });
+
   it("records which agent started the session", async () => {
     const bridge = await bridgeOnFreePort();
     await connectedAgent(bridge);
