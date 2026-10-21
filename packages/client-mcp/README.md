@@ -1,6 +1,6 @@
 # @rawgrid/client-mcp
 
-Lets a browser tab offer MCP tools to an agent running on your machine, such as Claude Code, Codex or Cursor. rawgrid's md builder uses it for live mode: your agent reads the document you are reviewing and answers each comment as soon as you post it.
+Lets a browser tab offer MCP tools to an agent running on your machine, such as Claude Code, Codex or Cursor. [rawgrid](https://fanoflix.github.io/rawgrid-client/)'s md builder uses it for live mode: your agent reads the document you are reviewing and answers each comment as soon as you post it.
 
 There is no hosted server and nothing is written to your project folders. Your agent starts this package itself, as an ordinary MCP server.
 
@@ -51,7 +51,7 @@ Cursor, in `~/.cursor/mcp.json`:
 { "mcpServers": { "rawgrid": { "command": "npx", "args": ["-y", "@rawgrid/client-mcp@latest"] } } }
 ```
 
-Then open md builder in rawgrid, click **live**, and connect to your agent's session.
+Then open md builder in rawgrid at [fanoflix.github.io/rawgrid-client/tools](https://fanoflix.github.io/rawgrid-client/tools), click **live**, and paste the prompt from the live panel into your agent. md builder connects to the agent's session on its own once the agent starts using rawgrid.
 
 ## Security
 
