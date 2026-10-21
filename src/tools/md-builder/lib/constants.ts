@@ -8,6 +8,7 @@ export interface MdBuilderConfig {
   blinkMs: number;
   copiedFeedbackMs: number;
   liveScanMs: number;
+  agentAwayMs: number;
   waitDefaultSeconds: number;
   waitMaxSeconds: number;
 }
@@ -22,6 +23,7 @@ export const MD_BUILDER_CONFIG: MdBuilderConfig = {
   blinkMs: 900,
   copiedFeedbackMs: 1000,
   liveScanMs: 4000,
+  agentAwayMs: 120_000,
   waitDefaultSeconds: 50,
   waitMaxSeconds: 50,
 };
@@ -216,6 +218,11 @@ export const MD_BUILDER_TEXT = {
   liveStepCursorHint: "add this to ~/.cursor/mcp.json",
   liveStepConnect: "2. connect to the agent's session",
   liveStepPrompt: "3. tell your agent",
+  liveStepAllow: "4. let it keep listening (optional)",
+  liveAllowWhy:
+    "keeps long sessions going: your agent never stops for a permission prompt or an auto-mode block on rawgrid's tools.",
+  liveAllowHow: "in claude code, run /permissions and add this allow rule:",
+  liveAllowRule: "mcp__rawgrid",
   livePrompt: [
     "Use the rawgrid tools to review the document open in md builder.",
     "",
@@ -240,6 +247,9 @@ export const MD_BUILDER_TEXT = {
   liveHandshakeHint:
     "connected, but your agent hasn't used rawgrid yet. paste the prompt from step 3 into it.",
   liveHeaderWaiting: "connected · paste the live prompt into your agent",
+  liveHeaderAway: "isn't listening · ask it to carry on",
+  liveAwayHint:
+    "your agent hasn't called md builder for 2 minutes, so it may have stopped. ask it to carry on, or paste the prompt from step 3 again.",
   liveHostBackground: "background, no terminal",
   liveOutdated: "older version",
   liveOutdatedHint: "this session runs an older rawgrid server that can't say where it runs. start a new agent session to update it.",

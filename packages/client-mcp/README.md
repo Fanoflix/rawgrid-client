@@ -15,7 +15,7 @@ agent ──stdio──► @rawgrid/client-mcp ──ws://127.0.0.1:47821–4783
 3. The tab finds the server, the user clicks connect, and the tab sends the list of tools it offers.
 4. The server tells the agent its tool list changed. Each tool call goes to the tab, and the tab's answer comes back as the tool result.
 
-If the tab is not connected, for example while the page reloads, a call waits up to 30 seconds for it to come back before failing. A call cut off by a disconnect is sent again only if the tool is marked read-only (`annotations.readOnlyHint: true`). Any other tool reports that its change may or may not have been applied, because the tab might have applied it before the connection dropped.
+If the tab is not connected, for example while the page reloads, a call waits up to 30 seconds for it to come back before failing. The tab's tools stay listed while it is away, and the agent is only told the tool list changed when a tab registers a different set, so a reload never makes tools disappear. A call cut off by a disconnect is sent again only if the tool is marked read-only (`annotations.readOnlyHint: true`). Any other tool reports that its change may or may not have been applied, because the tab might have applied it before the connection dropped.
 
 Every agent process that loads your MCP config starts this server, including idle ones such as Claude Code's pre-warmed background sessions. So tabs should connect on their own only to sessions with a non-null `lastAgentCallAt`, meaning the agent has actually started using rawgrid.
 
@@ -36,6 +36,8 @@ Claude Code:
 ```bash
 claude mcp add --scope user rawgrid -- npx -y @rawgrid/client-mcp@latest
 ```
+
+Optionally, in Claude Code run `/permissions` and add an allow rule for `mcp__rawgrid`. Long sessions then never stop for a permission prompt or an auto-mode block on rawgrid's tools.
 
 `@latest` makes npx check for a new version each time the agent starts, instead of reusing a cached copy, so the server keeps up with the rawgrid page. `--scope user` makes it available in every project. Without it, Claude Code adds the server only to the project you ran the command in.
 

@@ -155,6 +155,8 @@ export async function startBridge(options: BridgeOptions): Promise<Bridge> {
   const toolListeners = new Set<() => void>();
   const tabWaiters = new Set<() => void>();
   let registered: RegisteredTab | null = null;
+  let advertisedTools: ClientTool[] = [];
+  let advertisedSignature = "";
   let isClosed = false;
   let nextCallId = 1;
 
@@ -175,7 +177,11 @@ export async function startBridge(options: BridgeOptions): Promise<Bridge> {
     };
   }
 
-  function notifyToolsChanged() {
+  function advertise(tools: ClientTool[]) {
+    const signature = JSON.stringify(tools);
+    if (signature === advertisedSignature) return;
+    advertisedTools = tools;
+    advertisedSignature = signature;
     toolListeners.forEach((listener) => listener());
   }
 
@@ -214,7 +220,6 @@ export async function startBridge(options: BridgeOptions): Promise<Bridge> {
     if (registered?.socket !== socket) return;
     registered = null;
     dropPendingCalls();
-    notifyToolsChanged();
     broadcastSession();
   }
 
@@ -232,7 +237,7 @@ export async function startBridge(options: BridgeOptions): Promise<Bridge> {
         clientName: message.client.name,
         tools: message.tools,
       };
-      notifyToolsChanged();
+      advertise(message.tools);
       broadcastSession();
       [...tabWaiters].forEach((wake) => wake());
       return;
@@ -305,7 +310,7 @@ export async function startBridge(options: BridgeOptions): Promise<Bridge> {
     session: () => session,
     isConnected: () => registered !== null,
     clientName: () => registered?.clientName ?? null,
-    tools: () => registered?.tools ?? [],
+    tools: () => advertisedTools,
     callTool,
     setAgent(agent) {
       session.agent = agent;

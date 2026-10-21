@@ -165,6 +165,7 @@ export interface MdBuilderState {
   resolvedThreads: ResolvedThreadView[];
   incomingNote: IncomingNote | null;
   agentStatus: AgentStatus | null;
+  isAgentAway: boolean;
   pendingAgentReplies: Record<number, string>;
 }
 
@@ -317,6 +318,9 @@ export function useMdBuilder() {
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>("comments");
   const [incomingNote, setIncomingNote] = useState<IncomingNote | null>(null);
   const [agentStatus, setAgentStatus] = useState<AgentStatus | null>(null);
+  const [isAgentAway, setIsAgentAway] = useState(false);
+  const activeAgentCallsRef = useRef(0);
+  const agentAwayTimerRef = useRef<number | null>(null);
   const [pendingReplySeqs, setPendingReplySeqs] = useState<Record<number, number>>({});
   const isLiveRef = useRef(false);
 
@@ -784,7 +788,7 @@ export function useMdBuilder() {
     []
   );
 
-  const handleAgentCall = useCallback(
+  const respondToAgent = useCallback(
     async (tool: string, args: Record<string, unknown>): Promise<ClientMcpCallResult> => {
       if (!viewRef.current.source) return { ok: false, error: MD_BUILDER_TEXT.liveNoDocument };
       if (tool === LIVE_TOOL_NAMES.setStatus) {
@@ -831,10 +835,39 @@ export function useMdBuilder() {
     [applyAgentChange, waitForActivity]
   );
 
+  const clearAgentAwayTimer = useCallback(() => {
+    if (agentAwayTimerRef.current) window.clearTimeout(agentAwayTimerRef.current);
+    agentAwayTimerRef.current = null;
+  }, []);
+
+  const handleAgentCall = useCallback(
+    async (tool: string, args: Record<string, unknown>): Promise<ClientMcpCallResult> => {
+      activeAgentCallsRef.current += 1;
+      clearAgentAwayTimer();
+      setIsAgentAway(false);
+      try {
+        return await respondToAgent(tool, args);
+      } finally {
+        activeAgentCallsRef.current -= 1;
+        if (activeAgentCallsRef.current === 0) {
+          agentAwayTimerRef.current = window.setTimeout(
+            () => setIsAgentAway(true),
+            MD_BUILDER_CONFIG.agentAwayMs
+          );
+        }
+      }
+    },
+    [clearAgentAwayTimer, respondToAgent]
+  );
+
+  useEffect(() => clearAgentAwayTimer, [clearAgentAwayTimer]);
+
   const live = useLiveMode({
     hasDocument: reviewDoc.source.length > 0,
     onCall: handleAgentCall,
     onConnected: () => {
+      clearAgentAwayTimer();
+      setIsAgentAway(false);
       setAgentStatus(null);
       setPendingReplySeqs({});
       publish();
@@ -1289,6 +1322,7 @@ export function useMdBuilder() {
     resolvedThreads,
     incomingNote,
     agentStatus: isLive ? agentStatus : null,
+    isAgentAway: isLive && isAgentAway,
     pendingAgentReplies,
   };
 

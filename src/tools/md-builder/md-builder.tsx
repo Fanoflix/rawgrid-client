@@ -155,7 +155,7 @@ export function MdBuilderTool() {
     decreaseFont,
   } = useMdBuilder();
 
-  const hasAgentStarted = state.agentStatus !== null;
+  const hasAgentStarted = state.agentStatus !== null && !state.isAgentAway;
 
   const saveLabel =
     state.hasHandle || !state.hasFileSystemAccess
@@ -192,7 +192,7 @@ export function MdBuilderTool() {
           </span>
         )}
 
-        {state.agentStatus ? (
+        {state.agentStatus && hasAgentStarted ? (
           <span
             aria-live="polite"
             className={cn(
@@ -223,7 +223,7 @@ export function MdBuilderTool() {
               <span className="md-breathing truncate text-orange-500 dark:text-orange-400">
                 {live.state.connected.agentName ?? MD_BUILDER_TEXT.liveUnknownAgent}
                 {" · "}
-                {MD_BUILDER_TEXT.liveHeaderWaiting}
+                {state.isAgentAway ? MD_BUILDER_TEXT.liveHeaderAway : MD_BUILDER_TEXT.liveHeaderWaiting}
               </span>
             </span>
           )
@@ -255,6 +255,7 @@ export function MdBuilderTool() {
             <LivePanel
               state={live.state}
               hasAgentStarted={hasAgentStarted}
+              isAgentAway={state.isAgentAway}
               onOpenChange={live.setIsPanelOpen}
               onConnect={live.connect}
               onDisconnect={live.disconnect}
@@ -1532,6 +1533,7 @@ function PasteView({ onLoad, onCancel }: PasteViewProps) {
 interface LivePanelProps {
   state: LiveModeState;
   hasAgentStarted: boolean;
+  isAgentAway: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onConnect: (session: ClientMcpSession) => void;
   onDisconnect: () => void;
@@ -1540,6 +1542,7 @@ interface LivePanelProps {
 function LivePanel({
   state,
   hasAgentStarted,
+  isAgentAway,
   onOpenChange,
   onConnect,
   onDisconnect,
@@ -1630,7 +1633,7 @@ function LivePanel({
                   </span>
                 ) : (
                   <span className="md-breathing text-10 text-orange-500 dark:text-orange-400">
-                    {MD_BUILDER_TEXT.liveHandshakeHint}
+                    {isAgentAway ? MD_BUILDER_TEXT.liveAwayHint : MD_BUILDER_TEXT.liveHandshakeHint}
                   </span>
                 )}
               </span>
@@ -1655,6 +1658,12 @@ function LivePanel({
         <section className="flex flex-col gap-1.5">
           <h4 className="font-semibold">{MD_BUILDER_TEXT.liveStepPrompt}</h4>
           <CopyableCode value={MD_BUILDER_TEXT.livePrompt} />
+        </section>
+        <section className="flex flex-col gap-1.5">
+          <h4 className="font-semibold">{MD_BUILDER_TEXT.liveStepAllow}</h4>
+          <p className="text-muted-foreground">{MD_BUILDER_TEXT.liveAllowWhy}</p>
+          <span className="text-muted-foreground">{MD_BUILDER_TEXT.liveAllowHow}</span>
+          <CopyableCode value={MD_BUILDER_TEXT.liveAllowRule} />
         </section>
         {state.message && (
           <p role="status" className="bg-destructive/10 p-2 text-destructive">

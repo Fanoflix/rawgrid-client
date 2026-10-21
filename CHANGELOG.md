@@ -1,11 +1,27 @@
 # Changelog
 
+## 1.2.1
+
+### Upgrading
+
+The reload fix lives in `@rawgrid/client-mcp` 0.1.4, which is on npm. An agent session keeps the server it started with, so in a session that was already open run `/mcp`, pick **rawgrid** and choose **Reconnect**, or start a new session. Setups added with `@rawgrid/client-mcp@latest` pick up 0.1.4 on their own.
+
+### UX
+
+- The live panel has an optional step 4: an allow rule for rawgrid's tools in Claude Code (`mcp__rawgrid`), so long sessions never stop for a permission prompt or an auto-mode block.
+
+### Fixes
+
+- Reloading MD Builder no longer makes the agent stop. During a reload the agent briefly saw md builder's tools disappear and concluded it was disconnected. The tools now stay listed while the tab reloads (`@rawgrid/client-mcp` 0.1.4).
+- The live button no longer stays "live" after the agent stops listening. If the agent has made no call for 2 minutes, the button goes back to "waiting for" with a hollow dot, and the header says the agent isn't listening and to ask it to carry on.
+- The 1.2.0 changelog example about unsaved comments no longer mentions agents resolving threads.
+
 ## 1.2.0
 
 ### UX
 
 - MD Builder live mode. Add `@rawgrid/client-mcp` to your agent once, click `live` in MD Builder, and connect to the agent's session. The agent can read the document, wait for your comments, reply, start threads, edit text and apply changes you agreed to. It can never resolve a thread. Its changes appear as they happen and are written to the file. Each comment, reply, edit or delete reaches the agent the moment you post it, and is written to the file, so there is nothing to save and the agent no longer has to watch the file. The live panel has copy-ready setup for Claude Code, Codex and Cursor, using `@rawgrid/client-mcp@latest` so agents always start the newest server, plus the prompt to give your agent.
-- Unsaved comments survive agent changes. If the agent changes the document while you have unsaved comments, yours are kept on top of its changes. A comment that can no longer apply, for example a reply to a thread the agent just resolved, is listed in a strip so you can copy it.
+- Unsaved comments survive agent changes. If the agent changes the document while you have unsaved comments, yours are kept on top of its changes. A comment that can no longer apply, for example a comment on text the agent just rewrote, is listed in a strip so you can copy it.
 - The agent brief in the `⋯` menu names the open file and quotes its first line, so the agent can find the right file even though the browser never shares its folder. It also spells out the rules. The agent answers only threads whose last note is yours, applies a change only when you asked for it or agreed, never edits your notes, and never writes markup that breaks the file. While live mode is connected, the same menu item copies the live prompt instead.
 - Only you resolve threads. Each comment card has a ✓ button. Resolved threads move to a "resolved" tab in the sidebar with their notes and when they were resolved, and "reopen" puts a thread back on its text while that text is still in the document.
 - The agent's status shows in MD Builder's header while live: "thinking…", what it said it's working on, or "waiting for your next comment". While it works, the status slowly cycles orange, red, dark purple, red, orange.
