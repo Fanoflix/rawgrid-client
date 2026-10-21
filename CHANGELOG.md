@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.3
+
+### UX
+
+- The agent's status line in the md builder header, such as "claude-code · thinking…", now sits just left of the live button instead of after the file name, with a little space between them. What the agent is doing now reads next to the connection it comes from, and the file name keeps its room on the left. A long status is cut off before the header buttons are, and hovering it shows the full text.
+
 ## 1.2.2
 
 ### UX
