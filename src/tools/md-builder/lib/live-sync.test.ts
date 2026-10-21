@@ -11,6 +11,7 @@ import {
   applyUserOp,
   authorOf,
   documentSnapshot,
+  eventForAgent,
   DROPPED_TEXT,
   emptyLog,
   mapPendingThroughChange,
@@ -20,6 +21,7 @@ import {
   rebasePending,
   reopenRange,
   splitNoteTime,
+  trimQuote,
   withNoteTime,
   userEventsSince,
   type AgentCall,
@@ -254,6 +256,16 @@ describe("activity", () => {
         { author: "user", text: "keep it open", at: null },
       ],
     });
+  });
+  it("sends the agent the ends of a long quote and keeps the full text in the document", () => {
+    const long = `${"a".repeat(400)}middle${"z".repeat(400)}`;
+    const view = applyUserOp(docFrom(long), { kind: "comment", id: 1, start: 0, end: long.length, note: "all of it" })!;
+    const log = publishUserChanges(docFrom(long), view, emptyLog());
+    const event = eventForAgent(log.events[0]);
+    expect(event.quote).toBe(`${"a".repeat(300)}…${"z".repeat(300)}`);
+    expect(event.quoteLength).toBe(long.length);
+    expect(documentSnapshot(view, log).threads[0].quote).toBe(long);
+    expect(trimQuote("short")).toBe("short");
   });
 });
 

@@ -9,6 +9,7 @@ export interface MdBuilderConfig {
   copiedFeedbackMs: number;
   liveScanMs: number;
   agentAwayMs: number;
+  eventQuoteEdge: number;
   waitDefaultSeconds: number;
   waitMaxSeconds: number;
 }
@@ -24,6 +25,7 @@ export const MD_BUILDER_CONFIG: MdBuilderConfig = {
   copiedFeedbackMs: 1000,
   liveScanMs: 4000,
   agentAwayMs: 120_000,
+  eventQuoteEdge: 300,
   waitDefaultSeconds: 50,
   waitMaxSeconds: 50,
 };
@@ -90,7 +92,7 @@ export const LIVE_TOOLS = [
   {
     name: LIVE_TOOL_NAMES.waitForActivity,
     description:
-      "Waits until the user adds, replies to, edits or deletes a comment after sinceSeq, then returns them with the new seq. Returns an empty list with timedOut true after timeoutSeconds (at most 50), so call it again. Call it in a loop to keep reviewing.",
+      "Waits until the user adds, replies to, edits or deletes a comment after sinceSeq, then returns them with the new seq. A quote longer than 600 characters arrives as its first and last 300 joined by …, with quoteLength giving its full length; get_document has the full text. Returns an empty list with timedOut true after timeoutSeconds (at most 50), so call it again. Call it in a loop to keep reviewing.",
     inputSchema: {
       type: "object",
       properties: {
