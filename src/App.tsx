@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/resizable";
 import { dispatch, subscribe } from "@/lib/command-bus";
 import { ghostModifier } from "@/lib/drag-ghost";
-import { FONT_COMMANDS, HOVER_COMMAND } from "@/lib/tool-hover";
+import { FONT_COMMANDS, HOVER_COMMAND, SAVE_COMMAND } from "@/lib/tool-hover";
 import {
   FOCUS_TABS_HEIGHT,
   getGridNodeId,
@@ -46,12 +46,9 @@ import { useEditModeEscape } from "@/lib/use-edit-mode-escape";
 import { useFontScale } from "@/lib/use-font-scale";
 import { useLayout } from "@/lib/use-layout";
 import { useThemeToggle } from "@/lib/use-theme-toggle";
-import { cn, isPageEscape } from "@/lib/utils";
+import { cn, hasModKey, isPageEscape } from "@/lib/utils";
 import type { ToolId } from "@/lib/tool-registry";
 import { TOOL_REGISTRY } from "@/lib/tool-registry";
-
-const IS_MAC =
-  typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
 
 const FONT_HOTKEY_CODES: Record<string, keyof typeof FONT_COMMANDS | undefined> = {
   Equal: "increase",
@@ -127,8 +124,7 @@ export function App() {
 
   useEffect(() => {
     function handleFontHotkey(event: KeyboardEvent) {
-      const hasModifier = IS_MAC ? event.metaKey : event.ctrlKey;
-      if (!hasModifier || !event.shiftKey) return;
+      if (!hasModKey(event) || !event.shiftKey) return;
       const direction = FONT_HOTKEY_CODES[event.code];
       if (!direction) return;
       event.preventDefault();
@@ -137,6 +133,18 @@ export function App() {
     }
     window.addEventListener("keydown", handleFontHotkey);
     return () => window.removeEventListener("keydown", handleFontHotkey);
+  }, [focusedToolId]);
+
+  useEffect(() => {
+    function handleSaveHotkey(event: KeyboardEvent) {
+      if (!hasModKey(event) || event.shiftKey || event.altKey) return;
+      if (event.key.toLowerCase() !== "s") return;
+      event.preventDefault();
+      const target = hoveredToolRef.current ?? focusedToolId;
+      if (target) dispatch(SAVE_COMMAND, target);
+    }
+    window.addEventListener("keydown", handleSaveHotkey);
+    return () => window.removeEventListener("keydown", handleSaveHotkey);
   }, [focusedToolId]);
 
   useEffect(() => {

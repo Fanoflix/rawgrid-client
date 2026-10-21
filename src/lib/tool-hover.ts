@@ -9,3 +9,5 @@ export const FONT_COMMANDS = {
   increase: "font:increase",
   decrease: "font:decrease",
 } as const;
+
+export const SAVE_COMMAND = "tool:save";

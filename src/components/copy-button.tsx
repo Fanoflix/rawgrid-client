@@ -35,7 +35,14 @@ export function CopyButton({
       onClick={handleCopy}
       aria-label={ariaLabel}
     >
-      {isCopied ? "copied" : "copy"}
+      <span className="grid">
+        <span className={cn("col-start-1 row-start-1", isCopied && "invisible")}>
+          copy
+        </span>
+        <span className={cn("col-start-1 row-start-1", !isCopied && "invisible")}>
+          copied
+        </span>
+      </span>
     </Button>
   );
 }

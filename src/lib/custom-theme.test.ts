@@ -45,6 +45,12 @@ describe("customThemeCss", () => {
     expect(customThemeCss({ fonts: {}, light: {}, dark: {} })).toBe("");
   });
 
+  it("writes a secondary color with its own readable foreground", () => {
+    expect(
+      customThemeCss({ fonts: {}, light: {}, dark: { secondary: "#1e3a8a" } })
+    ).toBe("html.dark { --secondary: #1e3a8a; --secondary-foreground: oklch(0.985 0 0); }");
+  });
+
   it("scopes colors to their mode and adds a readable primary foreground", () => {
     const css = customThemeCss({
       fonts: { mono: "jetbrains-mono" },

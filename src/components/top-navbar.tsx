@@ -4,7 +4,8 @@ import { Pencil, RotateCcw } from "lucide-react";
 import { CommandPaletteTrigger } from "@/components/command-palette-trigger";
 import { FocusIcon } from "@/components/focus-icon";
 import { HiddenSpacesMenu } from "@/components/hidden-spaces-menu";
-import { SettingsDialog } from "@/components/settings-dialog";
+import { Kbd } from "@/components/kbd";
+import { SettingsPopover } from "@/components/settings-popover";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Tooltip,
@@ -14,7 +15,7 @@ import {
 import { Button, buttonVariants } from "./ui/button";
 import { subscribe } from "@/lib/command-bus";
 import { HOVER_COMMAND } from "@/lib/tool-hover";
-import { cn } from "@/lib/utils";
+import { cn, hasModKey, MOD_KEY_LABEL } from "@/lib/utils";
 import { TOOL_REGISTRY, type ToolId } from "@/lib/tool-registry";
 import type { useLayout } from "@/lib/use-layout";
 
@@ -28,13 +29,10 @@ interface ToolHint {
 }
 
 const HINT_EXIT_MS = 200;
-const IS_MAC =
-  typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
-const FOCUS_HOTKEY_KEYS = IS_MAC ? ["⌘", "⇧", "F"] : ["ctrl", "⇧", "F"];
+const FOCUS_HOTKEY_KEYS = [MOD_KEY_LABEL, "⇧", "F"];
 
 function isFocusHotkey(event: KeyboardEvent) {
-  const hasModifier = IS_MAC ? event.metaKey : event.ctrlKey;
-  return hasModifier && event.shiftKey && event.key.toLowerCase() === "f";
+  return hasModKey(event) && event.shiftKey && event.key.toLowerCase() === "f";
 }
 
 export function TopNavbar({ layoutState }: TopNavbarProps) {
@@ -192,11 +190,7 @@ export function TopNavbar({ layoutState }: TopNavbarProps) {
           >
             <FocusIcon isOff={isFocused} className="size-3" />
             focus mode
-            <kbd className="inline-flex h-4 items-center gap-0.5 rounded border border-current/20 px-1 font-sans text-10 leading-none tracking-wide opacity-70">
-              {FOCUS_HOTKEY_KEYS.map((key) => (
-                <span key={key}>{key}</span>
-              ))}
-            </kbd>
+            <Kbd keys={FOCUS_HOTKEY_KEYS} />
           </TooltipTrigger>
           <TooltipContent side="bottom">
             {isFocused
@@ -215,7 +209,7 @@ export function TopNavbar({ layoutState }: TopNavbarProps) {
         </Button>
 
         <ThemeToggle />
-        <SettingsDialog />
+        <SettingsPopover />
       </div>
     </nav>
   );

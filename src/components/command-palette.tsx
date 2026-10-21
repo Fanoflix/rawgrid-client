@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 
+import { Kbd } from "@/components/kbd";
 import { cn } from "@/lib/utils";
 import { dispatch, subscribe } from "@/lib/command-bus";
 import { rankCommands } from "@/lib/command-search";
 import { FONT_SCALE_COMMANDS } from "@/lib/font-scale";
-import { SETTINGS_COMMANDS, SETTINGS_SOURCES } from "@/lib/use-settings-dialog";
+import { SETTINGS_COMMANDS, SETTINGS_SOURCES } from "@/lib/use-settings-popover";
 import type { ToolId } from "@/lib/tool-registry";
 import { ALL_TOOL_IDS, TOOL_REGISTRY } from "@/lib/tool-registry";
 
@@ -395,9 +396,7 @@ export function CommandPalette({
                 placeholder="type a command..."
                 className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
               />
-              <kbd className="shrink-0 rounded border bg-muted px-1.5 py-0.5 text-10 text-muted-foreground">
-                esc
-              </kbd>
+              <Kbd keys={["esc"]} />
             </div>
 
             <div ref={listRef} className="max-h-64 overflow-y-auto py-1">
