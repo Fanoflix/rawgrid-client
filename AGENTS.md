@@ -31,10 +31,13 @@ Commands: `yarn dev`, `yarn build` (runs `tsc -b` first), `yarn lint`, `yarn tes
 | `src/lib/use-custom-theme.ts` | Custom theme store. Writes the `<style id="custom-theme">` element and localStorage. |
 | `src/lib/settings-json.ts` | The settings JSON: export with every key, strict parsing, and finding color and font values in the editor's syntax tree. Pure, unit tested. |
 | `src/lib/settings-field-widgets.ts` | CodeMirror widgets that put a color swatch or a font ▾ before each pickable value in the settings JSON. |
-| `src/lib/use-settings-dialog.ts` | Settings modal open state and the "ESC goes back to the palette" rule. |
-| `src/components/settings-dialog.tsx` | The settings modal: font size, fonts, theme mode and colors, and the "edit in json" view. |
+| `src/lib/use-settings-popover.ts` | Settings popover open state and the "ESC goes back to the palette" rule. |
+| `src/components/settings-popover.tsx` | The settings popover under the cog: font size, fonts, theme mode and colors, and the "edit in json" view. It has no backdrop, so changes show on the page while it is open. |
 | `src/components/edit-spaces-exit-dialog.tsx` | Asks whether to keep layout changes when ESC leaves edit spaces mode. |
+| `src/components/kbd.tsx` | The one keyboard shortcut chip (secondary background). Use it for every shortcut shown in the UI. |
 | `src/components/overflow-tooltip.tsx` | The one instant tooltip for cut-off header text, mounted once in `App.tsx`. |
+| `src/lib/client-mcp.ts` | Tab side of `@rawgrid/client-mcp`: finds agent sessions on the local ports, connects, registers tools and answers calls. |
+| `packages/client-mcp/` | The `@rawgrid/client-mcp` npm package, a Yarn workspace. A stdio MCP server the agent starts, plus a `127.0.0.1` WebSocket the tab connects to. Its README documents the protocol. |
 | `src/lib/command-bus.ts` | Tiny pub/sub. Commands are strings, payloads are strings. |
 | `src/lib/command-search.ts` | Ranked matcher behind the command palette. |
 | `src/components/command-palette.tsx` | The palette and its hard-coded `COMMANDS` list. |
@@ -81,6 +84,35 @@ Rules:
 - In focus mode a `FocusTabs` strip sits above the focused slot, listing every visible tool. The slot's fixed top offset is `focusTop + FOCUS_TABS_HEIGHT`, so change both together.
 - ESC in edit spaces mode exits it. If spaces were moved, hidden or shown since entering, it asks first: keep changes, discard (restores the layout from when edit mode started) or keep editing. The "done" button always keeps changes.
 - The palette has one "focus <tool>" command per tool, generated from the registry, plus "exit focus mode". Commands can carry a fixed `payload`, which is how those entries pass the tool id.
+
+## Hotkeys aimed at a tool
+
+`src/lib/tool-hover.ts` holds the commands that target one tool. `App.tsx` sends them with the tool id as the payload: the hovered tool, or the focused tool in focus mode. Each tool subscribes and ignores ids that are not its own.
+
+- `⌘⇧+` and `⌘⇧-` send `FONT_COMMANDS`. `useFont` handles them.
+- `⌘S` sends `SAVE_COMMAND`. Only md-builder handles it today. `App.tsx` always blocks the browser's "save page" dialog on the tools page, even when no tool saves.
+- Use `hasModKey` and `MOD_KEY_LABEL` from `src/lib/utils.ts` for `⌘` on macOS and `ctrl` elsewhere.
+
+## MD Builder live mode
+
+- **Transport.** The agent starts `@rawgrid/client-mcp` over stdio. md builder connects to it over `ws://127.0.0.1:47821–47830` and registers the tools in `LIVE_TOOLS` (`constants.ts`). `use-live-mode.ts` owns the connection. Scanning starts only after the user opens the live panel or has connected before, so a fresh visitor never gets Chrome's local network prompt. Once enabled, it connects on its own only when exactly one free session has `isAgentActive` (the server's `lastAgentCallAt` is set). Every agent process loads the MCP config, including Claude Code's `claude bg-spare` background processes, which have no terminal and never call rawgrid, so idle sessions are only connected by hand. The exception is the session the user last connected to (`md-builder:live-session`), which is reconnected after a reload even while idle. Connected is not the same as engaged: every connect resets `agentStatus`, and until the agent calls this connection, the UI shows "waiting for" with a hollow dot. `isAgentActive` only means the session has ever used rawgrid, so it drives auto-connect, not the live indicator. The server also reports `host` (from `ps` ancestry: background daemon, an app's terminal, or unknown), and the panel orders sessions with `orderSessions` and labels them with `sessionHostLabel` and `timeSince`.
+- **One writer.** Only md builder writes the `.md` file. Agent calls change the document through `applyAgentCall` in `live-sync.ts`, and each applied call is written to disk straight away (`queueDiskWrite`), unless the file changed on disk, in which case the usual "changed on disk" button shows.
+- **Published and pending.** `syncRef` in `use-md-builder.ts` holds the published document (what the agent sees and the disk holds), the user's unsaved ops, and the activity log. While nothing is pending, `published` is `null` and means "same as the view". Every user edit goes through `commitUserOp`, so it is recorded as an op. Agent changes apply to the published document, and the pending ops are replayed on top with `rebasePending`. Ops that no longer apply land in `droppedNotes` with a reason.
+- **Live mode posts each change.** While connected, `commitUserOp` publishes every op right away and writes the file, so the agent hears about each comment as soon as it is posted. `publish()` turns pending ops into user events in the log and wakes every `wait_for_activity` call. Ops made before connecting stay pending until `⌘S`, which publishes even without a file handle.
+- **Rules live in `live-sync.ts` and are pure.** Every rejection has a reason the agent can act on (`unknown_thread`, `thread_resolved`, `new_activity`, `not_found`, `ambiguous`, `overlaps_thread`, `contains_markup`, `crosses_block`, `empty_text`). `live-sync.test.ts` includes an interleaving fuzz test; add a case there for any new rule.
+- **Thread ids** are `t<id>` and stay unique within a session. A refresh numbers the reloaded threads after the current `nextId`, so an agent holding an old id gets `unknown_thread` instead of hitting a different thread.
+- **New-note styling must not mix the two user colors.** Primary and secondary can be any combination, so the highlight dims every non-new note in the sidebar while anything is new (`text-muted-foreground`), fills the reply marker, flashes a foreground wash once (`md-arrive`) and shows a dot mixed from primary and a fixed red (`md-unread-dot`). No backgrounds built from secondary.
+- **New notes.** Keys come from `noteKeyFor` (quote, first note, note index), not from thread ids, so they survive a page reload. A refresh replaces the set with `addedNoteKeys(before, after)`. In live mode the first agent reply or comment after a save replaces the set, and later ones in the same round add to it.
+- **Agent notes** are stored with an `agent:` prefix, which `authorOf` reads back as the author.
+- **Note times live in the note.** A note may end with `<!--rg:<ISO time>-->`. `splitNoteTime` reads it, `withNoteTime` writes it, and agent text has any marker stripped before md builder adds its own. Display and edit always use the split text. Notes render through `renderMarkdown` as `.md-doc.md-note`.
+- **`renderMarkdown` refuses unsafe link targets.** `javascript:`, `vbscript:` and `data:` links (ignoring case and control characters) render as their text. Keep it that way: notes from agents go through the same renderer.
+- **Only the user resolves threads.** The agent has `apply_change` (rewrite a thread's quoted text, thread stays open) but no resolve tool, and the brief and live prompt say so. Resolving is the user op `resolve`; reopening is `restore`, placed with `reopenRange`. Resolved threads are kept per document name in the `md-builder:resolved` tool state and shown in the sidebar's resolved tab.
+- **Reloads change seq and ids.** Each page load starts `seq` at `Date.now()` (`firstSeq`). A `wait_for_activity` with an older `sinceSeq` returns `reloaded: true`, and an `apply_change` with an older `baseSeq` is rejected as `stale_seq`, so the agent re-reads thread ids instead of writing to the wrong thread.
+- **Connecting publishes.** `useLiveMode` calls `onConnected`, which publishes unsaved ops so the agent's view matches the user's.
+- **Placeholder replies.** `publish()` records each thread the user commented, replied or edited in (`pendingReplySeqs`, thread id → event seq) while live. The thread renders a `PendingAgentNote` in the slot keyed `notes.length`, which is exactly the key the agent's real reply will get, so React reuses the element and only the text changes. Entries clear when the agent replies there, when the user resolves the thread, or when the agent calls `wait_for_activity` with a `sinceSeq` past that event. The placeholder's entrance waits `PENDING_REPLY_DELAY_S`.
+- **Agent status** comes from the calls themselves: `wait_for_activity` shows "waiting", other calls show "thinking", and `set_status` shows the agent's own words. It never sees the model's reasoning; MCP only sees tool calls.
+- **Discovery uses `fetch`, not WebSockets.** Chrome lets only one WebSocket per host be connecting at a time, and refused ports take seconds, so scanning ten ports with sockets timed out. The server answers `GET /hello` for allowed origins; the tab probes with a `no-cors` fetch, then `/hello`, and falls back to a socket greeting for 0.1.0 servers.
+- **Comment animations** use `motion` (`motion/react`) with `COMMENT_MOTION` from `constants.ts` (circOut, 0.175s). `COMMENT_SCROLL_DELAY_MS` waits for it before auto-scrolling, so change both together. Lists render inside `AnimatePresence initial={false}` so nothing animates on first render or tab switch.
 
 ## Command palette
 
@@ -134,3 +166,6 @@ Style rules that apply everywhere:
 - **Two timers for the timer tool.** The entered duration is tool state. The running countdown is app state so other tabs can follow it. Keep them separate.
 - **File handles are structured-cloneable.** `FileSystemFileHandle` and `File` can be stored in `app-state` directly. Permission to read a stored handle must be re-requested after a reload.
 - **The build base path is `/rawgrid-client/`.** Dev server URLs include it.
+- **The repo root is a Yarn workspace root.** `packages/*` are workspaces. The app itself stays the root package, so `yarn dev`, `yarn build` and the Pages deploy are unchanged. Vitest runs `packages/*/src/**/*.test.ts` too.
+- **zod 4 `discriminatedUnion` needs unique discriminator values.** Two `result` shapes under one `type` made every message fail to parse. The client-mcp protocol uses `z.union` for that reason.
+- **Live tool calls must answer within 120 seconds**, the server's call timeout. `wait_for_activity` is capped at 50 seconds for that reason, and the agent is told to call it again.
