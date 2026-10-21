@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.2.1
+
+### Upgrading
+
+The reload fix lives in `@rawgrid/client-mcp` 0.1.4, which is on npm. An agent session keeps the server it started with, so in a session that was already open run `/mcp`, pick **rawgrid** and choose **Reconnect**, or start a new session. Setups added with `@rawgrid/client-mcp@latest` pick up 0.1.4 on their own.
 
 ### UX
 
