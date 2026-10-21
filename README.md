@@ -20,7 +20,7 @@ A browser-based developer toolbox with multiple utilities arranged in a resizabl
 | **Base64**            | Encode text to Base64 and decode it back, with UTF-8 safe conversion and inline errors on invalid input.                                               | Paste a Base64 blob from a config file into the left box, hit `decode`, and read the plain text on the right.                            |
 | **JSON Prettify**     | Format messy JSON with 2-space, 4-space, or tab indent. Minify, sort keys A-Z, and get line/column parse errors. Both panes are editable.                | Paste a one-line API response, read it indented, then hit `minify` to squash it back for a config file.                                  |
 | **JSON Search**       | Search large JSON documents for specific fields with configurable context lines. Uses a Web Worker for files over 250KB.                                | Query `names, privileges [0,4]` against an Elasticsearch role mapping JSON to extract just the fields you need with surrounding context. |
-| **MD Builder**        | Open a local markdown file, select text and leave threaded comments. Saving writes them into the file as CriticMarkup (`{==text==}{>>comment<<}`), and `refresh` reloads the file after someone else edits it. Idea by [@TheSalarKhan](https://github.com/TheSalarKhan), thank you. | Comment on a plan your coding agent wrote, save, ask the agent to reply or apply the comments, then hit `refresh` to read its answers in place. |
+| **MD Builder**        | Open a local markdown file, select text and leave threaded comments. Saving writes them into the file as CriticMarkup (`{==text==}{>>comment<<}`), and `refresh` reloads the file after someone else edits it and highlights the notes that are new. In live mode your agent reads the document and answers each comment as soon as you post it. Idea by [@TheSalarKhan](https://github.com/TheSalarKhan), thank you. | Comment on a plan your coding agent wrote, save, ask the agent to reply or apply the comments, then hit `refresh` to read its answers in place. |
 
 ## UX Features
 
@@ -38,6 +38,10 @@ A browser-based developer toolbox with multiple utilities arranged in a resizabl
 - **Custom theme**: pick the primary color per mode and the ui and code fonts in settings, or edit everything as JSON and copy it to share.
 - **Persistent state**: tool inputs, layout, hidden spaces, theme, font size, and the chosen alarm sound are saved in the browser and restored on reload.
 - **Copy buttons**: hover an output to copy it.
+- **MD Builder live mode**: add `@rawgrid/client-mcp` to your agent once (`claude mcp add --scope user rawgrid -- npx -y @rawgrid/client-mcp@latest`), click `live` and connect. The agent gets tools to read the document, wait for your comments, reply, comment and resolve threads. Its changes show up as they happen, and each comment you post reaches it right away. See [packages/client-mcp](packages/client-mcp/README.md).
+- **Resolve and reopen**: only you resolve threads (✓ on each card). Resolved threads move to the "resolved" tab, and "reopen" puts one back while its text is still in the document. Agents can apply agreed changes but never resolve.
+- **New notes**: after a refresh, or a round of agent replies in live mode, the notes that are new stay highlighted until the next one. The `n new` button in the comments header jumps between them.
+- **Save hotkey**: `⌘S` (`ctrl+S` elsewhere) saves MD Builder while your cursor is over it or it is the focused tool.
 
 ## Getting Started
 
@@ -77,6 +81,7 @@ npm run preview
 - **dnd-kit** for dragging spaces
 - **CodeMirror 6** for the JSON editors
 - **IndexedDB** (via `idb`) for persistent tool state
+- **@rawgrid/client-mcp** (`packages/client-mcp`): a small MCP server that connects a local agent to the md builder tab
 
 ## Contributing
 

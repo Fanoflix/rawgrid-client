@@ -1,20 +1,17 @@
+import type { ReactNode } from "react";
 import { useId, useState } from "react";
-import { Braces, ListChecks, Settings } from "lucide-react";
+import { Braces, ListChecks, Settings, XIcon } from "lucide-react";
 
 import { CopyButton } from "@/components/copy-button";
 import { JsonEditor } from "@/components/json-editor";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
+  PopoverClose,
   PopoverContent,
+  PopoverTitle,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
   Select,
@@ -41,7 +38,7 @@ import { useCustomTheme } from "@/lib/use-custom-theme";
 import { useFont } from "@/lib/use-font";
 import { useFontScale } from "@/lib/use-font-scale";
 import { useHexDraft } from "@/lib/use-hex-draft";
-import { useSettingsDialog } from "@/lib/use-settings-dialog";
+import { useSettingsPopover } from "@/lib/use-settings-popover";
 import { useSettingsJsonView } from "@/lib/use-settings-json-view";
 import { useThemeToggle } from "@/lib/use-theme-toggle";
 import { cn } from "@/lib/utils";
@@ -49,18 +46,24 @@ import { cn } from "@/lib/utils";
 const SETTINGS_TEXT = {
   trigger: "settings",
   title: "settings",
+  close: "close settings",
   editInJson: "edit in json",
   editInForm: "edit in form",
+  fonts: "fonts",
   fontSize: "font size",
   reset: "reset",
   fontLabels: { ui: "ui font", mono: "code font" },
   theme: "theme",
+  mode: "mode",
   light: "light",
   dark: "dark",
   modifying: "modifying",
   themeMode: "theme mode",
-  colorLabels: { primary: "primary" },
-  colorHints: { primary: "buttons, highlights, active states" },
+  colorLabels: { primary: "primary", secondary: "secondary" },
+  colorHints: {
+    primary: "buttons, highlights, active states",
+    secondary: "comment cards, muted surfaces",
+  },
   resetMode: "reset colors for this mode",
   hexLabel: "hex",
   jsonHint:
@@ -74,12 +77,12 @@ const SETTINGS_TEXT = {
 const THUMB_HALF_WIDTH_PX = 6;
 const JSON_EDITOR_FONT = { minSize: 12, maxSize: 12, defaultSize: 12 } as const;
 
-export function SettingsDialog() {
-  const { isOpen, isFromPalette, handleOpenChange } = useSettingsDialog();
+export function SettingsPopover() {
+  const { isOpen, isFromPalette, handleOpenChange } = useSettingsPopover();
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger
+    <Popover open={isOpen} onOpenChange={handleOpenChange}>
+      <PopoverTrigger
         render={
           <Button
             type="button"
@@ -90,14 +93,16 @@ export function SettingsDialog() {
         }
       >
         <Settings />
-      </DialogTrigger>
-      <DialogContent
+      </PopoverTrigger>
+      <PopoverContent
+        side="bottom"
+        align="end"
         finalFocus={!isFromPalette}
-        className="top-[10vh] translate-y-0 gap-4 sm:max-w-lg"
+        className="max-h-(--available-height) w-lg max-w-[calc(100vw-1rem)] gap-4 overflow-y-auto border-2 border-border p-4 text-xs/relaxed shadow-2xl shadow-black/50 ring-0"
       >
         <SettingsBody />
-      </DialogContent>
-    </Dialog>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -106,8 +111,8 @@ function SettingsBody() {
 
   return (
     <>
-      <DialogHeader className="flex-row items-center gap-2 pr-8">
-        <DialogTitle>{SETTINGS_TEXT.title}</DialogTitle>
+      <div className="flex items-center gap-2">
+        <PopoverTitle>{SETTINGS_TEXT.title}</PopoverTitle>
         <Button
           type="button"
           variant="outline"
@@ -118,7 +123,19 @@ function SettingsBody() {
           {isJsonView ? <ListChecks /> : <Braces />}
           {isJsonView ? SETTINGS_TEXT.editInForm : SETTINGS_TEXT.editInJson}
         </Button>
-      </DialogHeader>
+        <PopoverClose
+          render={
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label={SETTINGS_TEXT.close}
+            />
+          }
+        >
+          <XIcon />
+        </PopoverClose>
+      </div>
       {isJsonView ? <SettingsJsonView /> : <SettingsForm />}
     </>
   );
@@ -126,13 +143,36 @@ function SettingsBody() {
 
 function SettingsForm() {
   return (
-    <div className="flex flex-col gap-3">
-      <FontScaleSetting />
-      <FontSetting slot="ui" />
-      <FontSetting slot="mono" />
+    <div className="flex flex-col gap-4">
+      <SettingsSection title={SETTINGS_TEXT.fonts}>
+        <FontScaleSetting />
+        <FontSetting slot="ui" />
+        <FontSetting slot="mono" />
+      </SettingsSection>
       <div className="h-px w-full bg-border" />
-      <ThemeColorsSetting />
+      <SettingsSection title={SETTINGS_TEXT.theme}>
+        <ThemeColorsSetting />
+      </SettingsSection>
     </div>
+  );
+}
+
+function SettingsSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  const headingId = useId();
+
+  return (
+    <section aria-labelledby={headingId} className="flex flex-col gap-3">
+      <h3 id={headingId} className="font-semibold">
+        {title}
+      </h3>
+      {children}
+    </section>
   );
 }
 
@@ -144,9 +184,7 @@ function FontScaleSetting() {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <span id={labelId} className="font-medium">
-          {SETTINGS_TEXT.fontSize}
-        </span>
+        <span id={labelId}>{SETTINGS_TEXT.fontSize}</span>
         <span className="font-mono text-10 text-muted-foreground">
           {fontScalePercentLabel(level)}
         </span>
@@ -203,7 +241,7 @@ function FontSetting({ slot }: { slot: FontSlot }) {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="font-medium">{SETTINGS_TEXT.fontLabels[slot]}</span>
+      <span>{SETTINGS_TEXT.fontLabels[slot]}</span>
       <Select
         items={items}
         value={effectiveFont(theme, slot)}
@@ -241,7 +279,7 @@ function ThemeColorsSetting() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <span className="font-medium">{SETTINGS_TEXT.theme}</span>
+        <span>{SETTINGS_TEXT.mode}</span>
         <span className="ml-auto flex">
           <Button
             type="button"
@@ -266,13 +304,13 @@ function ThemeColorsSetting() {
       </div>
       <p className="text-muted-foreground" aria-live="polite">
         {SETTINGS_TEXT.modifying}{" "}
-        <span className="font-medium text-foreground">{mode}</span>{" "}
+        <span className="text-foreground">{mode}</span>{" "}
         {SETTINGS_TEXT.themeMode}
       </p>
       {THEME_COLOR_KEYS.map((key) => (
         <div key={key} className="flex items-center gap-2">
           <span className="flex min-w-0 flex-col">
-            <span className="font-medium">{SETTINGS_TEXT.colorLabels[key]}</span>
+            <span>{SETTINGS_TEXT.colorLabels[key]}</span>
             <span className="truncate text-10 text-muted-foreground">
               {SETTINGS_TEXT.colorHints[key]}
             </span>

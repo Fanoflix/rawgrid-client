@@ -48,6 +48,15 @@ const TASK_PATTERN = /^\[([ xX])\]\s+/;
 const ESCAPABLE_PATTERN = /[!-/:-@[-`{-~]/;
 const WORD_PATTERN = /[A-Za-z0-9]/;
 const AUTOLINK_PATTERN = /^<(https?:\/\/[^>\s]+)>/;
+const UNSAFE_URL_PATTERN = /^(javascript|vbscript|data):/i;
+const LAST_CONTROL_CHAR_CODE = 0x20;
+
+function isSafeUrl(url: string) {
+  const visible = [...url]
+    .filter((character) => character.charCodeAt(0) > LAST_CONTROL_CHAR_CODE)
+    .join("");
+  return !UNSAFE_URL_PATTERN.test(visible);
+}
 const BARE_URL_PATTERN = /^https?:\/\/[^\s<]*[^\s<).,;:!?'"]/;
 
 function escapeHtml(text: string) {
@@ -345,7 +354,9 @@ function renderInline(
               .trim()
               .replace(/\s+["'(].*$/, "");
             flush(index);
-            html += `<a href="${escapeAttribute(url)}" target="_blank" rel="noopener noreferrer">${parse(index + 1, closeBracket)}</a>`;
+            html += isSafeUrl(url)
+              ? `<a href="${escapeAttribute(url)}" target="_blank" rel="noopener noreferrer">${parse(index + 1, closeBracket)}</a>`
+              : parse(index + 1, closeBracket);
             index = closeParen + 1;
             plainFrom = index;
             continue;

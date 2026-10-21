@@ -21,8 +21,8 @@ describe("settingsToJson", () => {
     ).toEqual({
       fontSize: 120,
       fonts: { ui: "nunito-sans", mono: "fira-code" },
-      light: { primary: "#e7000b" },
-      dark: { primary: "#123456" },
+      light: { primary: "#e7000b", secondary: "#f4f4f5" },
+      dark: { primary: "#123456", secondary: "#27272a" },
     });
   });
 
@@ -96,7 +96,9 @@ describe("findSettingsFields", () => {
       ["fonts.ui", "nunito-sans"],
       ["fonts.mono", "system"],
       ["light.primary", "#e7000b"],
+      ["light.secondary", "#f4f4f5"],
       ["dark.primary", "#fb2c36"],
+      ["dark.secondary", "#27272a"],
     ]);
     const lightPrimary = fields[2];
     expect(text.slice(lightPrimary.from, lightPrimary.to)).toBe('"#e7000b"');

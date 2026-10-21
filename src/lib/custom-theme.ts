@@ -1,7 +1,7 @@
 import { hexToRgb, parseHexInput } from "@/tools/color-picker/lib/utils";
 
 export type ThemeMode = "light" | "dark";
-export type ThemeColorKey = "primary";
+export type ThemeColorKey = "primary" | "secondary";
 export type FontSlot = "ui" | "mono";
 
 export type ModeColors = Partial<Record<ThemeColorKey, string>>;
@@ -19,7 +19,7 @@ export interface FontOption {
 }
 
 export const THEME_MODES: readonly ThemeMode[] = ["light", "dark"];
-export const THEME_COLOR_KEYS: readonly ThemeColorKey[] = ["primary"];
+export const THEME_COLOR_KEYS: readonly ThemeColorKey[] = ["primary", "secondary"];
 export const FONT_SLOTS: readonly FontSlot[] = ["ui", "mono"];
 
 export const CUSTOM_THEME_STORAGE = {
@@ -31,8 +31,8 @@ export const CUSTOM_THEME_STORAGE = {
 export const EMPTY_CUSTOM_THEME: CustomTheme = { fonts: {}, light: {}, dark: {} };
 
 export const DEFAULT_THEME_COLORS: Record<ThemeMode, Record<ThemeColorKey, string>> = {
-  light: { primary: "#e7000b" },
-  dark: { primary: "#fb2c36" },
+  light: { primary: "#e7000b", secondary: "#f4f4f5" },
+  dark: { primary: "#fb2c36", secondary: "#27272a" },
 };
 
 export const FONT_OPTIONS: Record<FontSlot, readonly FontOption[]> = {
@@ -63,6 +63,7 @@ export const DEFAULT_FONTS: Record<FontSlot, string> = {
 
 const COLOR_VARIABLES: Record<ThemeColorKey, string> = {
   primary: "--primary",
+  secondary: "--secondary",
 };
 
 const FONT_VARIABLES: Record<FontSlot, string> = {
@@ -150,10 +151,8 @@ export function customThemeCss(theme: CustomTheme) {
     const declarations = THEME_COLOR_KEYS.flatMap((key) => {
       const hex = clean[mode][key];
       if (!hex) return [];
-      const declaration = `${COLOR_VARIABLES[key]}: ${hex};`;
-      return key === "primary"
-        ? [declaration, `--primary-foreground: ${readableForeground(hex)};`]
-        : [declaration];
+      const variable = COLOR_VARIABLES[key];
+      return [`${variable}: ${hex};`, `${variable}-foreground: ${readableForeground(hex)};`];
     });
     return cssRule(MODE_SELECTORS[mode], declarations);
   });

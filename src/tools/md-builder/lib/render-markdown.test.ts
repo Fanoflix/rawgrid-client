@@ -159,3 +159,18 @@ describe("renderMarkdown", () => {
     expect(html).toContain('data-s="2" data-e="4" data-m="0">*</span>');
   });
 });
+
+describe("unsafe links", () => {
+  it("renders javascript, vbscript and data links as plain text", () => {
+    for (const url of ["javascript:alert(1)", " JaVaScRiPt:alert(1)", "java\tscript:alert(1)", "vbscript:x", "data:text/html,<b>x</b>"]) {
+      const html = renderMarkdown(`[click](${url})`, []);
+      expect(html).not.toContain("<a ");
+      expect(html).toContain("click");
+    }
+  });
+
+  it("keeps normal links", () => {
+    expect(renderMarkdown("[docs](https://example.com)", [])).toContain('<a href="https://example.com"');
+    expect(renderMarkdown("[section](#goals)", [])).toContain('<a href="#goals"');
+  });
+});

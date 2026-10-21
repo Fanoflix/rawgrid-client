@@ -14,7 +14,7 @@ export const SETTINGS_SOURCES = {
 
 type SettingsSource = (typeof SETTINGS_SOURCES)[keyof typeof SETTINGS_SOURCES];
 
-interface SettingsDialogState {
+interface SettingsPopoverState {
   isOpen: boolean;
   source: SettingsSource;
 }
@@ -23,8 +23,8 @@ export interface SettingsCloseDetails {
   reason: string;
 }
 
-export function useSettingsDialog() {
-  const [state, setState] = useState<SettingsDialogState>({
+export function useSettingsPopover() {
+  const [state, setState] = useState<SettingsPopoverState>({
     isOpen: false,
     source: SETTINGS_SOURCES.trigger,
   });
