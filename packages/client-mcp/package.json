@@ -1,0 +1,34 @@
+{
+  "name": "@rawgrid/client-mcp",
+  "version": "0.1.3",
+  "description": "Lets a browser tab offer MCP tools to a local agent. The agent starts this server over stdio, and the tab connects to it over a localhost WebSocket.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "rawgrid-client-mcp": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "yarn build"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "ws": "8.22.0",
+    "zod": "^4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@types/ws": "^8.18.2",
+    "typescript": "~5.9.3"
+  }
+}
