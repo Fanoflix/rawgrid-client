@@ -1,11 +1,5 @@
 import type { KeyboardEvent, MouseEvent, ReactNode, RefObject } from "react";
-import {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   Check,
@@ -144,6 +138,7 @@ export function MdBuilderTool() {
     copyDroppedNote,
     focusComment,
     focusNextNew,
+    markNoteRead,
     resolveThread,
     reopenThread,
     setSidebarTab,
@@ -237,17 +232,22 @@ export function MdBuilderTool() {
               aria-live="polite"
               className={cn(
                 "mr-2 flex min-w-0 shrink-100 items-center gap-1 font-mono text-10",
-                state.agentStatus.isWorking ? "md-agent-hue" : "text-muted-foreground"
+                state.agentStatus.isWorking
+                  ? "md-agent-hue"
+                  : "text-muted-foreground",
               )}
             >
               <span
                 className={cn(
                   "size-1.5 shrink-0 rounded-full",
-                  state.agentStatus.isWorking ? "animate-pulse bg-current" : "bg-muted-foreground/60"
+                  state.agentStatus.isWorking
+                    ? "animate-pulse bg-current"
+                    : "bg-muted-foreground/60",
                 )}
               />
               <span className="truncate">
-                {live.state.connected?.agentName ?? MD_BUILDER_TEXT.liveUnknownAgent}
+                {live.state.connected?.agentName ??
+                  MD_BUILDER_TEXT.liveUnknownAgent}
                 {" · "}
                 {state.agentStatus.text}
               </span>
@@ -261,9 +261,12 @@ export function MdBuilderTool() {
               >
                 <LiveDot isActive={false} />
                 <span className="md-breathing truncate text-orange-500 dark:text-orange-400">
-                  {live.state.connected.agentName ?? MD_BUILDER_TEXT.liveUnknownAgent}
+                  {live.state.connected.agentName ??
+                    MD_BUILDER_TEXT.liveUnknownAgent}
                   {" · "}
-                  {state.isAgentAway ? MD_BUILDER_TEXT.liveHeaderAway : MD_BUILDER_TEXT.liveHeaderWaiting}
+                  {state.isAgentAway
+                    ? MD_BUILDER_TEXT.liveHeaderAway
+                    : MD_BUILDER_TEXT.liveHeaderWaiting}
                 </span>
               </span>
             )
@@ -306,7 +309,7 @@ export function MdBuilderTool() {
             onClick={() => void copyMarkdown()}
             className={cn(
               "min-w-0 shrink",
-              state.isCopied && "text-green-500 hover:text-green-500"
+              state.isCopied && "text-green-500 hover:text-green-500",
             )}
           >
             <Copy />
@@ -352,8 +355,12 @@ export function MdBuilderTool() {
                 {MD_BUILDER_TEXT.open}
               </DropdownMenuItem>
               {state.rememberedName && (
-                <DropdownMenuItem onClick={reopenRemembered} className="flex-wrap">
-                  {MD_BUILDER_TEXT.reopen} <FileName name={state.rememberedName} />
+                <DropdownMenuItem
+                  onClick={reopenRemembered}
+                  className="flex-wrap"
+                >
+                  {MD_BUILDER_TEXT.reopen}{" "}
+                  <FileName name={state.rememberedName} />
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem onClick={showPasteView}>
@@ -384,7 +391,10 @@ export function MdBuilderTool() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <FontSizeButtons onIncrease={increaseFont} onDecrease={decreaseFont} />
+          <FontSizeButtons
+            onIncrease={increaseFont}
+            onDecrease={decreaseFont}
+          />
         </span>
       </div>
 
@@ -479,6 +489,7 @@ export function MdBuilderTool() {
                   onTabChange={setSidebarTab}
                   onResolve={resolveThread}
                   onReopen={reopenThread}
+                  onMarkRead={markNoteRead}
                   onNextNew={focusNextNew}
                   onFocusComment={focusComment}
                   onHoverComment={hoverComment}
@@ -554,7 +565,7 @@ function marksFor(container: HTMLElement, commentId: number | null) {
   if (commentId === null) return [];
   return [
     ...container.querySelectorAll<HTMLElement>(
-      `[${COMMENT_ID_ATTR}="${commentId}"]`
+      `[${COMMENT_ID_ATTR}="${commentId}"]`,
     ),
   ];
 }
@@ -595,13 +606,13 @@ function DocumentPane({
     container
       .querySelectorAll(`.${ACTIVE_CLASS}, .${HOVERED_CLASS}`)
       .forEach((element) =>
-        element.classList.remove(ACTIVE_CLASS, HOVERED_CLASS)
+        element.classList.remove(ACTIVE_CLASS, HOVERED_CLASS),
       );
     marksFor(container, activeCommentId).forEach((element) =>
-      element.classList.add(ACTIVE_CLASS)
+      element.classList.add(ACTIVE_CLASS),
     );
     marksFor(container, hoveredCommentId).forEach((element) =>
-      element.classList.add(HOVERED_CLASS)
+      element.classList.add(HOVERED_CLASS),
     );
   }, [documentRef, html, activeCommentId, hoveredCommentId]);
 
@@ -620,9 +631,9 @@ function DocumentPane({
         blinkTimer = window.setTimeout(
           () =>
             marks.forEach((element) => element.classList.remove(BLINK_CLASS)),
-          MD_BUILDER_CONFIG.blinkMs
+          MD_BUILDER_CONFIG.blinkMs,
         );
-      }
+      },
     );
     return () => {
       cancelScroll();
@@ -651,7 +662,7 @@ function DocumentPane({
       ref={documentRef}
       className={cn(
         "relative h-full w-full overflow-y-auto [contain:inline-size]",
-        hideScrollbar && "[scrollbar-width:none]"
+        hideScrollbar && "[scrollbar-width:none]",
       )}
       onClick={handleClick}
       onMouseOver={handleMouseOver}
@@ -672,7 +683,7 @@ function DocumentPane({
             top: selectionAnchor.top + selectionAnchor.height + 6,
             left: Math.max(
               48,
-              selectionAnchor.left + selectionAnchor.width / 2
+              selectionAnchor.left + selectionAnchor.width / 2,
             ),
           }}
           onMouseDown={(event) => event.preventDefault()}
@@ -701,7 +712,11 @@ interface ComposerPopoverProps {
   onCancel: () => void;
 }
 
-function ComposerPopover({ composer, onSubmit, onCancel }: ComposerPopoverProps) {
+function ComposerPopover({
+  composer,
+  onSubmit,
+  onCancel,
+}: ComposerPopoverProps) {
   const [note, setNote] = useState("");
   const quote = composer.quote.replace(/\s+/g, " ").slice(0, 200);
 
@@ -759,6 +774,7 @@ interface CommentsPaneProps {
   onTabChange: (tab: SidebarTab) => void;
   onResolve: (id: number) => void;
   onReopen: (key: string) => void;
+  onMarkRead: (id: number, noteIndex: number) => void;
   onNextNew: () => void;
   onFocusComment: (id: number | null) => void;
   onHoverComment: (id: number | null) => void;
@@ -788,6 +804,7 @@ function CommentsPane({
   onTabChange,
   onResolve,
   onReopen,
+  onMarkRead,
   onNextNew,
   onFocusComment,
   onHoverComment,
@@ -802,7 +819,7 @@ function CommentsPane({
     if (activeCommentId === null || tab !== "comments") return;
     const timer = window.setTimeout(
       () => scrollCardIntoView(listRef.current, activeCommentId),
-      COMMENT_SCROLL_DELAY_MS
+      COMMENT_SCROLL_DELAY_MS,
     );
     return () => window.clearTimeout(timer);
   }, [activeCommentId, tab]);
@@ -811,13 +828,13 @@ function CommentsPane({
     if (!incomingNote || tab !== "comments") return;
     const timer = window.setTimeout(
       () => scrollCardIntoView(listRef.current, incomingNote.threadId),
-      COMMENT_SCROLL_DELAY_MS
+      COMMENT_SCROLL_DELAY_MS,
     );
     return () => window.clearTimeout(timer);
   }, [incomingNote, tab]);
 
   return (
-    <div className="flex h-full w-full flex-col border-l border-border">
+    <div className="flex h-full w-full flex-col border-l border-border [contain:inline-size]">
       <div className="flex h-7 shrink-0 items-center gap-1 border-b border-border px-1">
         <div role="tablist" className="flex">
           <SidebarTabButton
@@ -860,7 +877,11 @@ function CommentsPane({
           <ChevronRight />
         </Button>
       </div>
-      <div ref={listRef} role="tabpanel" className="min-h-0 flex-1 overflow-y-auto p-1">
+      <div
+        ref={listRef}
+        role="tabpanel"
+        className="min-h-0 flex-1 overflow-y-auto p-1"
+      >
         {tab === "resolved" ? (
           <ResolvedList threads={resolvedThreads} onReopen={onReopen} />
         ) : comments.length === 0 ? (
@@ -877,22 +898,29 @@ function CommentsPane({
                     excerpt={excerptOf(
                       source,
                       comment,
-                      MD_BUILDER_CONFIG.excerptLength
+                      MD_BUILDER_CONFIG.excerptLength,
                     )}
                     isActive={comment.id === activeCommentId}
                     isHovered={comment.id === hoveredCommentId}
                     pendingAgentText={pendingAgentReplies[comment.id] ?? null}
                     hasNewElsewhere={newThreadCount > 0}
                     newNoteIndexes={comment.notes.flatMap((_, index) =>
-                      newNoteKeys.has(noteKeyFor(source, comment, index)) ? [index] : []
+                      newNoteKeys.has(noteKeyFor(source, comment, index))
+                        ? [index]
+                        : [],
                     )}
                     onFocus={() => onFocusComment(comment.id)}
                     onHover={(isHovering) =>
                       onHoverComment(isHovering ? comment.id : null)
                     }
                     onResolve={() => onResolve(comment.id)}
+                    onMarkRead={(noteIndex) =>
+                      onMarkRead(comment.id, noteIndex)
+                    }
                     onReply={(note) => onReply(comment.id, note)}
-                    onEdit={(noteIndex, note) => onEdit(comment.id, noteIndex, note)}
+                    onEdit={(noteIndex, note) =>
+                      onEdit(comment.id, noteIndex, note)
+                    }
                     onDelete={(noteIndex) => onDelete(comment.id, noteIndex)}
                   />
                 </div>
@@ -911,7 +939,11 @@ interface SidebarTabButtonProps {
   children: ReactNode;
 }
 
-function SidebarTabButton({ isActive, onSelect, children }: SidebarTabButtonProps) {
+function SidebarTabButton({
+  isActive,
+  onSelect,
+  children,
+}: SidebarTabButtonProps) {
   return (
     <button
       type="button"
@@ -922,7 +954,7 @@ function SidebarTabButton({ isActive, onSelect, children }: SidebarTabButtonProp
         "cursor-pointer p-1 font-mono text-10 transition-colors",
         isActive
           ? "bg-accent/50 text-foreground"
-          : "text-muted-foreground hover:text-foreground"
+          : "text-muted-foreground hover:text-foreground",
       )}
     >
       {children}
@@ -937,12 +969,20 @@ interface ResolvedListProps {
 
 function ResolvedList({ threads, onReopen }: ResolvedListProps) {
   if (!threads.length) {
-    return <p className="p-2 text-xs text-muted-foreground">{MD_BUILDER_TEXT.noResolved}</p>;
+    return (
+      <p className="p-2 text-xs text-muted-foreground">
+        {MD_BUILDER_TEXT.noResolved}
+      </p>
+    );
   }
   return (
     <div className="flex flex-col gap-1">
       {threads.map((thread) => (
-        <ResolvedCard key={thread.key} thread={thread} onReopen={() => onReopen(thread.key)} />
+        <ResolvedCard
+          key={thread.key}
+          thread={thread}
+          onReopen={() => onReopen(thread.key)}
+        />
       ))}
     </div>
   );
@@ -971,13 +1011,20 @@ function FileDetails({ name, path, hasHandle, agentFolder }: FileDetailsProps) {
     <span className="flex flex-col gap-0.5">
       <span className="text-foreground">{path ?? name}</span>
       <span className="text-muted-foreground">{origin}</span>
-      {path && <span className="text-muted-foreground">{MD_BUILDER_TEXT.fileLocated}</span>}
+      {path && (
+        <span className="text-muted-foreground">
+          {MD_BUILDER_TEXT.fileLocated}
+        </span>
+      )}
       {hasHandle && !path && (
-        <span className="text-muted-foreground">{MD_BUILDER_TEXT.fileFolderHidden}</span>
+        <span className="text-muted-foreground">
+          {MD_BUILDER_TEXT.fileFolderHidden}
+        </span>
       )}
       {agentFolder && !path && (
         <span className="text-muted-foreground">
-          {MD_BUILDER_TEXT.fileAgentFolder} <span className="text-foreground">{agentFolder}</span>
+          {MD_BUILDER_TEXT.fileAgentFolder}{" "}
+          <span className="text-foreground">{agentFolder}</span>
         </span>
       )}
     </span>
@@ -985,13 +1032,17 @@ function FileDetails({ name, path, hasHandle, agentFolder }: FileDetailsProps) {
 }
 
 function ResolvedCard({ thread, onReopen }: ResolvedCardProps) {
-  const quote = thread.quote.replace(/\s+/g, " ").slice(0, MD_BUILDER_CONFIG.excerptLength);
+  const quote = thread.quote
+    .replace(/\s+/g, " ")
+    .slice(0, MD_BUILDER_CONFIG.excerptLength);
 
   return (
     <div className="flex flex-col gap-1 border border-border bg-background p-2">
       <div className="flex items-start gap-1">
         <div className="min-w-0 flex-1">{quote && <Quote>{quote}</Quote>}</div>
-        <Hint label={thread.canReopen ? null : MD_BUILDER_TEXT.reopenUnavailable}>
+        <Hint
+          label={thread.canReopen ? null : MD_BUILDER_TEXT.reopenUnavailable}
+        >
           <span>
             <Button
               type="button"
@@ -1077,7 +1128,7 @@ function CommentMinimap({
       setMarkers(
         comments.flatMap((comment) => {
           const mark = container!.querySelector(
-            `[${COMMENT_ID_ATTR}="${comment.id}"]`
+            `[${COMMENT_ID_ATTR}="${comment.id}"]`,
           );
           if (!mark) return [];
           const top =
@@ -1085,7 +1136,7 @@ function CommentMinimap({
             containerTop +
             container!.scrollTop;
           return [{ id: comment.id, ratio: top / scrollHeight }];
-        })
+        }),
       );
     }
 
@@ -1102,7 +1153,8 @@ function CommentMinimap({
   function scrollRatio(ratio: number) {
     const container = documentRef.current;
     if (!container) return;
-    const centered = ratio * container.scrollHeight - container.clientHeight / 2;
+    const centered =
+      ratio * container.scrollHeight - container.clientHeight / 2;
     container.scrollTop = Math.max(0, centered);
   }
 
@@ -1123,7 +1175,8 @@ function CommentMinimap({
     const scale = container.scrollHeight / track.getBoundingClientRect().height;
 
     function handleMove(moveEvent: PointerEvent) {
-      container!.scrollTop = startScrollTop + (moveEvent.clientY - startY) * scale;
+      container!.scrollTop =
+        startScrollTop + (moveEvent.clientY - startY) * scale;
     }
     function handleUp() {
       window.removeEventListener("pointermove", handleMove);
@@ -1174,7 +1227,7 @@ function CommentMinimap({
                 "h-0.5 w-full transition-[height,background-color]",
                 "bg-primary/80 group-hover/marker:bg-primary",
                 newThreadIds.includes(marker.id) && "h-1 bg-foreground",
-                marker.id === activeCommentId && "h-1 bg-primary"
+                marker.id === activeCommentId && "h-1 bg-primary",
               )}
             />
           </button>
@@ -1195,6 +1248,7 @@ interface CommentCardProps {
   onFocus: () => void;
   onHover: (isHovering: boolean) => void;
   onResolve: () => void;
+  onMarkRead: (noteIndex: number) => void;
   onReply: (note: string) => void;
   onEdit: (noteIndex: number, note: string) => void;
   onDelete: (noteIndex: number) => void;
@@ -1211,6 +1265,7 @@ function CommentCard({
   onFocus,
   onHover,
   onResolve,
+  onMarkRead,
   onReply,
   onEdit,
   onDelete,
@@ -1229,7 +1284,7 @@ function CommentCard({
       className={cn(
         "group/card flex flex-col gap-3 border border-border bg-secondary/15 p-2 transition-colors hover:bg-secondary/25",
         isHovered && "bg-secondary/25",
-        isActive && "border-primary"
+        isActive && "border-primary",
       )}
       onClick={handleCardClick}
       onMouseEnter={() => onHover(true)}
@@ -1274,6 +1329,7 @@ function CommentCard({
                   isNew={newNoteIndexes.includes(index)}
                   isDimmed={hasNewElsewhere && !newNoteIndexes.includes(index)}
                   isReply={index > 0}
+                  onMarkRead={() => onMarkRead(index)}
                   onEdit={() => setEditingIndex(index)}
                   onDelete={() => onDelete(index)}
                 />
@@ -1285,8 +1341,14 @@ function CommentCard({
           <motion.div
             key={comment.notes.length}
             {...COMMENT_MOTION}
-            transition={{ ...COMMENT_MOTION.transition, delay: PENDING_REPLY_DELAY_S }}
-            exit={{ ...COMMENT_MOTION.exit, transition: COMMENT_MOTION.transition }}
+            transition={{
+              ...COMMENT_MOTION.transition,
+              delay: PENDING_REPLY_DELAY_S,
+            }}
+            exit={{
+              ...COMMENT_MOTION.exit,
+              transition: COMMENT_MOTION.transition,
+            }}
           >
             <AutoHeight>
               <PendingAgentNote text={pendingAgentText} />
@@ -1332,22 +1394,48 @@ interface NoteViewProps {
   isNew: boolean;
   isDimmed: boolean;
   isReply: boolean;
+  onMarkRead: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-function NoteView({ note, isNew, isDimmed, isReply, onEdit, onDelete }: NoteViewProps) {
+function NoteView({
+  note,
+  isNew,
+  isDimmed,
+  isReply,
+  onMarkRead,
+  onEdit,
+  onDelete,
+}: NoteViewProps) {
   const { text, at } = splitNoteTime(note);
   const time = formatNoteTime(at);
 
   return (
-    <div className={cn("group/note relative flex gap-1.5", isNew && "md-new-note")}>
+    <div
+      className={cn("group/note relative flex gap-1.5", isNew && "md-new-note")}
+    >
       {isReply && <ReplyMarker isFilled={isNew} />}
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         {isNew && (
-          <span className="md-breathing md-unread-text flex items-center gap-1.5 font-mono text-11 font-semibold tracking-wider uppercase">
-            <span aria-hidden className="md-unread-dot size-1.5 shrink-0 rounded-full" />
-            {MD_BUILDER_TEXT.newNotes}
+          <span className="flex items-center gap-2">
+            <span className="md-breathing md-unread-text flex items-center gap-1.5 font-mono text-11 font-semibold tracking-wider uppercase">
+              <span
+                aria-hidden
+                className="md-unread-dot size-1.5 shrink-0 rounded-full"
+              />
+              {MD_BUILDER_TEXT.newNotes}
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              className="h-auto px-1 py-0 font-mono text-10 text-muted-foreground opacity-0 transition-opacity group-hover/note:opacity-100 focus-visible:opacity-100"
+              onClick={onMarkRead}
+            >
+              <Check />
+              {MD_BUILDER_TEXT.markRead}
+            </Button>
           </span>
         )}
         <NoteMarkdown
@@ -1356,7 +1444,9 @@ function NoteView({ note, isNew, isDimmed, isReply, onEdit, onDelete }: NoteView
             "transition-colors",
             isDimmed && "text-muted-foreground",
             isDimmed &&
-              (isReply ? "group-hover/note:text-foreground" : "group-hover/card:text-foreground")
+              (isReply
+                ? "group-hover/note:text-foreground"
+                : "group-hover/card:text-foreground"),
           )}
         />
       </div>
@@ -1459,11 +1549,13 @@ function ReplyMarker({ isFilled = false }: { isFilled?: boolean }) {
     <span
       aria-hidden
       className={cn(
-        "relative min-h-4 w-3.5 shrink-0 self-stretch",
-        isFilled ? "text-foreground" : "text-muted-foreground"
+        "relative min-h-4 w-3.5 shrink-0 self-stretch transition-colors [line-height:1.5] group-hover/note:text-foreground",
+        isFilled
+          ? "font-mono text-11 text-foreground"
+          : "text-xs text-muted-foreground",
       )}
     >
-      <span className="absolute top-2 bottom-2 left-[3px] w-px overflow-hidden">
+      <span className="absolute top-[0.5lh] bottom-[0.5lh] left-[3px] w-px overflow-hidden">
         <span className="block h-6 w-px bg-linear-to-b from-muted-foreground/60 to-transparent" />
       </span>
       <svg
@@ -1473,10 +1565,15 @@ function ReplyMarker({ isFilled = false }: { isFilled?: boolean }) {
         strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="absolute top-px left-0 size-3.5"
+        className="absolute top-[calc(0.5lh-7px)] left-0 size-3.5"
       >
         <path d="M9 12h12" />
-        <circle cx="6" cy="12" r="3" fill={isFilled ? "currentColor" : "none"} />
+        <circle
+          cx="6"
+          cy="12"
+          r="3"
+          fill={isFilled ? "currentColor" : "none"}
+        />
       </svg>
     </span>
   );
@@ -1600,11 +1697,12 @@ function LivePanel({
   onConnect,
   onDisconnect,
 }: LivePanelProps) {
-  const [setupId, setSetupId] = useState<(typeof LIVE_SETUP_COMMANDS)[number]["id"]>(
-    LIVE_SETUP_COMMANDS[0].id
-  );
+  const [setupId, setSetupId] = useState<
+    (typeof LIVE_SETUP_COMMANDS)[number]["id"]
+  >(LIVE_SETUP_COMMANDS[0].id);
   const setup =
-    LIVE_SETUP_COMMANDS.find((command) => command.id === setupId) ?? LIVE_SETUP_COMMANDS[0];
+    LIVE_SETUP_COMMANDS.find((command) => command.id === setupId) ??
+    LIVE_SETUP_COMMANDS[0];
   const connected = state.connected;
 
   return (
@@ -1620,7 +1718,9 @@ function LivePanel({
               connected &&
                 hasAgentStarted &&
                 "border-destructive text-destructive hover:text-destructive dark:border-destructive",
-              connected && !hasAgentStarted && "border-destructive/50 dark:border-destructive/50"
+              connected &&
+                !hasAgentStarted &&
+                "border-destructive/50 dark:border-destructive/50",
             )}
           />
         }
@@ -1661,7 +1761,9 @@ function LivePanel({
             ))}
           </span>
           {setup.id === "cursor" && (
-            <span className="text-muted-foreground">{MD_BUILDER_TEXT.liveStepCursorHint}</span>
+            <span className="text-muted-foreground">
+              {MD_BUILDER_TEXT.liveStepCursorHint}
+            </span>
           )}
           <CopyableCode value={setup.command} />
         </section>
@@ -1671,7 +1773,9 @@ function LivePanel({
             <div
               className={cn(
                 "flex items-center gap-2 border p-2",
-                hasAgentStarted ? "border-destructive" : "border-dashed border-destructive/50"
+                hasAgentStarted
+                  ? "border-destructive"
+                  : "border-dashed border-destructive/50",
               )}
             >
               <LiveDot isActive={hasAgentStarted} />
@@ -1686,7 +1790,9 @@ function LivePanel({
                   </span>
                 ) : (
                   <span className="md-breathing text-10 text-orange-500 dark:text-orange-400">
-                    {isAgentAway ? MD_BUILDER_TEXT.liveAwayHint : MD_BUILDER_TEXT.liveHandshakeHint}
+                    {isAgentAway
+                      ? MD_BUILDER_TEXT.liveAwayHint
+                      : MD_BUILDER_TEXT.liveHandshakeHint}
                   </span>
                 )}
               </span>
@@ -1703,8 +1809,12 @@ function LivePanel({
           ) : (
             <>
               <SessionList state={state} onConnect={onConnect} />
-              <p className="text-10 text-muted-foreground">{MD_BUILDER_TEXT.liveAutoConnectHint}</p>
-              <p className="text-10 text-muted-foreground">{MD_BUILDER_TEXT.liveLocalNetworkHint}</p>
+              <p className="text-10 text-muted-foreground">
+                {MD_BUILDER_TEXT.liveAutoConnectHint}
+              </p>
+              <p className="text-10 text-muted-foreground">
+                {MD_BUILDER_TEXT.liveLocalNetworkHint}
+              </p>
             </>
           )}
         </section>
@@ -1714,8 +1824,12 @@ function LivePanel({
         </section>
         <section className="flex flex-col gap-1.5">
           <h4 className="font-semibold">{MD_BUILDER_TEXT.liveStepAllow}</h4>
-          <p className="text-muted-foreground">{MD_BUILDER_TEXT.liveAllowWhy}</p>
-          <span className="text-muted-foreground">{MD_BUILDER_TEXT.liveAllowHow}</span>
+          <p className="text-muted-foreground">
+            {MD_BUILDER_TEXT.liveAllowWhy}
+          </p>
+          <span className="text-muted-foreground">
+            {MD_BUILDER_TEXT.liveAllowHow}
+          </span>
           <CopyableCode value={MD_BUILDER_TEXT.liveAllowRule} />
         </section>
         {state.message && (
@@ -1737,7 +1851,9 @@ function SessionList({ state, onConnect }: SessionListProps) {
   if (!state.sessions.length) {
     return (
       <p className="text-muted-foreground" aria-live="polite">
-        {state.isScanning ? MD_BUILDER_TEXT.liveSearching : MD_BUILDER_TEXT.liveNoSessions}
+        {state.isScanning
+          ? MD_BUILDER_TEXT.liveSearching
+          : MD_BUILDER_TEXT.liveNoSessions}
       </p>
     );
   }
@@ -1748,7 +1864,9 @@ function SessionList({ state, onConnect }: SessionListProps) {
           key={session.port}
           className={cn(
             "flex items-center gap-2 border border-border p-2",
-            session.hostKind === "background" && !session.isAgentActive && "opacity-60"
+            session.hostKind === "background" &&
+              !session.isAgentActive &&
+              "opacity-60",
           )}
         >
           <span className="flex min-w-0 flex-col">
@@ -1762,7 +1880,11 @@ function SessionList({ state, onConnect }: SessionListProps) {
                 </Hint>
               )}
             </span>
-            <Hint label={session.isOutdated ? MD_BUILDER_TEXT.liveOutdatedHint : null}>
+            <Hint
+              label={
+                session.isOutdated ? MD_BUILDER_TEXT.liveOutdatedHint : null
+              }
+            >
               <span className="truncate text-10 text-muted-foreground">
                 {[
                   session.isOutdated
@@ -1774,10 +1896,14 @@ function SessionList({ state, onConnect }: SessionListProps) {
                   .join(" · ")}
               </span>
             </Hint>
-            <span className="truncate font-mono text-10 text-muted-foreground">{session.cwd}</span>
+            <span className="truncate font-mono text-10 text-muted-foreground">
+              {session.cwd}
+            </span>
           </span>
           {session.isTaken ? (
-            <span className="ml-auto shrink-0 text-muted-foreground">{MD_BUILDER_TEXT.liveInUse}</span>
+            <span className="ml-auto shrink-0 text-muted-foreground">
+              {MD_BUILDER_TEXT.liveInUse}
+            </span>
           ) : (
             <Button
               type="button"
@@ -1799,11 +1925,15 @@ function SessionList({ state, onConnect }: SessionListProps) {
 
 function CopyableCode({ value }: { value: string }) {
   return (
-    <div className="flex items-start gap-1">
-      <pre className="min-w-0 flex-1 whitespace-pre-wrap wrap-break-word bg-muted p-2 font-mono text-10">
+    <div className="group/code relative">
+      <pre className="whitespace-pre-wrap wrap-break-word bg-muted p-2 pr-8 font-mono text-10">
         {value}
       </pre>
-      <CopyButton value={value} />
+      <CopyButton
+        value={value}
+        isIconOnly
+        className="absolute top-1 right-1 group-hover/code:text-foreground"
+      />
     </div>
   );
 }
@@ -1816,7 +1946,10 @@ interface DroppedNotesProps {
 
 function DroppedNotes({ notes, onCopy, onDismiss }: DroppedNotesProps) {
   return (
-    <ul role="alert" className="flex shrink-0 flex-col gap-0.5 border-b border-border bg-destructive/10 p-1 text-destructive">
+    <ul
+      role="alert"
+      className="flex shrink-0 flex-col gap-0.5 border-b border-border bg-destructive/10 p-1 text-destructive"
+    >
       {notes.map((dropped, index) => (
         <li key={index} className="flex items-center gap-1">
           <span className="min-w-0 flex-1 truncate font-mono text-10">
@@ -1857,13 +1990,12 @@ function FileName({ name }: { name: string }) {
   );
 }
 
-
 function LiveDot({ isActive }: { isActive: boolean }) {
   return (
     <span
       className={cn(
         "size-2 shrink-0 rounded-full",
-        isActive ? "animate-pulse bg-destructive" : "border border-destructive"
+        isActive ? "animate-pulse bg-destructive" : "border border-destructive",
       )}
     />
   );
@@ -1880,9 +2012,20 @@ function PendingAgentNote({ text }: { text: string }) {
   );
 }
 
-function NoteMarkdown({ text, className }: { text: string; className?: string }) {
+function NoteMarkdown({
+  text,
+  className,
+}: {
+  text: string;
+  className?: string;
+}) {
   const markup = useMemo(() => ({ __html: renderMarkdown(text, []) }), [text]);
-  return <div className={cn("md-doc md-note text-xs", className)} dangerouslySetInnerHTML={markup} />;
+  return (
+    <div
+      className={cn("md-doc md-note text-xs", className)}
+      dangerouslySetInnerHTML={markup}
+    />
+  );
 }
 
 function AutoHeight({ children }: { children: ReactNode }) {

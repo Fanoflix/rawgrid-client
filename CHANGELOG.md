@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.5
+
+### UX
+
+- NEW marks stay until you clear them. A "mark read" button appears to the right of NEW when you hover a note, and it clears that note's mark and the "new" count with it. md builder no longer clears NEW marks on its own, so an agent answering one thread no longer wipes the marks on threads you haven't read yet.
+- The copy buttons in the live panel are now icons inside the top-right corner of each code block. Clicking one turns it into a green tick, so the button no longer changes width between "copy" and "copied".
+- The reply marker sits centered on the first line of its note at any font size, and lights up together with the note you hover.
+
+### Fixes
+
+- A wide code block in a note no longer stretches the comment list past its panel and cuts off every comment. The block scrolls on its own and long paths wrap.
+- Single-line replies no longer show a short line under the reply marker.
+
 ## 1.2.4
 
 ### Upgrading

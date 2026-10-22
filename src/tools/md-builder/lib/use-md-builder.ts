@@ -425,7 +425,6 @@ export function useMdBuilder() {
   });
   const waitersRef = useRef(new Set<() => void>());
   const diskWriteRef = useRef<Promise<void>>(Promise.resolve());
-  const isRoundOpenRef = useRef(false);
 
   useLayoutEffect(() => {
     viewRef.current = reviewDoc;
@@ -549,8 +548,9 @@ export function useMdBuilder() {
         options.isRefresh ? previous.nextId : 1
       );
       showDocument(next);
-      setNewNoteKeyList(options.isRefresh ? addedNoteKeys(previous, next) : NO_KEYS);
-      isRoundOpenRef.current = false;
+      setNewNoteKeyList((current) =>
+        options.isRefresh ? [...new Set([...current, ...addedNoteKeys(previous, next)])] : NO_KEYS
+      );
       resetSync();
       setHandle(loaded.handle);
       setLastModified(loaded.lastModified);
@@ -684,7 +684,6 @@ export function useMdBuilder() {
         });
       }
     }
-    isRoundOpenRef.current = false;
     setIsDirty(false);
     waitersRef.current.forEach((wake) => wake());
   }, []);
@@ -795,9 +794,7 @@ export function useMdBuilder() {
       }
       if (thread && (call.tool === "reply" || call.tool === "comment")) {
         const key = noteKeyFor(outcome.published.source, thread, thread.notes.length - 1);
-        const isNewRound = !isRoundOpenRef.current;
-        isRoundOpenRef.current = true;
-        setNewNoteKeyList((current) => (isNewRound ? [key] : [...current, key]));
+        setNewNoteKeyList((current) => (current.includes(key) ? current : [...current, key]));
       }
 
       queueDiskWrite();
@@ -1339,6 +1336,13 @@ export function useMdBuilder() {
     setActiveCommentId((current) => (current === commentId ? null : current));
   }
 
+  function markNoteRead(commentId: number, noteIndex: number) {
+    const comment = viewRef.current.comments.find((candidate) => candidate.id === commentId);
+    if (!comment) return;
+    const key = noteKeyFor(viewRef.current.source, comment, noteIndex);
+    setNewNoteKeyList((current) => current.filter((saved) => saved !== key));
+  }
+
   function resolveThread(commentId: number) {
     const thread = viewRef.current.comments.find((comment) => comment.id === commentId);
     if (!thread) return;
@@ -1518,6 +1522,7 @@ export function useMdBuilder() {
     addReply,
     editNote,
     deleteNote,
+    markNoteRead,
     resolveThread,
     reopenThread,
     setSidebarTab,
