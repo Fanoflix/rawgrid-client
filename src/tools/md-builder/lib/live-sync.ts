@@ -27,7 +27,15 @@ export type AgentCall =
   | { tool: "reply"; threadId: string; text: string }
   | { tool: "apply_change"; threadId: string; baseSeq: number; replacement: string }
   | { tool: "edit_text"; old: string; new: string }
-  | { tool: "comment"; quote: string; text: string };
+  | { tool: "comment"; quote: string; text: string }
+  | { tool: "add_image"; after: string; markdown: string };
+
+export interface ImageRequest {
+  path: string;
+  alt: string;
+  after: string;
+  documentPath: string | null;
+}
 
 export type RejectionReason =
   | "unknown_thread"
@@ -39,7 +47,15 @@ export type RejectionReason =
   | "contains_markup"
   | "crosses_block"
   | "empty_text"
-  | "stale_seq";
+  | "stale_seq"
+  | "document_not_found"
+  | "document_ambiguous"
+  | "image_not_found"
+  | "not_an_image"
+  | "outside_project"
+  | "image_too_large"
+  | "bridge_outdated"
+  | "not_connected";
 
 export type ActivityType =
   | "comment"
@@ -48,7 +64,8 @@ export type ActivityType =
   | "delete-note"
   | "resolve"
   | "apply-change"
-  | "edit-text";
+  | "edit-text"
+  | "add-image";
 
 export interface ActivityEvent {
   seq: number;
@@ -113,6 +130,18 @@ const REJECTION_TEXT: Record<RejectionReason, string> = {
   empty_text: "the text is empty.",
   stale_seq:
     "md builder reloaded after you read the document, so thread ids and seq changed. call get_document and try again.",
+  document_not_found:
+    "md builder couldn't find this document in your project folder. pass documentPath, the path of the markdown file.",
+  document_ambiguous:
+    "several files in your project have this document's name and first line. pass documentPath with the one open in md builder. matches:",
+  image_not_found: "there is no image file at that path.",
+  not_an_image: "that file is not a png, jpg, gif, webp, avif or svg image.",
+  outside_project:
+    "the image is outside your project folder. copy it into the project, for example next to the document, and pass the copy's path.",
+  image_too_large: "the image is over 10 MB. use a smaller copy.",
+  bridge_outdated:
+    "this @rawgrid/client-mcp is too old to read images. ask the user to run /mcp and reconnect rawgrid, or start a new session.",
+  not_connected: "md builder is not connected to this session.",
 };
 
 export const DROPPED_TEXT = {
@@ -167,8 +196,18 @@ export function agentNote(text: string, at: string | null = null) {
   return withNoteTime(`${AGENT_PREFIX} ${stripAuthor(text.replace(ANY_NOTE_TIME_PATTERN, "").trim())}`, at);
 }
 
+export function rejectionMessage(reason: RejectionReason) {
+  return `rejected (${reason}): ${REJECTION_TEXT[reason]}`;
+}
+
 function reject(reason: RejectionReason): AgentOutcome {
-  return { ok: false, reason, message: `rejected (${reason}): ${REJECTION_TEXT[reason]}` };
+  return { ok: false, reason, message: rejectionMessage(reason) };
+}
+
+function insertionAfter(source: string, at: number, markdown: string) {
+  const following = source.slice(at);
+  if (following === "" || following.startsWith("\n\n")) return `\n\n${markdown}`;
+  return following.startsWith("\n") ? `\n\n${markdown}\n` : `\n\n${markdown}\n\n`;
 }
 
 function occurrencesOf(source: string, text: string) {
@@ -321,6 +360,30 @@ export function applyAgentCall(
       published: applyChange(published, change, call.new),
       log: recordEvents(log, [
         { actor: "agent", type: "edit-text", threadId: null, quote: call.old, note: call.new },
+      ]),
+      change,
+      threadId: null,
+    };
+  }
+
+  if (call.tool === "add_image") {
+    if (!call.after.trim()) return reject("empty_text");
+    const positions = occurrencesOf(published.source, call.after);
+    if (positions.length === 0) return reject("not_found");
+    if (positions.length > 1) return reject("ambiguous");
+    const afterEnd = positions[0] + call.after.length;
+    const lineBreak = published.source.indexOf("\n", afterEnd);
+    const at = lineBreak < 0 ? published.source.length : lineBreak;
+    if (published.comments.some((comment) => comment.start < at && comment.end > at)) {
+      return reject("overlaps_thread");
+    }
+    const insert = insertionAfter(published.source, at, call.markdown);
+    const change = { from: at, to: at, insertLength: insert.length };
+    return {
+      ok: true,
+      published: applyChange(published, change, insert),
+      log: recordEvents(log, [
+        { actor: "agent", type: "add-image", threadId: null, quote: call.after, note: call.markdown },
       ]),
       change,
       threadId: null,
@@ -576,6 +639,16 @@ function stringArg(args: Record<string, unknown>, key: string) {
   return typeof value === "string" ? value : null;
 }
 
+export function imageRequestFrom(args: Record<string, unknown>): ImageRequest | string {
+  const path = stringArg(args, "path");
+  const after = stringArg(args, "after");
+  if (!path?.trim()) return "missing or invalid argument: path";
+  if (after === null) return "missing or invalid argument: after";
+  const alt = (stringArg(args, "alt") ?? "").replace(/[[\]\n]/g, " ").trim();
+  const documentPath = stringArg(args, "documentPath")?.trim() || null;
+  return { path: path.trim(), alt, after, documentPath };
+}
+
 export function agentCallFrom(tool: string, args: Record<string, unknown>): AgentCall | string {
   const missing = (key: string) => `missing or invalid argument: ${key}`;
   if (tool === "reply") {
@@ -610,9 +683,10 @@ export function agentCallFrom(tool: string, args: Record<string, unknown>): Agen
   return `unknown tool: ${tool}`;
 }
 
-export function documentSnapshot(published: ReviewDocument, log: LiveLog) {
+export function documentSnapshot(published: ReviewDocument, log: LiveLog, path: string | null = null) {
   return {
     name: published.name,
+    path,
     seq: log.seq,
     markdown: published.source,
     threads: sortComments(published.comments).map((comment) => ({

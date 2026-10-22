@@ -54,11 +54,9 @@ export function scrollToCenter(
 
 const BRIEF_START_MAX_LENGTH = 80;
 
-export function firstLineOf(source: string) {
+export function firstLineOf(source: string, maxLength = BRIEF_START_MAX_LENGTH) {
   const line = source.split("\n").map((text) => text.trim()).find(Boolean) ?? "";
-  return line.length > BRIEF_START_MAX_LENGTH
-    ? line.slice(0, BRIEF_START_MAX_LENGTH)
-    : line;
+  return line.length > maxLength ? line.slice(0, maxLength) : line;
 }
 
 export function agentBriefFor(fileName: string, source: string) {
@@ -136,4 +134,44 @@ export function isSubmitShortcut(event: {
   ctrlKey: boolean;
 }) {
   return event.key === "Enter" && (event.metaKey || event.ctrlKey);
+}
+
+const URL_SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:|^\/\/|^#/i;
+
+function folderOf(path: string) {
+  return path.slice(0, path.lastIndexOf("/")) || "/";
+}
+
+function normalizePath(path: string) {
+  const segments: string[] = [];
+  for (const segment of path.split("/")) {
+    if (segment === "" || segment === ".") continue;
+    if (segment === "..") segments.pop();
+    else segments.push(segment);
+  }
+  return `/${segments.join("/")}`;
+}
+
+export function resolveImageSource(documentPath: string, source: string) {
+  if (!source || URL_SCHEME_PATTERN.test(source)) return null;
+  let decoded = source;
+  try {
+    decoded = decodeURI(source);
+  } catch {
+    return null;
+  }
+  return normalizePath(decoded.startsWith("/") ? decoded : `${folderOf(documentPath)}/${decoded}`);
+}
+
+export function relativeImagePath(documentPath: string, imagePath: string) {
+  const from = normalizePath(folderOf(documentPath)).split("/").filter(Boolean);
+  const to = normalizePath(imagePath).split("/").filter(Boolean);
+  let shared = 0;
+  while (shared < from.length && shared < to.length - 1 && from[shared] === to[shared]) shared++;
+  const steps = [...from.slice(shared).map(() => ".."), ...to.slice(shared)];
+  return steps.map((step) => encodeURIComponent(step).replace(/%2F/g, "/")).join("/");
+}
+
+export function imageMarkdown(alt: string, path: string) {
+  return `![${alt}](${path})`;
 }

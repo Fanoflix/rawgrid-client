@@ -1,6 +1,6 @@
 {
   "name": "@rawgrid/client-mcp",
-  "version": "0.1.4",
+  "version": "0.2.1",
   "description": "Lets a browser tab offer MCP tools to a local agent. The agent starts this server over stdio, and the tab connects to it over a localhost WebSocket.",
   "license": "MIT",
   "homepage": "https://fanoflix.github.io/rawgrid-client/",

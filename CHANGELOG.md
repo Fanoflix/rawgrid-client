@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.2.4
+
+### Upgrading
+
+Images need `@rawgrid/client-mcp` 0.2.0 or later. 0.2.1 also searches big folders and lists every matching file when several share the document's name. In an agent session that was already open, run `/mcp`, pick **rawgrid** and choose **Reconnect**, or start a new session. With 0.1.x, md builder still works, and `add_image` tells the agent to reconnect.
+
+### Features
+
+- **Images in md builder.** The agent can add an image with the new `add_image` tool. It passes the image's path and a line to put it after, and md builder writes `![alt](images/meme.png)` on its own line, relative to the document, so the file stays plain markdown that also renders on GitHub. The image must be inside the agent's project folder, so an image from elsewhere gets copied into the project first, for example into an `images` folder next to the document.
+- md builder now shows images. While an agent is connected, the bridge reads the image files the document links to and the page displays them. They load again after a page reload. Without a connected agent, an image shows as its alt text, as before. Images on the web aren't loaded, so nothing leaves your machine.
+- md builder finds the open document in the agent's project, by its name and first line. Hovering the file name then shows its full path, and `get_document` returns it as `path`.
+- When several files in the project share the document's name and first line, as with a mirrored copy of a repo, `add_image` asks the agent to pass `documentPath`, and with 0.2.1 it lists the matches. `get_document` takes `documentPath` too, for a document that already has image links. md builder remembers that choice, so after a reload it still finds the document and shows its images. With 0.2.1 the search covers up to 200,000 entries, enough for a folder holding many repos.
+- `add_image` refuses files that aren't images, files over 10 MB, and files outside the project, including symlinks that point out of it. Each refusal tells the agent what to do instead.
+
+### Fixes
+
+- Line breaks in comments and replies now show. A single newline used to render as a space, as it does in a markdown document, so a reply written in short lines ran together into one block. Notes now keep each line, like comments on GitHub. The document itself still follows normal markdown.
+- Agent notes now read like the agent's chat replies. The tool descriptions, the live prompt and the copy-paste prompt tell the agent to write each note exactly as it would answer in chat: markdown with real line breaks, paragraphs, lists, bold and code blocks, and no signature. Before, nothing said notes were markdown, and agents squashed numbered lists into one paragraph and sometimes signed notes ("agent: Claude: …").
+
 ## 1.2.3
 
 ### UX

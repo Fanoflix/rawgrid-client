@@ -9,7 +9,7 @@ import {
 import type { Bridge } from "./bridge.js";
 import type { CallOutcome } from "./protocol.js";
 
-export const SERVER_INFO = { name: "rawgrid", version: "0.1.4" } as const;
+export const SERVER_INFO = { name: "rawgrid", version: "0.2.1" } as const;
 
 const BUILT_IN_TOOLS = {
   status: "client_status",

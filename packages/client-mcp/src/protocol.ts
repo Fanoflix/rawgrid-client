@@ -1,9 +1,10 @@
 import { z } from "zod";
 
+import type { ImageResult } from "./files.js";
 import type { SessionHost } from "./host.js";
 
 export const PROTOCOL = "rawgrid-client-mcp";
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2;
 
 export const PORT_RANGE = { first: 47821, last: 47830 } as const;
 export const HELLO_PATH = "/hello";
@@ -59,6 +60,8 @@ export type ServerMessage =
     }
   | { type: "session"; session: SessionInfo; isTaken: boolean }
   | { type: "call"; id: string; tool: string; args: Record<string, unknown> }
+  | { type: "located"; id: string; path: string | null; candidates: string[] }
+  | ({ type: "image"; id: string } & ImageResult)
   | { type: "replaced" };
 
 const clientToolSchema = z.object({
@@ -85,6 +88,19 @@ const tabMessageSchema = z.union([
     id: z.string(),
     ok: z.literal(false),
     error: z.string(),
+  }),
+  z.object({
+    type: z.literal("locate"),
+    id: z.string(),
+    name: z.string().min(1),
+    firstLine: z.string(),
+    hint: z.string().optional(),
+  }),
+  z.object({
+    type: z.literal("read-image"),
+    id: z.string(),
+    path: z.string().min(1),
+    includeData: z.boolean(),
   }),
 ]);
 

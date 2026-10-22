@@ -3,7 +3,10 @@ import { describe, expect, it } from "vitest";
 import {
   agentBriefFor,
   firstLineOf,
+  imageMarkdown,
   orderSessions,
+  relativeImagePath,
+  resolveImageSource,
   sessionHostLabel,
   timeSince,
 } from "@/tools/md-builder/lib/utils";
@@ -58,5 +61,28 @@ describe("agent sessions in the live panel", () => {
     expect(timeSince("2026-10-22T09:57:00Z", now)).toBe("3m ago");
     expect(timeSince("2026-10-22T07:30:00Z", now)).toBe("2h ago");
     expect(timeSince("2026-10-20T10:00:00Z", now)).toBe("2d ago");
+  });
+});
+
+describe("image paths", () => {
+  const documentPath = "/repo/docs/plan.md";
+
+  it("writes the image path relative to the document and encodes spaces", () => {
+    expect(relativeImagePath(documentPath, "/repo/docs/images/users won't do that.png")).toBe(
+      "images/users%20won't%20do%20that.png"
+    );
+    expect(relativeImagePath(documentPath, "/repo/assets/meme.png")).toBe("../assets/meme.png");
+    expect(relativeImagePath(documentPath, "/repo/docs/meme.png")).toBe("meme.png");
+    expect(imageMarkdown("meme", "images/meme.png")).toBe("![meme](images/meme.png)");
+  });
+
+  it("resolves a written path back to the file and leaves urls alone", () => {
+    expect(resolveImageSource(documentPath, "images/users%20won't%20do%20that.png")).toBe(
+      "/repo/docs/images/users won't do that.png"
+    );
+    expect(resolveImageSource(documentPath, "./../assets/meme.png")).toBe("/repo/assets/meme.png");
+    expect(resolveImageSource(documentPath, "/abs/meme.png")).toBe("/abs/meme.png");
+    expect(resolveImageSource(documentPath, "https://example.com/a.png")).toBeNull();
+    expect(resolveImageSource(documentPath, "data:image/png;base64,AA")).toBeNull();
   });
 });

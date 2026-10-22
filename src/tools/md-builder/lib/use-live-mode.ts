@@ -3,6 +3,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   ClientMcpCallResult,
   ClientMcpConnection,
+  ClientMcpImage,
+  ClientMcpLocated,
+  ClientMcpLocateRequest,
   ClientMcpSession,
 } from "@/lib/client-mcp";
 import { connectClientMcp, scanClientMcpSessions } from "@/lib/client-mcp";
@@ -146,6 +149,20 @@ export function useLiveMode({ hasDocument, onCall, onConnected }: UseLiveModeOpt
     []
   );
 
+  const locateDocument = useCallback(
+    async (request: ClientMcpLocateRequest): Promise<ClientMcpLocated> =>
+      (await connectionRef.current?.locateDocument(request)) ?? { path: null, candidates: [] },
+    []
+  );
+
+  const readImage = useCallback(
+    async (path: string, includeData: boolean): Promise<ClientMcpImage> =>
+      connectionRef.current
+        ? connectionRef.current.readImage(path, includeData)
+        : { ok: false, reason: "not_connected" },
+    []
+  );
+
   function disconnect() {
     setIsEnabled(false);
     setRememberedSessionId("");
@@ -170,5 +187,7 @@ export function useLiveMode({ hasDocument, onCall, onConnected }: UseLiveModeOpt
     setIsPanelOpen,
     connect: (session: ClientMcpSession) => void connect(session),
     disconnect,
+    locateDocument,
+    readImage,
   };
 }

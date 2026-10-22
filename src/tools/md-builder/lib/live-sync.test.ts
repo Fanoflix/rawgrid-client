@@ -11,6 +11,7 @@ import {
   applyUserOp,
   authorOf,
   documentSnapshot,
+  imageRequestFrom,
   eventForAgent,
   DROPPED_TEXT,
   emptyLog,
@@ -428,5 +429,49 @@ describe("interleaving fuzz", () => {
         expect(new Set(view.comments.map((comment) => comment.id)).size).toBe(view.comments.length);
       }
     }
+  });
+});
+
+describe("add_image", () => {
+  const image = "![meme](images/meme.png)";
+
+  it("puts the image on its own paragraph after the line that holds the anchor", () => {
+    const outcome = applyOk(BASE, emptyLog(), { tool: "add_image", after: "with retries", markdown: image });
+    expect(outcome.published.source).toBe(
+      "Upload one at a time with retries.\n\n![meme](images/meme.png)\n\nThe tray stays open."
+    );
+    expect(outcome.published.comments.map((comment) => outcome.published.source.slice(comment.start, comment.end))).toEqual([
+      "one at a time",
+      "stays open",
+    ]);
+  });
+
+  it("separates the image from a next line that follows directly, and appends at the end", () => {
+    const doc = docFrom("# Title\nfirst line");
+    expect(applyOk(doc, emptyLog(), { tool: "add_image", after: "Title", markdown: image }).published.source).toBe(
+      "# Title\n\n![meme](images/meme.png)\n\nfirst line"
+    );
+    expect(applyOk(doc, emptyLog(), { tool: "add_image", after: "first", markdown: image }).published.source).toBe(
+      "# Title\nfirst line\n\n![meme](images/meme.png)"
+    );
+  });
+
+  it("rejects anchors that are missing, repeated or inside a thread that spans lines", () => {
+    expect(applyAgentCall(BASE, emptyLog(), { tool: "add_image", after: "nope", markdown: image })).toMatchObject({ reason: "not_found" });
+    expect(applyAgentCall(BASE, emptyLog(), { tool: "add_image", after: "t", markdown: image })).toMatchObject({ reason: "ambiguous" });
+    const spanning = docFrom("{==first\nsecond==}{>>both lines<<}");
+    expect(applyAgentCall(spanning, emptyLog(), { tool: "add_image", after: "first", markdown: image })).toMatchObject({
+      reason: "overlaps_thread",
+    });
+  });
+
+  it("reads add_image arguments and keeps brackets and line breaks out of the alt text", () => {
+    expect(imageRequestFrom({ path: " docs/a.png ", after: "x", alt: "a [b]\nc" })).toEqual({
+      path: "docs/a.png",
+      alt: "a  b  c",
+      after: "x",
+      documentPath: null,
+    });
+    expect(imageRequestFrom({ after: "x" })).toBe("missing or invalid argument: path");
   });
 });
