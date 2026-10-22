@@ -629,6 +629,11 @@
 }
 
 .md-doc.md-note p,
+.md-doc.md-note li {
+  white-space: pre-line;
+}
+
+.md-doc.md-note p,
 .md-doc.md-note ul,
 .md-doc.md-note ol,
 .md-doc.md-note pre,

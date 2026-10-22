@@ -82,6 +82,12 @@ export const LIVE_TOOL_NAMES = {
 
 export const AGENT_STATUS_MAX_LENGTH = 80;
 
+const NOTE_TEXT_SCHEMA = {
+  type: "string",
+  description:
+    "markdown, written exactly as you would write your reply to the user in chat: the same paragraphs, lists, bold, code spans and code blocks, with real line breaks. md builder renders it the same way. Don't sign it; md builder already labels your notes.",
+} as const;
+
 export const LIVE_TOOLS = [
   {
     name: LIVE_TOOL_NAMES.getDocument,
@@ -114,10 +120,11 @@ export const LIVE_TOOLS = [
   },
   {
     name: LIVE_TOOL_NAMES.reply,
-    description: "Adds your reply to the end of a comment thread. It shows to the user as an agent note.",
+    description:
+      "Adds your reply to the end of a comment thread. It shows to the user as an agent note, rendered as markdown.",
     inputSchema: {
       type: "object",
-      properties: { threadId: { type: "string" }, text: { type: "string" } },
+      properties: { threadId: { type: "string" }, text: NOTE_TEXT_SCHEMA },
       required: ["threadId", "text"],
     },
   },
@@ -177,7 +184,7 @@ export const LIVE_TOOLS = [
       "Starts a new thread on a quote that appears exactly once in the markdown and stays within one line.",
     inputSchema: {
       type: "object",
-      properties: { quote: { type: "string" }, text: { type: "string" } },
+      properties: { quote: { type: "string" }, text: NOTE_TEXT_SCHEMA },
       required: ["quote", "text"],
     },
   },
@@ -264,6 +271,7 @@ export const MD_BUILDER_TEXT = {
     "   - If I asked for a change or agreed to your suggestion, apply it with apply_change (or edit_text for text outside the quote), then reply saying what you changed.",
     "   - Otherwise answer with reply.",
     "   - You can't resolve threads. I resolve them myself.",
+    "   - Write each note exactly as you would write your reply to me in this chat, in markdown with real line breaks: paragraphs, lists, bold and code blocks all show the same way in md builder. Don't sign notes.",
     "3. Call wait_for_activity with the latest seq you read, and repeat step 2 for each new event. Keep going until I tell you to stop.",
     "",
     "Always pass the latest seq you read as baseSeq. If a call is rejected, follow the reason it gives, usually by calling get_document again. If md builder disconnects, keep calling wait_for_activity: it reconnects on its own after a page reload. If wait_for_activity says md builder reloaded, call get_document before anything else.",
@@ -337,6 +345,7 @@ export const MD_BUILDER_TEXT = {
     "- Reply by adding `{>>agent: your reply<<}` right after the last block in that thread.",
     "- If I asked for a change or agreed to your suggestion, make the change inside the highlight, keep the `{==` `==}` around the new text, and reply saying what you changed.",
     "- Never remove a thread's markup. I resolve threads myself.",
+    "- Write each note exactly as you would write your reply to me in this chat, in markdown with real line breaks: paragraphs, lists, bold and code blocks all show the same way in md builder. A note can span several lines. Don't sign notes.",
     "Skip threads whose last note is yours.",
     "",
     "Notes may end with a time marker such as `<!--rg:2026-10-22T10:42:05Z-->`. Leave existing markers as they are, and end each note you add with one holding the current UTC time (`date -u +%Y-%m-%dT%H:%M:%SZ`).",
