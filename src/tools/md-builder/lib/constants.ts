@@ -312,6 +312,7 @@ export const MD_BUILDER_TEXT = {
   dismiss: "dismiss",
   copyNote: "copy note",
   newNotes: "new",
+  markRead: "mark read",
   nextNew: "threads with new notes since your last action. click to jump to the next one.",
   composerMoved: "the agent changed the text you selected. select it again.",
   agentWaiting: "waiting for your next comment",

@@ -624,6 +624,10 @@
   line-height: 1.5;
 }
 
+.md-doc.md-note > :first-child {
+  margin-top: 0;
+}
+
 .md-doc.md-note > :last-child {
   margin-bottom: 0;
 }
