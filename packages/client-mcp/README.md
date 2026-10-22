@@ -61,6 +61,7 @@ Then open md builder in rawgrid at [fanoflix.github.io/rawgrid-client/tools](htt
 - It accepts a WebSocket only when the `Origin` header is `https://fanoflix.github.io` or the local dev server (`http://localhost:5173`, `http://127.0.0.1:5173`). Browsers set `Origin` themselves, so other websites cannot connect. Add more with `--allow-origin <origin>`.
 - It also checks the `Host` header, which blocks DNS rebinding.
 - One tab at a time. A second tab that connects takes over and the first one is told.
+- The server reads files only for the tab that holds the session, and only inside the folder the agent started in. It reads image files (png, jpg, gif, webp, avif and svg, up to 10 MB each), and it reads the first line of files named like the open document to find it. It follows symlinks only when they stay inside that folder, and it never writes files.
 
 ## Protocol
 
@@ -70,9 +71,11 @@ Server to tab:
 
 | Message | When |
 | --- | --- |
-| `{ type: "hello", protocol: "rawgrid-client-mcp", version: 1, session, isTaken }` | Right after the tab connects. `session` has `id`, `cwd`, `pid`, `startedAt`, `agent` (`{ name, version }` once the agent has said hello) `lastAgentCallAt` (when the agent last called any rawgrid tool, or `null`) and `host` (`{ kind: "terminal" | "background" | "unknown", app }`, found by walking the process's ancestors with `ps`, so a tab can tell a terminal session from a background one). |
+| `{ type: "hello", protocol: "rawgrid-client-mcp", version: 2, session, isTaken }` | Right after the tab connects. `session` has `id`, `cwd`, `pid`, `startedAt`, `agent` (`{ name, version }` once the agent has said hello) `lastAgentCallAt` (when the agent last called any rawgrid tool, or `null`) and `host` (`{ kind: "terminal" | "background" | "unknown", app }`, found by walking the process's ancestors with `ps`, so a tab can tell a terminal session from a background one). |
 | `{ type: "session", session, isTaken }` | Whenever the session or its owner changes. |
 | `{ type: "call", id, tool, args }` | The agent called one of the tab's tools. |
+| `{ type: "located", id, path, candidates }` | The answer to `locate`. `path` is the file's absolute path, or `null` when no file or more than one file matches. `candidates` lists up to 5 matches, so the agent can pick one when several files share the name and first line. |
+| `{ type: "image", id, ok: true, path, mime, size, data? }` or `{ type: "image", id, ok: false, reason }` | The answer to `read-image`. `path` is the real absolute path and `data` is base64. `reason` is `image_not_found`, `not_an_image`, `outside_project` or `image_too_large`. |
 | `{ type: "replaced" }` | Another tab took over. |
 
 Tab to server:
@@ -81,6 +84,8 @@ Tab to server:
 | --- | --- |
 | `{ type: "register", client: { name }, tools: [{ name, description, inputSchema, annotations? }] }` | To take the session and offer tools. Tools use the same shape as MCP and WebMCP. Set `annotations.readOnlyHint` on tools that only read, so they are retried after a reconnect. |
 | `{ type: "result", id, ok: true, value }` or `{ type: "result", id, ok: false, error }` | The answer to a call. Errors reach the agent as tool errors. |
+| `{ type: "locate", id, name, firstLine, hint? }` | Finds the open document in the agent's folder: the one file with that name whose first non-blank line is `firstLine`. It skips hidden folders and folders like `node_modules` and `dist`. `hint` is a path to try first. Needs version 2. |
+| `{ type: "read-image", id, path, includeData }` | Reads an image inside the agent's folder. `path` is absolute or relative to that folder. Set `includeData` to `false` to only check the file. Needs version 2. |
 
 A call times out after 120 seconds, so a tab tool that waits must return before then.
 

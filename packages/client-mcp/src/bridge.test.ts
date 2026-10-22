@@ -1,7 +1,10 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { ToolListChangedNotificationSchema } from "@modelcontextprotocol/sdk/types.js";
+import { mkdtemp, realpath, rm, writeFile } from "node:fs/promises";
 import { get } from "node:http";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { WebSocket } from "ws";
 
@@ -25,11 +28,11 @@ afterEach(async () => {
   await Promise.all(openBridges.splice(0).map((bridge) => bridge.close()));
 });
 
-async function bridgeOnFreePort(callTimeoutMs = 2000, reconnectGraceMs = 100) {
+async function bridgeOnFreePort(callTimeoutMs = 2000, reconnectGraceMs = 100, cwd = "/tmp/project") {
   const bridge = await startBridge({
     ports: { first: 47900, last: 47960 },
     allowedOrigins: [ORIGIN],
-    cwd: "/tmp/project",
+    cwd,
     callTimeoutMs,
     reconnectGraceMs,
   });
@@ -132,6 +135,32 @@ describe("bridge", () => {
       session: { id: bridge.session().id, cwd: "/tmp/project" },
       isTaken: false,
     });
+  });
+
+  it("answers locate and read-image only for the registered tab", async () => {
+    const project = await realpath(await mkdtemp(join(tmpdir(), "rawgrid-bridge-")));
+    await writeFile(join(project, "plan.md"), "# Plan\n");
+    await writeFile(join(project, "meme.png"), Buffer.from([1, 2]));
+    try {
+      const bridge = await bridgeOnFreePort(2000, 100, project);
+      const watcher = await connectTab(bridge.port);
+      const tab = await connectTab(bridge.port);
+      await tab.next("hello");
+      register(tab);
+      watcher.socket.send(JSON.stringify({ type: "read-image", id: "w", path: "meme.png", includeData: true }));
+      tab.socket.send(JSON.stringify({ type: "locate", id: "1", name: "plan.md", firstLine: "# Plan" }));
+      expect(await tab.next("located")).toEqual({
+        type: "located",
+        id: "1",
+        path: join(project, "plan.md"),
+        candidates: [join(project, "plan.md")],
+      });
+      tab.socket.send(JSON.stringify({ type: "read-image", id: "2", path: "meme.png", includeData: true }));
+      expect(await tab.next("image")).toMatchObject({ id: "2", ok: true, mime: "image/png", data: "AQI=" });
+      expect(watcher.messages.some((message) => message.type === "image")).toBe(false);
+    } finally {
+      await rm(project, { recursive: true, force: true });
+    }
   });
 
   it("refuses tabs from other origins", async () => {

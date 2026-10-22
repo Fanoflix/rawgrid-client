@@ -20,6 +20,7 @@ import {
   type ServerMessage,
   type SessionInfo,
 } from "./protocol.js";
+import { locateDocument, readImage } from "./files.js";
 import { describeHost } from "./host.js";
 import { isAllowedHost, isAllowedOrigin } from "./security.js";
 
@@ -243,6 +244,18 @@ export async function startBridge(options: BridgeOptions): Promise<Bridge> {
       return;
     }
     if (registered?.socket !== socket) return;
+    if (message.type === "locate") {
+      void locateDocument(options.cwd, message).then((located) =>
+        send(socket, { type: "located", id: message.id, ...located })
+      );
+      return;
+    }
+    if (message.type === "read-image") {
+      void readImage(options.cwd, message.path, message.includeData).then((image) =>
+        send(socket, { type: "image", id: message.id, ...image })
+      );
+      return;
+    }
     const pending = pendingCalls.get(message.id);
     if (!pending) return;
     pendingCalls.delete(message.id);
