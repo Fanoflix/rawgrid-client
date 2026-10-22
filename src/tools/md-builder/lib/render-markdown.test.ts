@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { renderMarkdown } from "@/tools/md-builder/lib/render-markdown";
+import { imageSources, renderMarkdown } from "@/tools/md-builder/lib/render-markdown";
 
 interface MappedSpan {
   start: number;
@@ -172,5 +172,18 @@ describe("unsafe links", () => {
   it("keeps normal links", () => {
     expect(renderMarkdown("[docs](https://example.com)", [])).toContain('<a href="https://example.com"');
     expect(renderMarkdown("[section](#goals)", [])).toContain('<a href="#goals"');
+  });
+});
+
+describe("images", () => {
+  it("shows an image once its file is loaded and a label until then", () => {
+    const source = 'Before ![a "meme"](images/meme.png "title") after';
+    expect(renderMarkdown(source, [])).toContain('<span class="md-img">a "meme"</span>');
+    const html = renderMarkdown(source, [], new Map([["images/meme.png", "blob:abc"]]));
+    expect(html).toContain('<img class="md-image" src="blob:abc" alt="a &quot;meme&quot;">');
+  });
+
+  it("lists each image source once, including angle-bracket destinations", () => {
+    expect(imageSources("![a](x.png) ![b](<my file.png>) ![c](x.png) `code`")).toEqual(["x.png", "my file.png"]);
   });
 });

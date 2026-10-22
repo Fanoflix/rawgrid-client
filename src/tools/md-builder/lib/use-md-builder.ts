@@ -8,7 +8,12 @@ import {
   useState,
 } from "react";
 
-import type { ClientMcpCallResult } from "@/lib/client-mcp";
+import type {
+  ClientMcpCallResult,
+  ClientMcpImage,
+  ClientMcpLocated,
+  ClientMcpLocateRequest,
+} from "@/lib/client-mcp";
 import { useFont } from "@/lib/use-font";
 import { useToolState } from "@/lib/use-tool-state";
 import {
@@ -58,17 +63,20 @@ import {
   documentSnapshot,
   emptyLog,
   eventForAgent,
+  imageRequestFrom,
   mapPendingThroughChange,
   mapPosition,
   noteKeyFor,
   parseThreadKey,
   publishUserChanges,
   rebasePending,
+  rejectionMessage,
   reopenRange,
   userEventsSince,
   withNoteTime,
 } from "@/tools/md-builder/lib/live-sync";
 import {
+  imageSources,
   PENDING_COMMENT_ID,
   renderMarkdown,
 } from "@/tools/md-builder/lib/render-markdown";
@@ -81,7 +89,11 @@ import {
 import { useLiveMode } from "@/tools/md-builder/lib/use-live-mode";
 import {
   agentBriefFor,
+  firstLineOf,
+  imageMarkdown,
   isCommentShortcut,
+  relativeImagePath,
+  resolveImageSource,
 } from "@/tools/md-builder/lib/utils";
 
 export interface SelectionAnchor {
@@ -167,6 +179,13 @@ export interface MdBuilderState {
   agentStatus: AgentStatus | null;
   isAgentAway: boolean;
   pendingAgentReplies: Record<number, string>;
+  documentPath: string | null;
+}
+
+interface LiveFiles {
+  canReadFiles: boolean;
+  locateDocument: (request: ClientMcpLocateRequest) => Promise<ClientMcpLocated>;
+  readImage: (path: string, includeData: boolean) => Promise<ClientMcpImage>;
 }
 
 interface SyncState {
@@ -215,6 +234,30 @@ function deserializeFlag(raw: string) {
 
 function serializeKeys(keys: string[]) {
   return JSON.stringify(keys);
+}
+
+const NOT_LOCATED: ClientMcpLocated = { path: null, candidates: [] };
+const NO_PATHS: Record<string, string> = {};
+const MAX_REMEMBERED_PATHS = 50;
+
+function documentKey(name: string, firstLine: string) {
+  return `${name}\n${firstLine}`;
+}
+
+function serializePaths(paths: Record<string, string>) {
+  return JSON.stringify(paths);
+}
+
+function deserializePaths(raw: string) {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return NO_PATHS;
+    return Object.fromEntries(
+      Object.entries(parsed).filter((entry): entry is [string, string] => typeof entry[1] === "string")
+    );
+  } catch {
+    return NO_PATHS;
+  }
 }
 
 function deserializeKeys(raw: string) {
@@ -323,6 +366,18 @@ export function useMdBuilder() {
   const agentAwayTimerRef = useRef<number | null>(null);
   const [pendingReplySeqs, setPendingReplySeqs] = useState<Record<number, number>>({});
   const isLiveRef = useRef(false);
+  const [documentPath, setDocumentPath] = useState<string | null>(null);
+  const documentPathRef = useRef<string | null>(null);
+  const [imageUrlsByPath, setImageUrlsByPath] = useState<Record<string, string>>({});
+  const requestedImagesRef = useRef(new Set<string>());
+  const liveFilesRef = useRef<LiveFiles | null>(null);
+  const { value: rememberedPaths, setValue: setRememberedPaths } = useToolState<Record<string, string>>({
+    tool: "md-builder:document-paths",
+    initialValue: NO_PATHS,
+    serialize: serializePaths,
+    deserialize: deserializePaths,
+  });
+  const rememberedPathsRef = useRef(rememberedPaths);
 
   const [handle, setHandle] = useState<FileSystemFileHandle | null>(null);
   const [lastModified, setLastModified] = useState(0);
@@ -377,6 +432,8 @@ export function useMdBuilder() {
     handleRef.current = handle;
     lastModifiedRef.current = lastModified;
     composerRef.current = composer;
+    documentPathRef.current = documentPath;
+    rememberedPathsRef.current = rememberedPaths;
   });
 
   const { fontSize, increaseFont, decreaseFont } = useFont({
@@ -385,6 +442,17 @@ export function useMdBuilder() {
     minSize: MD_BUILDER_CONFIG.minFontSize,
     maxSize: MD_BUILDER_CONFIG.maxFontSize,
   });
+
+  const imageUrls = useMemo(() => {
+    const urls = new Map<string, string>();
+    if (!documentPath) return urls;
+    for (const source of imageSources(reviewDoc.source)) {
+      const path = resolveImageSource(documentPath, source);
+      const url = path === null ? undefined : imageUrlsByPath[path];
+      if (url) urls.set(source, url);
+    }
+    return urls;
+  }, [documentPath, imageUrlsByPath, reviewDoc.source]);
 
   const html = useMemo(() => {
     const pendingHighlight: ReviewComment[] = composer
@@ -397,11 +465,12 @@ export function useMdBuilder() {
           },
         ]
       : [];
-    return renderMarkdown(reviewDoc.source, [
-      ...reviewDoc.comments,
-      ...pendingHighlight,
-    ]);
-  }, [reviewDoc.source, reviewDoc.comments, composer]);
+    return renderMarkdown(
+      reviewDoc.source,
+      [...reviewDoc.comments, ...pendingHighlight],
+      imageUrls
+    );
+  }, [reviewDoc.source, reviewDoc.comments, composer, imageUrls]);
 
   const newNoteKeys = useMemo(() => new Set(newNoteKeyList), [newNoteKeyList]);
   const sortedComments = useMemo(
@@ -490,6 +559,7 @@ export function useMdBuilder() {
       setComposer(null);
       setPendingSelection(null);
       setView("document");
+      if (!options.isRefresh) setDocumentPath(null);
       if (loaded.handle) {
         setRememberedHandle(loaded.handle);
         rememberHandle(loaded.handle);
@@ -737,6 +807,7 @@ export function useMdBuilder() {
           applied: call.tool,
           seq: outcome.log.seq,
           threadId: outcome.threadId === null ? null : `t${outcome.threadId}`,
+          ...(call.tool === "add_image" ? { markdown: call.markdown } : {}),
         },
       };
     },
@@ -788,6 +859,57 @@ export function useMdBuilder() {
     []
   );
 
+  const locateDocument = useCallback(
+    async (agentHint?: string) => {
+      const files = liveFilesRef.current;
+      if (!files?.canReadFiles) return NOT_LOCATED;
+      const published = syncRef.current.published ?? viewRef.current;
+      const firstLine = firstLineOf(exportCriticMarkup(published.source, published.comments), Infinity);
+      const key = documentKey(published.name, firstLine);
+      const located = await files.locateDocument({
+        name: published.name,
+        firstLine,
+        hint: agentHint ?? rememberedPathsRef.current[key],
+      });
+      const { path } = located;
+      if (!path) return located;
+      documentPathRef.current = path;
+      setDocumentPath(path);
+      if (agentHint) {
+        setRememberedPaths((current) =>
+          Object.fromEntries([...Object.entries(current).filter(([saved]) => saved !== key), [key, path]].slice(-MAX_REMEMBERED_PATHS))
+        );
+      }
+      return located;
+    },
+    [setRememberedPaths]
+  );
+
+  const addImage = useCallback(
+    async (args: Record<string, unknown>): Promise<ClientMcpCallResult> => {
+      const request = imageRequestFrom(args);
+      if (typeof request === "string") return { ok: false, error: request };
+      const files = liveFilesRef.current;
+      if (!files) return { ok: false, error: rejectionMessage("not_connected") };
+      if (!files.canReadFiles) return { ok: false, error: rejectionMessage("bridge_outdated") };
+      const hinted = request.documentPath ? await locateDocument(request.documentPath) : NOT_LOCATED;
+      const searched = hinted.path || documentPathRef.current ? NOT_LOCATED : await locateDocument();
+      const located = hinted.path ?? documentPathRef.current ?? searched.path;
+      if (!located && searched.candidates.length > 1) {
+        return {
+          ok: false,
+          error: `${rejectionMessage("document_ambiguous")} ${searched.candidates.join(", ")}`,
+        };
+      }
+      if (!located) return { ok: false, error: rejectionMessage("document_not_found") };
+      const image = await files.readImage(request.path, false);
+      if (!image.ok) return { ok: false, error: rejectionMessage(image.reason) };
+      const markdown = imageMarkdown(request.alt, relativeImagePath(located, image.path));
+      return applyAgentChange({ tool: "add_image", after: request.after, markdown });
+    },
+    [applyAgentChange, locateDocument]
+  );
+
   const respondToAgent = useCallback(
     async (tool: string, args: Record<string, unknown>): Promise<ClientMcpCallResult> => {
       if (!viewRef.current.source) return { ok: false, error: MD_BUILDER_TEXT.liveNoDocument };
@@ -825,14 +947,20 @@ export function useMdBuilder() {
           : { isWorking: true, text: MD_BUILDER_TEXT.agentThinking, threadId: null }
       );
       if (tool === LIVE_TOOL_NAMES.getDocument) {
+        const hint = typeof args.documentPath === "string" ? args.documentPath.trim() : "";
+        if (hint) await locateDocument(hint);
         const sync = syncRef.current;
-        return { ok: true, value: documentSnapshot(sync.published ?? viewRef.current, sync.log) };
+        return {
+          ok: true,
+          value: documentSnapshot(sync.published ?? viewRef.current, sync.log, documentPathRef.current),
+        };
       }
+      if (tool === LIVE_TOOL_NAMES.addImage) return addImage(args);
       const call = agentCallFrom(tool, args);
       if (typeof call === "string") return { ok: false, error: call };
       return applyAgentChange(call);
     },
-    [applyAgentChange, waitForActivity]
+    [addImage, applyAgentChange, locateDocument, waitForActivity]
   );
 
   const clearAgentAwayTimer = useCallback(() => {
@@ -870,11 +998,48 @@ export function useMdBuilder() {
       setIsAgentAway(false);
       setAgentStatus(null);
       setPendingReplySeqs({});
+      requestedImagesRef.current.clear();
       publish();
       queueDiskWrite();
     },
   });
   const isLive = live.state.connected !== null;
+  const { locateDocument: locateWithBridge, readImage } = live;
+
+  useLayoutEffect(() => {
+    liveFilesRef.current = live.state.connected
+      ? { canReadFiles: live.state.connected.canReadFiles, locateDocument: locateWithBridge, readImage }
+      : null;
+  });
+
+  const hasDocument = reviewDoc.source.length > 0;
+  useEffect(() => {
+    if (isLive && hasDocument && documentPath === null) void locateDocument();
+  }, [documentPath, hasDocument, isLive, locateDocument, reviewDoc.name]);
+
+  useEffect(() => {
+    if (!isLive || !documentPath) return;
+    for (const source of imageSources(reviewDoc.source)) {
+      const path = resolveImageSource(documentPath, source);
+      if (path === null || requestedImagesRef.current.has(path)) continue;
+      requestedImagesRef.current.add(path);
+      void readImage(path, true).then((image) => {
+        if (!image.ok || !image.data) return;
+        const bytes = Uint8Array.from(atob(image.data), (character) => character.charCodeAt(0));
+        const url = URL.createObjectURL(new Blob([bytes], { type: image.mime }));
+        setImageUrlsByPath((current) => ({ ...current, [path]: url }));
+      });
+    }
+  }, [documentPath, isLive, readImage, reviewDoc.source]);
+
+  const imageUrlsRef = useRef(imageUrlsByPath);
+  useLayoutEffect(() => {
+    imageUrlsRef.current = imageUrlsByPath;
+  });
+  useEffect(
+    () => () => Object.values(imageUrlsRef.current).forEach((url) => URL.revokeObjectURL(url)),
+    []
+  );
 
   useLayoutEffect(() => {
     isLiveRef.current = isLive;
@@ -1324,6 +1489,7 @@ export function useMdBuilder() {
     agentStatus: isLive ? agentStatus : null,
     isAgentAway: isLive && isAgentAway,
     pendingAgentReplies,
+    documentPath,
   };
 
   return {

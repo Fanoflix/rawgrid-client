@@ -77,6 +77,7 @@ export const LIVE_TOOL_NAMES = {
   editText: "edit_text",
   comment: "comment",
   setStatus: "set_status",
+  addImage: "add_image",
 } as const;
 
 export const AGENT_STATUS_MAX_LENGTH = 80;
@@ -85,8 +86,17 @@ export const LIVE_TOOLS = [
   {
     name: LIVE_TOOL_NAMES.getDocument,
     description:
-      "Returns the document open in md builder: its markdown without comment markup, every comment thread with its id (t1, t2, ...), the line it starts on, the quoted text, and each note with its author (user or agent). Also returns seq, the number of the latest change. Pass seq to wait_for_activity as sinceSeq and to apply_change as baseSeq.",
-    inputSchema: { type: "object", properties: {} },
+      "Returns the document open in md builder: its markdown without comment markup, every comment thread with its id (t1, t2, ...), the line it starts on, the quoted text, and each note with its author (user or agent). Also returns path, the file's path when md builder found it in your project, and seq, the number of the latest change. Pass seq to wait_for_activity as sinceSeq and to apply_change as baseSeq.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        documentPath: {
+          type: "string",
+          description:
+            "the markdown file's path, when path comes back null because several files in your project share its name. md builder remembers it, so images in the document show.",
+        },
+      },
+    },
     annotations: { readOnlyHint: true },
   },
   {
@@ -133,6 +143,21 @@ export const LIVE_TOOLS = [
       type: "object",
       properties: { old: { type: "string" }, new: { type: "string" } },
       required: ["old", "new"],
+    },
+  },
+  {
+    name: LIVE_TOOL_NAMES.addImage,
+    description:
+      "Adds an image to the document on its own line, after the line that contains `after`. path is the image file (png, jpg, gif, webp, avif or svg, up to 10 MB), absolute or relative to your working directory, and must be inside your project folder; copy an image from elsewhere into the project first, for example into an images folder next to the document. md builder writes it as ![alt](path relative to the document) and shows it. after must match the markdown from get_document exactly once. If md builder can't find the document in your project, pass documentPath, the markdown file's path.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        path: { type: "string" },
+        alt: { type: "string", description: "a short description of the image" },
+        after: { type: "string" },
+        documentPath: { type: "string" },
+      },
+      required: ["path", "after"],
     },
   },
   {
@@ -196,6 +221,7 @@ export const MD_BUILDER_TEXT = {
   fileFromUpload: "an uploaded copy. save as to keep your changes.",
   fileFolderHidden: "browsers don't share a file's folder, so the full path isn't known here.",
   fileAgentFolder: "agent project:",
+  fileLocated: "the connected agent found it in its project, so images next to it show here.",
   changedOnDisk: "changed on disk",
   commentsTitle: "comments",
   collapseComments: "collapse comments",

@@ -191,6 +191,7 @@ export function MdBuilderTool() {
               label={
                 <FileDetails
                   name={state.name}
+                  path={state.documentPath}
                   hasHandle={state.hasHandle}
                   agentFolder={live.state.connected?.cwd ?? null}
                 />
@@ -954,11 +955,12 @@ interface ResolvedCardProps {
 
 interface FileDetailsProps {
   name: string;
+  path: string | null;
   hasHandle: boolean;
   agentFolder: string | null;
 }
 
-function FileDetails({ name, hasHandle, agentFolder }: FileDetailsProps) {
+function FileDetails({ name, path, hasHandle, agentFolder }: FileDetailsProps) {
   const origin = hasHandle
     ? MD_BUILDER_TEXT.fileFromDisk
     : name === PASTED_DOCUMENT_NAME
@@ -967,10 +969,13 @@ function FileDetails({ name, hasHandle, agentFolder }: FileDetailsProps) {
 
   return (
     <span className="flex flex-col gap-0.5">
-      <span className="text-foreground">{name}</span>
+      <span className="text-foreground">{path ?? name}</span>
       <span className="text-muted-foreground">{origin}</span>
-      {hasHandle && <span className="text-muted-foreground">{MD_BUILDER_TEXT.fileFolderHidden}</span>}
-      {agentFolder && (
+      {path && <span className="text-muted-foreground">{MD_BUILDER_TEXT.fileLocated}</span>}
+      {hasHandle && !path && (
+        <span className="text-muted-foreground">{MD_BUILDER_TEXT.fileFolderHidden}</span>
+      )}
+      {agentFolder && !path && (
         <span className="text-muted-foreground">
           {MD_BUILDER_TEXT.fileAgentFolder} <span className="text-foreground">{agentFolder}</span>
         </span>

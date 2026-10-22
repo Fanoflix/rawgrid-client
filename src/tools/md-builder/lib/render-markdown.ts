@@ -33,7 +33,11 @@ interface TableCell {
 interface RenderContext {
   comments: ReviewComment[];
   emittedPoints: Set<number>;
+  images: ReadonlyMap<string, string>;
 }
+
+const NO_IMAGES: ReadonlyMap<string, string> = new Map();
+const IMAGE_PATTERN = /!\[[^\]\n]*\]\(([^()\n]*(?:\([^()\n]*\)[^()\n]*)*)\)/g;
 
 const LIST_PATTERN = /^(\s*)([-*+]|\d{1,9}[.)])(\s+|$)(.*)$/;
 const RULE_PATTERN = /^\s{0,3}([-*_])(?:\s*\1){2,}\s*$/;
@@ -58,6 +62,19 @@ function isSafeUrl(url: string) {
   return !UNSAFE_URL_PATTERN.test(visible);
 }
 const BARE_URL_PATTERN = /^https?:\/\/[^\s<]*[^\s<).,;:!?'"]/;
+
+export function imageSourceOf(destination: string) {
+  const trimmed = destination.trim();
+  if (trimmed.startsWith("<")) {
+    const close = trimmed.indexOf(">");
+    return close > 0 ? trimmed.slice(1, close) : trimmed.slice(1);
+  }
+  return trimmed.replace(/\s+["'(].*$/, "");
+}
+
+export function imageSources(source: string) {
+  return [...new Set([...source.matchAll(IMAGE_PATTERN)].map((match) => imageSourceOf(match[1])))].filter(Boolean);
+}
 
 function escapeHtml(text: string) {
   return text
@@ -335,8 +352,11 @@ function renderInline(
           const closeParen = matchBracket("(", ")", closeBracket + 1, limit);
           if (closeParen > 0) {
             flush(index);
-            const alt = text.slice(index + 2, closeBracket) || "image";
-            html += `<span class="md-img">${escapeHtml(alt)}</span>`;
+            const alt = text.slice(index + 2, closeBracket);
+            const url = context.images.get(imageSourceOf(text.slice(closeBracket + 2, closeParen)));
+            html += url
+              ? `<img class="md-image" src="${escapeAttribute(url)}" alt="${escapeAttribute(alt)}">`
+              : `<span class="md-img">${escapeHtml(alt || "image")}</span>`;
             index = closeParen + 1;
             plainFrom = index;
             continue;
@@ -761,11 +781,13 @@ function renderBlocks(context: RenderContext, lines: SourceLine[]): string {
 
 export function renderMarkdown(
   source: string,
-  comments: ReviewComment[]
+  comments: ReviewComment[],
+  images: ReadonlyMap<string, string> = NO_IMAGES
 ): string {
   const context: RenderContext = {
     comments: sortComments(comments),
     emittedPoints: new Set(),
+    images,
   };
   let html = renderBlocks(context, splitSourceLines(source));
   for (const comment of context.comments) {
