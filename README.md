@@ -2,9 +2,9 @@
 
 A browser-based developer toolbox with multiple utilities arranged in a resizable grid layout. All tools run entirely client-side with persistent state across sessions.
 
-**[Live](https://fanoflix.github.io/rawgrid-client/)**
+**[https://fanoflix.github.io/rawgrid-client/tools](https://fanoflix.github.io/rawgrid-client/tools)**
 
-![rawgrid screenshot](public/rawgrid-screenshot.png)
+https://github.com/user-attachments/assets/357b0c7f-e9b1-4094-8ef7-eaee5b3b9b7d
 
 ## Tools
 
