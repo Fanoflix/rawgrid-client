@@ -46,7 +46,7 @@ Commands: `yarn dev`, `yarn build` (runs `tsc -b` first), `yarn lint`, `yarn tes
 | `src/components/ui/*` | shadcn primitives. `resizable.tsx` wraps react-resizable-panels. |
 | `src/components/json-editor.tsx` | CodeMirror editor hard-wired for JSON. |
 | `src/tools/<id>/` | One folder per tool. See the blueprint. |
-| `src/pages/landing.tsx` | Marketing page with its own `TOOLS` list and icons. |
+| `src/pages/landing.tsx` | Marketing page with its own `TOOLS` list and icons. The hero is `public/landing/launch.mp4`, autoplaying muted on a loop with an unmute button. |
 | `src/index.css` | Theme tokens, dark mode, keyframes, and per-tool CSS such as `.md-doc`. |
 
 ## Persistence

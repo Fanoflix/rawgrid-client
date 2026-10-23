@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.6
+
+### UX
+
+- The landing page opens with the rawgrid launch video in place of the hero screenshot. It plays muted on a loop, and a speaker button in its top-right corner turns the sound on.
+- The README shows a looping preview of the launch video at the top, and its link now opens the landing page instead of the toolbox.
+
 ## 1.2.5
 
 ### UX
