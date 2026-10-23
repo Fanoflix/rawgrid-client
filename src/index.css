@@ -315,11 +315,13 @@
   font-size: inherit;
 }
 
-.hero-image-fade {
-  mask-image:
-    linear-gradient(to right, transparent, black 6%, black 94%, transparent),
-    linear-gradient(to bottom, transparent, black 5%, black 55%, transparent);
-  mask-composite: intersect;
+.launch-video-grid {
+  background-image:
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center;
+  mask-image: radial-gradient(ellipse at center, black 35%, transparent 72%);
 }
 
 .fade-to-background-edges {
