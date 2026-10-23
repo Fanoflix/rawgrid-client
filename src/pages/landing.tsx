@@ -12,6 +12,8 @@ import {
   Palette,
   Play,
   StickyNote,
+  Volume2,
+  VolumeX,
   Youtube,
 } from "lucide-react";
 
@@ -128,6 +130,33 @@ function ThemedLandingImage({
         alt={alt}
         className={cn("hidden dark:block", className)}
       />
+    </>
+  );
+}
+
+function LaunchVideo() {
+  const [isMuted, setIsMuted] = useState(true);
+
+  return (
+    <>
+      <video
+        src="landing/launch.mp4"
+        aria-label="rawgrid launch video"
+        autoPlay
+        loop
+        muted={isMuted}
+        playsInline
+        className="hero-image-fade aspect-video w-full"
+      />
+      <Button
+        size="icon"
+        variant="outline"
+        aria-label={isMuted ? "unmute video" : "mute video"}
+        onClick={() => setIsMuted((wasMuted) => !wasMuted)}
+        className="absolute top-[8%] right-[8%] bg-background/60 backdrop-blur"
+      >
+        {isMuted ? <VolumeX /> : <Volume2 />}
+      </Button>
     </>
   );
 }
@@ -284,11 +313,7 @@ export function LandingPage() {
         </div>
 
         <div className="relative -mt-6 w-full max-w-5xl">
-          <ThemedLandingImage
-            imageName="hero"
-            alt="rawgrid tools side by side in the grid"
-            className="hero-image-fade w-full"
-          />
+          <LaunchVideo />
           <p className="absolute inset-x-0 -bottom-6 mx-auto max-w-2xl px-6 text-center text-base text-muted-foreground leading-relaxed">
             everyday developer tools in one resizable, drag-and-drop grid. no
             sign-ups, no tracking — open source and runs entirely in your
