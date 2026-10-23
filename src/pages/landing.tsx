@@ -134,30 +134,54 @@ function ThemedLandingImage({
   );
 }
 
+const LAUNCH_VIDEO_CORNERS = [
+  "-top-3 -left-3 border-t border-l",
+  "-top-3 -right-3 border-t border-r",
+  "-bottom-3 -left-3 border-b border-l",
+  "-bottom-3 -right-3 border-b border-r",
+];
+
 function LaunchVideo() {
   const [isMuted, setIsMuted] = useState(true);
 
   return (
-    <>
-      <video
-        src="landing/launch.mp4"
-        aria-label="rawgrid launch video"
-        autoPlay
-        loop
-        muted={isMuted}
-        playsInline
-        className="hero-image-fade aspect-video w-full"
+    <div className="relative">
+      <div
+        aria-hidden
+        className="launch-video-grid pointer-events-none absolute -inset-x-24 -inset-y-20 dark:hidden"
       />
-      <Button
-        size="icon"
-        variant="outline"
-        aria-label={isMuted ? "unmute video" : "mute video"}
-        onClick={() => setIsMuted((wasMuted) => !wasMuted)}
-        className="absolute top-[8%] right-[8%] bg-background/60 backdrop-blur"
-      >
-        {isMuted ? <VolumeX /> : <Volume2 />}
-      </Button>
-    </>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-[12%] top-[45%] bottom-0 bg-primary/25 blur-3xl dark:hidden"
+      />
+      {LAUNCH_VIDEO_CORNERS.map((corner) => (
+        <span
+          key={corner}
+          aria-hidden
+          className={cn("absolute size-4 border-primary dark:hidden", corner)}
+        />
+      ))}
+      <div className="relative border border-foreground/15 bg-black shadow-[0_1px_2px_rgb(0_0_0/0.08),0_16px_32px_-8px_rgb(0_0_0/0.25),0_48px_96px_-24px_rgb(0_0_0/0.45)] dark:border-border dark:shadow-none">
+        <video
+          src="landing/launch.mp4"
+          aria-label="rawgrid launch video"
+          autoPlay
+          loop
+          muted={isMuted}
+          playsInline
+          className="block aspect-video w-full"
+        />
+        <Button
+          size="icon"
+          variant="outline"
+          aria-label={isMuted ? "unmute video" : "mute video"}
+          onClick={() => setIsMuted((wasMuted) => !wasMuted)}
+          className="absolute top-3 right-3 border-white/15 bg-black/50 text-white backdrop-blur hover:bg-black/70 hover:text-white"
+        >
+          {isMuted ? <VolumeX /> : <Volume2 />}
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -250,7 +274,7 @@ export function LandingPage() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="flex min-h-screen flex-col overflow-x-clip bg-background text-foreground">
       <nav className="sticky top-0 z-40 flex items-center justify-between border-b border-border/50 bg-background/80 px-6 py-3 backdrop-blur">
         <span
           aria-hidden={!isNavbarBrandVisible}
@@ -312,9 +336,9 @@ export function LandingPage() {
           </div>
         </div>
 
-        <div className="relative -mt-6 w-full max-w-5xl">
+        <div className="flex w-full max-w-5xl flex-col items-center gap-10">
           <LaunchVideo />
-          <p className="absolute inset-x-0 -bottom-6 mx-auto max-w-2xl px-6 text-center text-base text-muted-foreground leading-relaxed">
+          <p className="max-w-2xl px-6 text-center text-base text-muted-foreground leading-relaxed">
             everyday developer tools in one resizable, drag-and-drop grid. no
             sign-ups, no tracking — open source and runs entirely in your
             browser.
