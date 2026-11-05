@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.3.0
+
+### New tool
+
+- **Differ** compares two texts side by side. Changed lines get a red or green background, and the changed words inside them are highlighted. Both sides stay editable, and the diff updates as you type.
+- `json` formats both sides with sorted keys and 2-space indent, so key order and spacing stop showing up as changes. While it's on, a pasted or dropped file is formatted too. A side that isn't valid JSON keeps its text and shows the parse error under it.
+- `ignore whitespace` ignores spaces and tabs, so indentation, inner spacing and trailing spaces don't count as changes. Added and removed lines still do.
+- `collapse` folds long runs of matching lines and keeps 3 lines of context around each change. Click a fold to open it.
+- Drop a file on either side to load it. Files over 10 MB and binary files are refused with a message.
+- The header shows lines added and removed, the number of changes, and up and down buttons to jump between them. While the cursor is inside a change, the count reads like `2/5`.
+- The command palette gets differ commands: set either side, swap, clear, next and previous change, and the three toggles.
+
+### UX
+
+- Differ is visible by default in the top row. YouTube Player is now hidden by default; show it again from edit spaces. Saved layouts keep their current tools.
+
+### For contributors
+
+- Differ is built on `@codemirror/merge`. It brought its own newer copy of `@codemirror/view`, which breaks CodeMirror, so the lockfile now holds a single deduped copy. After adding or upgrading any `@codemirror/*` package, run `yarn dedupe '@codemirror/*'`. `AGENTS.md` has a Differ section with the other gotchas.
+
 ## 1.2.6
 
 ### UX
