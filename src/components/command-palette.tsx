@@ -108,6 +108,42 @@ const COMMANDS: Command[] = [
     command: "json-prettify:pretty",
   },
   {
+    id: "differ-set-original",
+    label: "set original",
+    group: "differ",
+    command: "differ:set-original",
+    param: "original text",
+  },
+  {
+    id: "differ-set-changed",
+    label: "set changed",
+    group: "differ",
+    command: "differ:set-changed",
+    param: "changed text",
+  },
+  { id: "differ-swap", label: "swap sides", group: "differ", command: "differ:swap" },
+  { id: "differ-clear", label: "clear both sides", group: "differ", command: "differ:clear" },
+  { id: "differ-next", label: "next change", group: "differ", command: "differ:next" },
+  {
+    id: "differ-previous",
+    label: "previous change",
+    group: "differ",
+    command: "differ:previous",
+  },
+  { id: "differ-json", label: "toggle json mode", group: "differ", command: "differ:json" },
+  {
+    id: "differ-whitespace",
+    label: "toggle ignore whitespace",
+    group: "differ",
+    command: "differ:whitespace",
+  },
+  {
+    id: "differ-collapse",
+    label: "toggle collapse unchanged",
+    group: "differ",
+    command: "differ:collapse",
+  },
+  {
     id: "md-builder-open",
     label: "open file",
     group: "md builder",
@@ -220,6 +256,7 @@ const TOOL_BY_COMMAND_PREFIX: Record<string, ToolId> = {
   base64: "base64",
   "json-prettify": "json-prettify",
   "md-builder": "md-builder",
+  differ: "differ",
 };
 
 function toolForCommand(command: string): ToolId | null {

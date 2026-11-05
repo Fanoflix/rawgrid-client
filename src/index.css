@@ -81,6 +81,68 @@
 .json-bracket-1 { color: var(--json-bracket-1); }
 .json-bracket-2 { color: var(--json-bracket-2); }
 
+:root {
+  --diff-added: oklch(0.6 0.16 150);
+  --diff-removed: oklch(0.6 0.2 25);
+}
+
+.dark {
+  --diff-added: oklch(0.76 0.15 150);
+  --diff-removed: oklch(0.72 0.16 22);
+}
+
+.differ-merge .cm-mergeView {
+  overscroll-behavior: contain;
+}
+
+.differ-merge .cm-mergeViewEditors {
+  min-height: 100%;
+}
+
+.differ-merge .cm-mergeViewEditor {
+  cursor: text;
+}
+
+.differ-merge .cm-mergeViewEditor + .cm-mergeViewEditor {
+  border-left: 1px solid var(--border);
+}
+
+.differ-merge .cm-mergeViewEditor[data-drop-target] {
+  background: color-mix(in oklab, var(--primary) 10%, transparent);
+  outline: 1px dashed var(--primary);
+  outline-offset: -1px;
+}
+
+.differ-merge .cm-mergeView .cm-editor.cm-merge-a .cm-changedLine {
+  background: color-mix(in oklab, var(--diff-removed) 10%, transparent);
+}
+
+.differ-merge .cm-mergeView .cm-editor.cm-merge-b .cm-changedLine {
+  background: color-mix(in oklab, var(--diff-added) 10%, transparent);
+}
+
+.differ-merge .cm-mergeView .cm-editor.cm-merge-a .cm-changedText {
+  background: color-mix(in oklab, var(--diff-removed) 30%, transparent);
+}
+
+.differ-merge .cm-mergeView .cm-editor.cm-merge-b .cm-changedText {
+  background: color-mix(in oklab, var(--diff-added) 30%, transparent);
+}
+
+.differ-merge .cm-mergeView .cm-editor.cm-merge-a .cm-changedLineGutter {
+  background: var(--diff-removed);
+}
+
+.differ-merge .cm-mergeView .cm-editor.cm-merge-b .cm-changedLineGutter {
+  background: var(--diff-added);
+}
+
+.differ-merge .cm-mergeView .cm-editor .cm-collapsedLines {
+  color: var(--muted-foreground);
+  background: var(--muted);
+  font-size: 0.85em;
+}
+
 .dark {
   --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);

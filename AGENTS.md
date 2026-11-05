@@ -46,6 +46,8 @@ Commands: `yarn dev`, `yarn build` (runs `tsc -b` first), `yarn lint`, `yarn tes
 | `src/components/ui/*` | shadcn primitives. `resizable.tsx` wraps react-resizable-panels. |
 | `src/components/json-editor.tsx` | CodeMirror editor hard-wired for JSON. |
 | `src/tools/<id>/` | One folder per tool. See the blueprint. |
+| `src/tools/differ/merge-editor.tsx` | Wraps `@codemirror/merge`'s `MergeView`. Pushes outside text in with the `externalSync` annotation, reports a `DiffSummary`, and handles file drops on each column. |
+| `src/tools/differ/lib/merge-editor-extensions.ts` | The differ's CodeMirror theme, font and language compartments, and the update helpers. Diff colors are the `--diff-added` and `--diff-removed` tokens and the `.differ-merge` rules in `index.css`. |
 | `src/pages/landing.tsx` | Marketing page with its own `TOOLS` list and icons. The hero is `public/landing/launch.mp4`, autoplaying muted on a loop with an unmute button. |
 | `src/index.css` | Theme tokens, dark mode, keyframes, and per-tool CSS such as `.md-doc`. |
 
@@ -117,6 +119,16 @@ Rules:
 - **Agent status** comes from the calls themselves: `wait_for_activity` shows "waiting", other calls show "thinking", and `set_status` shows the agent's own words. It never sees the model's reasoning; MCP only sees tool calls.
 - **Discovery uses `fetch`, not WebSockets.** Chrome lets only one WebSocket per host be connecting at a time, and refused ports take seconds, so scanning ten ports with sockets timed out. The server answers `GET /hello` for allowed origins; the tab probes with a `no-cors` fetch, then `/hello`, and falls back to a socket greeting for 0.1.0 servers.
 - **Comment animations** use `motion` (`motion/react`) with `COMMENT_MOTION` from `constants.ts` (circOut, 0.175s). `COMMENT_SCROLL_DELAY_MS` waits for it before auto-scrolling, so change both together. Lists render inside `AnimatePresence initial={false}` so nothing animates on first render or tab switch.
+
+## Differ
+
+- **One copy of `@codemirror/view`.** `@codemirror/merge` brought its own newer `@codemirror/view`, and tsc failed with "separate declarations of a private property". Two copies also break CodeMirror at runtime. After adding or upgrading any `@codemirror/*` package, run `yarn dedupe '@codemirror/*'` and check that `node_modules/@codemirror/*/node_modules` doesn't exist.
+- **Outside text vs. typing.** The hook owns both texts. `MergeEditor` replaces a document only when the prop differs from the editor, and tags that change with `externalSync`, so it never comes back through `onSideChange`. Otherwise a swap or a JSON format would echo back and clear the side's error.
+- **JSON mode formats on purpose, not while typing.** It formats when you turn it on, when you paste (`input.paste`) and when you drop a file. Each format is a separate history step, so ctrl+z first undoes the formatting, then the paste.
+- **Ignore whitespace is a `diffConfig.override`.** `createWhitespaceBlindDiff` diffs with spaces and tabs removed (newlines kept) and maps the positions back to the original text. `MergeView.reconfigure` stores a new `diffConfig` but doesn't recompute chunks, so the merge view is rebuilt when the toggle changes.
+- **Collapse is computed once.** The package builds collapsed ranges only when the field is set up, so `MergeEditor` sets the collapse again after any change that replaces a whole document (paste over everything, drop, swap, clear, JSON format). Typing doesn't refold, which would hide lines next to the cursor.
+- **Drops are caught in the capture phase** on each `.cm-mergeViewEditor`. CodeMirror's own drop handler would insert the file's text at the drop point instead of replacing the document.
+- **No newline at the end of the file.** When neither side ends with a newline, appending lines marks the old last line as changed on both sides, like git does. The sample texts end with a newline so the first view is clean.
 
 ## Command palette
 

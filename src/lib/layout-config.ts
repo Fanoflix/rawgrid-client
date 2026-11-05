@@ -32,11 +32,12 @@ export const DEFAULT_TOOLS_BY_SLOT: ToolsBySlot = [
   "json-search",
   "base64",
   "md-builder",
+  "differ",
 ];
 
 export const SLOT_COUNT = DEFAULT_TOOLS_BY_SLOT.length;
 
-export const DEFAULT_HIDDEN_SLOTS: number[] = [4];
+export const DEFAULT_HIDDEN_SLOTS: number[] = [4, 5];
 
 export const FOCUS_TABS_HEIGHT = 28;
 
@@ -221,12 +222,12 @@ export const GRID_TREE: GridGroupNode = {
             { kind: "slot", slot: 1, size: 30, minSize: 15 },
           ],
         },
-        { kind: "slot", slot: 2, size: 23, minSize: 10 },
+        { kind: "slot", slot: 2, size: 18, minSize: 10 },
         {
           kind: "group",
           id: "top-center-right",
           direction: "vertical",
-          size: 45,
+          size: 32,
           minSize: 15,
           children: [
             { kind: "slot", slot: 3, size: 45, minSize: 15 },
@@ -234,6 +235,7 @@ export const GRID_TREE: GridGroupNode = {
           ],
         },
         { kind: "slot", slot: 5, size: 20, minSize: 10 },
+        { kind: "slot", slot: 11, size: 38, minSize: 15 },
       ],
     },
     {

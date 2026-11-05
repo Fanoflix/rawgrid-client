@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 
 import { Base64Tool } from "@/tools/base64/base64";
 import { ColorPickerTool } from "@/tools/color-picker/color-picker";
+import { DifferTool } from "@/tools/differ/differ";
 import { JwtDecoderTool } from "@/tools/jwt-decoder/jwt-decoder";
 import { JsonPrettifyTool } from "@/tools/json-prettify/json-prettify";
 import { JsonSearchTool } from "@/tools/json-search/json-search";
@@ -23,7 +24,8 @@ export type ToolId =
   | "json-search"
   | "base64"
   | "json-prettify"
-  | "md-builder";
+  | "md-builder"
+  | "differ";
 
 export interface ToolEntry {
   name: string;
@@ -87,6 +89,11 @@ export const TOOL_REGISTRY: Record<ToolId, ToolEntry> = {
     name: "MD Builder",
     description: "review a markdown file with comments for your agent",
     component: MdBuilderTool,
+  },
+  differ: {
+    name: "Differ",
+    description: "compare two texts side by side",
+    component: DifferTool,
   },
 };
 

@@ -5,6 +5,7 @@ import {
   Binary,
   Braces,
   Clock,
+  Diff,
   FileJson,
   Hourglass,
   KeyRound,
@@ -65,6 +66,11 @@ const TOOLS = [
     name: "md builder",
     description: "comment on a local markdown file and hand it to your agent",
     credit: { label: "@TheSalarKhan", href: SALAR_URL },
+  },
+  {
+    icon: Diff,
+    name: "differ",
+    description: "compare two texts or json files side by side",
   },
   {
     icon: StickyNote,
